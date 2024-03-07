@@ -25,18 +25,19 @@ export enum AstNodeSubtype {
   ROW_RANGE = "ROW_RANGE",
 }
 
-type BuildArgs<T> = Omit<T, "type" | "subtype">;
+type BuildArgs<T> = Omit<T, "type" | "subtype" | "id">;
 type BuildFn<T> = (args: BuildArgs<T>) => T;
 
-export interface Ast<TType extends AstNodeType = AstNodeType> {
+export interface AstBase<TType extends AstNodeType = AstNodeType> {
   type: TType;
-  rawContent: string | null;
+  id: string;
+  rawContent: string;
 }
 
 export interface SubtypeAst<
   TType extends AstNodeType,
   TSubtype extends AstNodeSubtype,
-> extends Ast<TType> {
+> extends AstBase<TType> {
   subtype: TSubtype;
 }
 
@@ -50,6 +51,7 @@ export interface EmptyAst extends ValueAst<AstNodeSubtype.EMPTY, null> {}
 export const buildEmptyAst = (): EmptyAst => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.EMPTY,
+  id: crypto.randomUUID(),
   rawContent: "",
   value: null,
 });
@@ -58,6 +60,7 @@ export interface NumberAst extends ValueAst<AstNodeSubtype.NUMBER, Number> {}
 export const buildNumberAst: BuildFn<NumberAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.NUMBER,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -65,13 +68,15 @@ export interface StringAst extends ValueAst<AstNodeSubtype.STRING, string> {}
 export const buildStringAst: BuildFn<StringAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.STRING,
+  id: crypto.randomUUID(),
   ...args,
 });
 
-export interface ArrayAst extends ValueAst<AstNodeSubtype.ARRAY, Ast[][]> {}
+export interface ArrayAst extends ValueAst<AstNodeSubtype.ARRAY, AstBase[][]> {}
 export const buildArrayAst: BuildFn<ArrayAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.ARRAY,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -83,6 +88,7 @@ export interface CellReferenceAst
 export const buildCellReferenceAst: BuildFn<CellReferenceAst> = (args) => ({
   type: AstNodeType.REFERENCE,
   subtype: AstNodeSubtype.CELL,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -99,6 +105,7 @@ export const buildCellRangeReferenceAst: BuildFn<CellRangeReferenceAst> = (
 ) => ({
   type: AstNodeType.REFERENCE,
   subtype: AstNodeSubtype.CELL_RANGE,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -109,6 +116,7 @@ export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = (
 ) => ({
   type: AstNodeType.REFERENCE,
   subtype: AstNodeSubtype.COLUMN_RANGE,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -119,6 +127,7 @@ export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = (
 ) => ({
   type: AstNodeType.REFERENCE,
   subtype: AstNodeSubtype.ROW_RANGE,
+  id: crypto.randomUUID(),
   ...args,
 });
 
@@ -131,30 +140,35 @@ export const buildNamedExpressionReferenceAst: BuildFn<
 > = (args) => ({
   type: AstNodeType.REFERENCE,
   subtype: AstNodeSubtype.NAMED_EXPRESSION,
+  id: crypto.randomUUID(),
   ...args,
 });
 
 // function ASTs
-export interface FunctionAst extends Ast<AstNodeType.FUNCTION> {
+export interface FunctionAst extends AstBase<AstNodeType.FUNCTION> {
   functionName: string;
   args: Ast[];
 }
 export const buildFunctionAst: BuildFn<FunctionAst> = (args) => ({
   type: AstNodeType.FUNCTION,
+  id: crypto.randomUUID(),
   ...args,
 });
 
-export interface UnaryExpressionAst extends Ast<AstNodeType.UNARY_EXPRESSION> {
+export interface UnaryExpressionAst
+  extends AstBase<AstNodeType.UNARY_EXPRESSION> {
   operator: string;
+  operatorOnRight: boolean;
   value: Ast;
 }
 export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) => ({
   type: AstNodeType.UNARY_EXPRESSION,
+  id: crypto.randomUUID(),
   ...args,
 });
 
 export interface BinaryExpressionAst
-  extends Ast<AstNodeType.BINARY_EXPRESSION> {
+  extends AstBase<AstNodeType.BINARY_EXPRESSION> {
   operator: string;
   left: Ast;
   right: Ast;
@@ -163,21 +177,40 @@ export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (
   args
 ) => ({
   type: AstNodeType.BINARY_EXPRESSION,
+  id: crypto.randomUUID(),
   ...args,
 });
 
-export interface ParenthesisAst extends Ast<AstNodeType.PARENTHESIS> {
+export interface ParenthesisAst extends AstBase<AstNodeType.PARENTHESIS> {
   content: Ast;
 }
 export const buildParenthesisAst: BuildFn<ParenthesisAst> = (args) => ({
   type: AstNodeType.PARENTHESIS,
+  id: crypto.randomUUID(),
   ...args,
 });
 
-export interface ErrorAst extends Ast<AstNodeType.ERROR> {
+export interface ErrorAst extends AstBase<AstNodeType.ERROR> {
   error: string;
 }
 export const buildErrorAst: BuildFn<ErrorAst> = (args) => ({
   type: AstNodeType.ERROR,
+  id: crypto.randomUUID(),
   ...args,
 });
+
+export type Ast =
+  | EmptyAst
+  | NumberAst
+  | StringAst
+  | ArrayAst
+  | CellReferenceAst
+  | CellRangeReferenceAst
+  | ColumnRangeReferenceAst
+  | RowRangeReferenceAst
+  | NamedExpressionReferenceAst
+  | FunctionAst
+  | UnaryExpressionAst
+  | BinaryExpressionAst
+  | ParenthesisAst
+  | ErrorAst;

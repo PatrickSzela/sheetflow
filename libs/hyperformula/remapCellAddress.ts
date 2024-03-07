@@ -1,5 +1,5 @@
+import { CellAddress } from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import { CellAddress } from "../sheetflow";
 
 export const remapCellAddress = (
   hf: HyperFormula,

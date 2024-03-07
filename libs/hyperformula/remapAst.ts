@@ -1,8 +1,3 @@
-import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import {
-  Ast as HfAst,
-  AstNodeType as HfAstNodeType,
-} from "hyperformula/commonjs/parser";
 import {
   Ast,
   buildArrayAst,
@@ -19,7 +14,12 @@ import {
   buildRowRangeReferenceAst,
   buildStringAst,
   buildUnaryExpressionAst,
-} from "../sheetflow";
+} from "@/libs/sheetflow";
+import { HyperFormula, SimpleCellAddress } from "hyperformula";
+import {
+  Ast as HfAst,
+  AstNodeType as HfAstNodeType,
+} from "hyperformula/commonjs/parser";
 import { remapCellAddress } from "./remapCellAddress";
 
 export const remapAst = (
@@ -41,18 +41,21 @@ export const remapAst = (
       return buildUnaryExpressionAst({
         operator: "-",
         value: remapAst(hf, ast.value, address),
+        operatorOnRight: false,
         rawContent,
       });
     case HfAstNodeType.PLUS_UNARY_OP:
       return buildUnaryExpressionAst({
         operator: "+",
         value: remapAst(hf, ast.value, address),
+        operatorOnRight: false,
         rawContent,
       });
     case HfAstNodeType.PERCENT_OP:
       return buildUnaryExpressionAst({
         operator: "%",
         value: remapAst(hf, ast.value, address),
+        operatorOnRight: true,
         rawContent,
       });
     case HfAstNodeType.CONCATENATE_OP:
