@@ -1,10 +1,7 @@
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import { Config } from "hyperformula/commonjs/Config";
 import {
   Ast as HfAst,
   AstNodeType as HfAstNodeType,
-  Unparser,
-  buildLexerConfig,
 } from "hyperformula/commonjs/parser";
 import {
   Ast,
@@ -30,17 +27,8 @@ export const remapAst = (
   ast: HfAst,
   address: SimpleCellAddress
 ): Ast => {
-  const config = new Config(hf.getConfig());
-  const lexerConfig = buildLexerConfig(config);
-
-  const unparser = new Unparser(
-    config,
-    lexerConfig,
-    hf.dependencyGraph.sheetMapping.fetchDisplayName,
-    hf.dependencyGraph.namedExpressions
-  );
-
-  const rawContent = unparser.unparse(ast, address).slice(1);
+  // @ts-expect-error we're using protected property here
+  const rawContent = hf._unparser.unparse(ast, address).slice(1);
 
   switch (ast.type) {
     case HfAstNodeType.EMPTY:
