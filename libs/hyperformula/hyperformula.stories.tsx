@@ -11,7 +11,7 @@ const sheets: Sheets = {
   Sheet1: [],
 };
 
-const meta: Meta<typeof FormulaAstPreview> = {
+const meta = {
   title: "HyperFormula",
   component: FormulaAstPreview,
   decorators: [
@@ -21,7 +21,7 @@ const meta: Meta<typeof FormulaAstPreview> = {
       </HyperFormulaProvider>
     ),
   ],
-};
+} satisfies Meta<typeof FormulaAstPreview>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
