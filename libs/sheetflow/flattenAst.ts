@@ -15,23 +15,22 @@ export const flattenAst = (
     case AstNodeType.FUNCTION:
       return [
         { ...ast, nearestParenthesis },
-        ...ast.args.map((i) => flattenAst(i, nearestParenthesis)).flat(),
+        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
       ];
     case AstNodeType.UNARY_EXPRESSION:
       return [
         { ...ast, nearestParenthesis },
-        ...flattenAst(ast.value, nearestParenthesis),
+        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
       ];
     case AstNodeType.BINARY_EXPRESSION:
       return [
         { ...ast, nearestParenthesis },
-        ...flattenAst(ast.left, nearestParenthesis),
-        ...flattenAst(ast.right, nearestParenthesis),
+        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
       ];
     case AstNodeType.PARENTHESIS:
       return [
         { ...ast, nearestParenthesis },
-        ...flattenAst(ast.content, ast.id),
+        ...ast.children.map((i) => flattenAst(i, ast.id)).flat(),
       ];
     case AstNodeType.ERROR:
       return [ast];

@@ -34,20 +34,27 @@ export interface AstBase<TType extends AstNodeType = AstNodeType> {
   rawContent: string;
 }
 
-export interface SubtypeAst<
+export interface AstWithSubtype<
   TType extends AstNodeType,
   TSubtype extends AstNodeSubtype,
 > extends AstBase<TType> {
   subtype: TSubtype;
 }
 
-// value ASTs
-export interface ValueAst<TSubtype extends AstNodeSubtype, TValue>
-  extends SubtypeAst<AstNodeType.VALUE, TSubtype> {
+export interface AstWithChildren<
+  TType extends AstNodeType,
+  TChild extends Ast[],
+> extends AstBase<TType> {
+  children: TChild;
+}
+
+export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
+  extends AstWithSubtype<AstNodeType.VALUE, TSubtype> {
   value: TValue;
 }
 
-export interface EmptyAst extends ValueAst<AstNodeSubtype.EMPTY, null> {}
+// value ASTs
+export interface EmptyAst extends AstWithValue<AstNodeSubtype.EMPTY, null> {}
 export const buildEmptyAst = (): EmptyAst => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.EMPTY,
@@ -56,7 +63,8 @@ export const buildEmptyAst = (): EmptyAst => ({
   value: null,
 });
 
-export interface NumberAst extends ValueAst<AstNodeSubtype.NUMBER, Number> {}
+export interface NumberAst
+  extends AstWithValue<AstNodeSubtype.NUMBER, Number> {}
 export const buildNumberAst: BuildFn<NumberAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.NUMBER,
@@ -64,7 +72,8 @@ export const buildNumberAst: BuildFn<NumberAst> = (args) => ({
   ...args,
 });
 
-export interface StringAst extends ValueAst<AstNodeSubtype.STRING, string> {}
+export interface StringAst
+  extends AstWithValue<AstNodeSubtype.STRING, string> {}
 export const buildStringAst: BuildFn<StringAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.STRING,
@@ -72,7 +81,7 @@ export const buildStringAst: BuildFn<StringAst> = (args) => ({
   ...args,
 });
 
-export interface ArrayAst extends ValueAst<AstNodeSubtype.ARRAY, AstBase[][]> {}
+export interface ArrayAst extends AstWithValue<AstNodeSubtype.ARRAY, Ast[][]> {}
 export const buildArrayAst: BuildFn<ArrayAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.ARRAY,
@@ -82,7 +91,7 @@ export const buildArrayAst: BuildFn<ArrayAst> = (args) => ({
 
 // reference ASTs
 export interface CellReferenceAst
-  extends SubtypeAst<AstNodeType.REFERENCE, AstNodeSubtype.CELL> {
+  extends AstWithSubtype<AstNodeType.REFERENCE, AstNodeSubtype.CELL> {
   reference: CellAddress;
 }
 export const buildCellReferenceAst: BuildFn<CellReferenceAst> = (args) => ({
@@ -93,7 +102,7 @@ export const buildCellReferenceAst: BuildFn<CellReferenceAst> = (args) => ({
 });
 
 export interface RangeReferenceAst<TSubtype extends AstNodeSubtype, TStartEnd>
-  extends SubtypeAst<AstNodeType.REFERENCE, TSubtype> {
+  extends AstWithSubtype<AstNodeType.REFERENCE, TSubtype> {
   start: TStartEnd;
   end: TStartEnd;
 }
@@ -132,7 +141,10 @@ export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = (
 });
 
 export interface NamedExpressionReferenceAst
-  extends SubtypeAst<AstNodeType.REFERENCE, AstNodeSubtype.NAMED_EXPRESSION> {
+  extends AstWithSubtype<
+    AstNodeType.REFERENCE,
+    AstNodeSubtype.NAMED_EXPRESSION
+  > {
   expressionName: string;
 }
 export const buildNamedExpressionReferenceAst: BuildFn<
@@ -145,9 +157,9 @@ export const buildNamedExpressionReferenceAst: BuildFn<
 });
 
 // function ASTs
-export interface FunctionAst extends AstBase<AstNodeType.FUNCTION> {
+export interface FunctionAst
+  extends AstWithChildren<AstNodeType.FUNCTION, Ast[]> {
   functionName: string;
-  args: Ast[];
 }
 export const buildFunctionAst: BuildFn<FunctionAst> = (args) => ({
   type: AstNodeType.FUNCTION,
@@ -156,10 +168,9 @@ export const buildFunctionAst: BuildFn<FunctionAst> = (args) => ({
 });
 
 export interface UnaryExpressionAst
-  extends AstBase<AstNodeType.UNARY_EXPRESSION> {
+  extends AstWithChildren<AstNodeType.UNARY_EXPRESSION, [Ast]> {
   operator: string;
   operatorOnRight: boolean;
-  value: Ast;
 }
 export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) => ({
   type: AstNodeType.UNARY_EXPRESSION,
@@ -168,10 +179,8 @@ export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) => ({
 });
 
 export interface BinaryExpressionAst
-  extends AstBase<AstNodeType.BINARY_EXPRESSION> {
+  extends AstWithChildren<AstNodeType.BINARY_EXPRESSION, [Ast, Ast]> {
   operator: string;
-  left: Ast;
-  right: Ast;
 }
 export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (
   args
@@ -181,9 +190,8 @@ export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (
   ...args,
 });
 
-export interface ParenthesisAst extends AstBase<AstNodeType.PARENTHESIS> {
-  content: Ast;
-}
+export interface ParenthesisAst
+  extends AstWithChildren<AstNodeType.PARENTHESIS, [Ast]> {}
 export const buildParenthesisAst: BuildFn<ParenthesisAst> = (args) => ({
   type: AstNodeType.PARENTHESIS,
   id: crypto.randomUUID(),

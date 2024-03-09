@@ -40,112 +40,136 @@ export const remapAst = (
     case HfAstNodeType.MINUS_UNARY_OP:
       return buildUnaryExpressionAst({
         operator: "-",
-        value: remapAst(hf, ast.value, address),
+        children: [remapAst(hf, ast.value, address)],
         operatorOnRight: false,
         rawContent,
       });
     case HfAstNodeType.PLUS_UNARY_OP:
       return buildUnaryExpressionAst({
         operator: "+",
-        value: remapAst(hf, ast.value, address),
+        children: [remapAst(hf, ast.value, address)],
         operatorOnRight: false,
         rawContent,
       });
     case HfAstNodeType.PERCENT_OP:
       return buildUnaryExpressionAst({
         operator: "%",
-        value: remapAst(hf, ast.value, address),
+        children: [remapAst(hf, ast.value, address)],
         operatorOnRight: true,
         rawContent,
       });
     case HfAstNodeType.CONCATENATE_OP:
       return buildBinaryExpressionAst({
         operator: "&",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.EQUALS_OP:
       return buildBinaryExpressionAst({
         operator: "=",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.NOT_EQUAL_OP:
       return buildBinaryExpressionAst({
         operator: "<>",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.GREATER_THAN_OP:
       return buildBinaryExpressionAst({
         operator: ">",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.LESS_THAN_OP:
       return buildBinaryExpressionAst({
         operator: "<",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.GREATER_THAN_OR_EQUAL_OP:
       return buildBinaryExpressionAst({
         operator: ">=",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.LESS_THAN_OR_EQUAL_OP:
       return buildBinaryExpressionAst({
         operator: "<=",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.PLUS_OP:
       return buildBinaryExpressionAst({
         operator: "+",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.MINUS_OP:
       return buildBinaryExpressionAst({
         operator: "-",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.TIMES_OP:
       return buildBinaryExpressionAst({
         operator: "*",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.DIV_OP:
       return buildBinaryExpressionAst({
         operator: "/",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.POWER_OP:
       return buildBinaryExpressionAst({
         operator: "^",
-        left: remapAst(hf, ast.left, address),
-        right: remapAst(hf, ast.right, address),
+        children: [
+          remapAst(hf, ast.left, address),
+          remapAst(hf, ast.right, address),
+        ],
         rawContent,
       });
     case HfAstNodeType.FUNCTION_CALL:
       return buildFunctionAst({
         functionName: ast.procedureName,
-        args: ast.args.map((i) => remapAst(hf, i, address)),
+        children: ast.args.map((i) => remapAst(hf, i, address)),
         rawContent,
       });
     case HfAstNodeType.NAMED_EXPRESSION:
@@ -155,7 +179,7 @@ export const remapAst = (
       });
     case HfAstNodeType.PARENTHESIS:
       return buildParenthesisAst({
-        content: remapAst(hf, ast.expression, address),
+        children: [remapAst(hf, ast.expression, address)],
         rawContent,
       });
     case HfAstNodeType.CELL_REFERENCE:
