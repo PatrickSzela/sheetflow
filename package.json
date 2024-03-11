@@ -20,7 +20,6 @@
     "react-inspector": "^6.0.2"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^1.2.2",
     "@storybook/addon-essentials": "8.0.0-rc.1",
     "@storybook/addon-interactions": "8.0.0-rc.1",
     "@storybook/addon-links": "8.0.0-rc.1",
