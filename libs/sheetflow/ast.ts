@@ -55,12 +55,11 @@ export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
 
 // value ASTs
 export interface EmptyAst extends AstWithValue<AstNodeSubtype.EMPTY, null> {}
-export const buildEmptyAst = (): EmptyAst => ({
+export const buildEmptyAst: BuildFn<EmptyAst> = (args) => ({
   type: AstNodeType.VALUE,
   subtype: AstNodeSubtype.EMPTY,
   id: crypto.randomUUID(),
-  rawContent: "",
-  value: null,
+  ...args,
 });
 
 export interface NumberAst
@@ -105,6 +104,7 @@ export interface RangeReferenceAst<TSubtype extends AstNodeSubtype, TStartEnd>
   extends AstWithSubtype<AstNodeType.REFERENCE, TSubtype> {
   start: TStartEnd;
   end: TStartEnd;
+  sheet: string;
 }
 
 export interface CellRangeReferenceAst

@@ -1,17 +1,17 @@
-import { Ast, buildErrorAst } from "@/libs/sheetflow";
+import { Ast } from "@/libs/sheetflow";
 import { SimpleCellAddress } from "hyperformula";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
-import { useMemo } from "react";
+import { useState } from "react";
 import { useHyperFormula } from "./HyperFormulaProvider";
 import { remapAst } from "./remapAst";
 
-export const useFormulaAst = (formula: string): Ast => {
+export const useFormulaAst = (formula: string): Ast | undefined => {
   const hf = useHyperFormula();
 
-  const data = useMemo(() => {
-    if (!hf.validateFormula(formula))
-      return buildErrorAst({ error: "Failed to create AST", rawContent: "" });
+  const [newFormula, setNewFormula] = useState<string>();
+  const [data, setData] = useState<Ast>();
 
+  if (newFormula !== formula && hf.validateFormula(formula)) {
     // TODO: store formula in a custom sheet
     const address: SimpleCellAddress = { col: 9999, row: 9999, sheet: 0 };
 
@@ -29,11 +29,12 @@ export const useFormulaAst = (formula: string): Ast => {
     // @ts-expect-error we're using protected property here
     const ast = formulaVertex?.formula;
 
-    if (!ast)
-      return buildErrorAst({ error: "Failed to create AST", rawContent: "" });
+    if (!ast) return undefined;
 
-    return remapAst(hf, ast, address);
-  }, [formula, hf]);
+    setData(remapAst(hf, ast, address, data));
+
+    setNewFormula(formula);
+  }
 
   return data;
 };

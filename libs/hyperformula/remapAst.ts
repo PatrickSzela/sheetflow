@@ -1,5 +1,7 @@
 import {
   Ast,
+  AstNodeSubtype,
+  AstNodeType,
   buildArrayAst,
   buildBinaryExpressionAst,
   buildCellRangeReferenceAst,
@@ -21,169 +23,94 @@ import {
   AstNodeType as HfAstNodeType,
 } from "hyperformula/commonjs/parser";
 import { remapCellAddress } from "./remapCellAddress";
+import { areAstEqual, getOperator } from "./utils";
 
 export const remapAst = (
   hf: HyperFormula,
   ast: HfAst,
-  address: SimpleCellAddress
+  address: SimpleCellAddress,
+  oldRemappedAst: Ast | undefined = undefined
 ): Ast => {
   // @ts-expect-error we're using protected property here
   const rawContent = hf._unparser.unparse(ast, address).slice(1);
 
+  const equal =
+    oldRemappedAst && areAstEqual(ast, oldRemappedAst, hf, address, false);
+
+  const id = equal ? { id: oldRemappedAst.id } : {};
+
+  const oldChildren =
+    equal && oldRemappedAst && "children" in oldRemappedAst
+      ? oldRemappedAst.children
+      : [oldRemappedAst];
+
+  console.log(equal ? "equal" : "not equal", ast, oldRemappedAst);
+
+  // const oldChildren =
+  //   equal && "children" in oldRemappedAst ? oldRemappedAst.children : undefined;
+
   switch (ast.type) {
     case HfAstNodeType.EMPTY:
-      return buildEmptyAst();
+      return buildEmptyAst({ ...id, value: null, rawContent: "" });
     case HfAstNodeType.NUMBER:
-      return buildNumberAst({ value: ast.value, rawContent });
+      return buildNumberAst({ ...id, value: ast.value, rawContent });
     case HfAstNodeType.STRING:
-      return buildStringAst({ value: ast.value, rawContent });
+      return buildStringAst({ ...id, value: ast.value, rawContent });
     case HfAstNodeType.MINUS_UNARY_OP:
-      return buildUnaryExpressionAst({
-        operator: "-",
-        children: [remapAst(hf, ast.value, address)],
-        operatorOnRight: false,
-        rawContent,
-      });
     case HfAstNodeType.PLUS_UNARY_OP:
-      return buildUnaryExpressionAst({
-        operator: "+",
-        children: [remapAst(hf, ast.value, address)],
-        operatorOnRight: false,
-        rawContent,
-      });
     case HfAstNodeType.PERCENT_OP:
       return buildUnaryExpressionAst({
-        operator: "%",
-        children: [remapAst(hf, ast.value, address)],
-        operatorOnRight: true,
+        ...id,
+        operator: getOperator(ast.type),
+        children: [remapAst(hf, ast.value, address, oldChildren?.[0])],
+        operatorOnRight: ast.type === HfAstNodeType.PERCENT_OP,
         rawContent,
       });
     case HfAstNodeType.CONCATENATE_OP:
-      return buildBinaryExpressionAst({
-        operator: "&",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.EQUALS_OP:
-      return buildBinaryExpressionAst({
-        operator: "=",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.NOT_EQUAL_OP:
-      return buildBinaryExpressionAst({
-        operator: "<>",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.GREATER_THAN_OP:
-      return buildBinaryExpressionAst({
-        operator: ">",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.LESS_THAN_OP:
-      return buildBinaryExpressionAst({
-        operator: "<",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.GREATER_THAN_OR_EQUAL_OP:
-      return buildBinaryExpressionAst({
-        operator: ">=",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.LESS_THAN_OR_EQUAL_OP:
-      return buildBinaryExpressionAst({
-        operator: "<=",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.PLUS_OP:
-      return buildBinaryExpressionAst({
-        operator: "+",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.MINUS_OP:
-      return buildBinaryExpressionAst({
-        operator: "-",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.TIMES_OP:
-      return buildBinaryExpressionAst({
-        operator: "*",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.DIV_OP:
-      return buildBinaryExpressionAst({
-        operator: "/",
-        children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
-        ],
-        rawContent,
-      });
     case HfAstNodeType.POWER_OP:
       return buildBinaryExpressionAst({
-        operator: "^",
+        ...id,
+        operator: getOperator(ast.type),
         children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
+          remapAst(hf, ast.left, address, oldChildren?.[0]),
+          remapAst(hf, ast.right, address, oldChildren?.[1]),
         ],
         rawContent,
       });
     case HfAstNodeType.FUNCTION_CALL:
       return buildFunctionAst({
+        ...id,
         functionName: ast.procedureName,
-        children: ast.args.map((i) => remapAst(hf, i, address)),
+        children: ast.args.map((i, idx) =>
+          remapAst(hf, i, address, oldChildren?.[idx])
+        ),
         rawContent,
       });
     case HfAstNodeType.NAMED_EXPRESSION:
       return buildNamedExpressionReferenceAst({
+        ...id,
         expressionName: ast.expressionName,
         rawContent,
       });
     case HfAstNodeType.PARENTHESIS:
       return buildParenthesisAst({
-        children: [remapAst(hf, ast.expression, address)],
+        ...id,
+        children: [remapAst(hf, ast.expression, address, oldChildren?.[0])],
         rawContent,
       });
     case HfAstNodeType.CELL_REFERENCE:
       return buildCellReferenceAst({
+        ...id,
         reference: remapCellAddress(
           hf,
           ast.reference.toSimpleCellAddress(address)
@@ -192,40 +119,68 @@ export const remapAst = (
       });
     case HfAstNodeType.CELL_RANGE:
       return buildCellRangeReferenceAst({
+        ...id,
         start: remapCellAddress(hf, ast.start.toSimpleCellAddress(address)),
         end: remapCellAddress(hf, ast.end.toSimpleCellAddress(address)),
+        sheet:
+          hf.getSheetName(ast.start.toSimpleCellAddress(address).sheet) ??
+          "MISSING",
         rawContent,
       });
     case HfAstNodeType.COLUMN_RANGE:
       return buildColumnRangeReferenceAst({
+        ...id,
         start: ast.start.col,
         end: ast.end.col,
+        sheet:
+          hf.getSheetName(ast.start.toSimpleColumnAddress(address).sheet) ??
+          "MISSING",
         rawContent,
       });
     case HfAstNodeType.ROW_RANGE:
       return buildRowRangeReferenceAst({
+        ...id,
         start: ast.start.row,
         end: ast.end.row,
+        sheet:
+          hf.getSheetName(ast.start.toSimpleRowAddress(address).sheet) ??
+          "MISSING",
         rawContent,
       });
     case HfAstNodeType.ERROR:
       return buildErrorAst({
+        ...id,
         error: ast.error.type,
         rawContent,
       });
     case HfAstNodeType.ERROR_WITH_RAW_INPUT:
       return buildErrorAst({
+        ...id,
         error: ast.error.type,
         rawContent,
       });
     case HfAstNodeType.ARRAY:
       return buildArrayAst({
-        value: ast.args.map((a) => a.map((b) => remapAst(hf, b, address))),
+        ...id,
+        value: ast.args.map((a, idx1) =>
+          a.map((b, idx2) =>
+            remapAst(
+              hf,
+              b,
+              address,
+              oldRemappedAst?.type === AstNodeType.VALUE &&
+                oldRemappedAst.subtype === AstNodeSubtype.ARRAY
+                ? oldRemappedAst.value[idx1][idx2]
+                : undefined
+            )
+          )
+        ),
         rawContent,
       });
 
     default:
       return buildErrorAst({
+        ...id,
         error: "AST node type doesn't match any of the case clauses",
         rawContent,
       });

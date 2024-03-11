@@ -1,7 +1,9 @@
-import type { Meta, StoryObj } from "@storybook/react";
 import { HyperFormulaProvider, useFormulaAst } from "@/libs/hyperformula";
-import { AstFlow, AstFlowProps } from "./AstFlow";
+import { Ast } from "@/libs/sheetflow";
+import type { Meta, StoryObj } from "@storybook/react";
 import { ConfigParams, Sheets } from "hyperformula";
+import { useState } from "react";
+import { AstFlowWrapped, AstFlowProps } from "./AstFlow";
 
 const options: Partial<ConfigParams> = {
   licenseKey: "gpl-v3",
@@ -13,7 +15,7 @@ const sheets: Sheets = {
 
 const meta = {
   title: "Components",
-  component: AstFlow,
+  component: AstFlowWrapped,
   argTypes: {
     formula: { control: "text" },
   },
@@ -22,10 +24,14 @@ const meta = {
   },
   decorators: [
     (Story, c) => {
+      const [properAst, setProperAst] = useState<Ast>();
       const ast = useFormulaAst(c.args?.formula ?? "");
+
+      if (ast && properAst !== ast) setProperAst(ast);
+
       return (
         <div style={{ height: "100vh" }}>
-          <Story args={{ ast }} />
+          <Story args={{ ast: properAst }} />
         </div>
       );
     },
