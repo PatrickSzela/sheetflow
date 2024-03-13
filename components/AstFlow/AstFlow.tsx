@@ -43,7 +43,7 @@ const AstFlow = (props: AstFlowProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   if (prevAst !== ast) {
-    const _nodes = generateNodes(flatAst, nodes);
+    const _nodes = generateNodes(flatAst);
     const _edges = generateEdges(flatAst);
 
     setNodes(_nodes);

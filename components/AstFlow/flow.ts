@@ -3,7 +3,6 @@ import { Edge, Node, Position } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],
-  oldNodes: Node[],
   skipParenthesis: Boolean = false
 ): Node[] => {
   const flat = skipParenthesis
@@ -11,11 +10,9 @@ export const generateNodes = (
     : flatAst;
 
   const nodes: Node[] = flat.map((ast) => {
-    const old = oldNodes.find((i) => i.id === ast.id);
-
     return {
       id: ast.id,
-      position: old?.position ?? { x: 0, y: 0 },
+      position: { x: 0, y: 0 },
       data: { label: `${ast.type}: ${ast.rawContent}` },
       // data: { label: cur.id },
 

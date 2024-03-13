@@ -31,7 +31,7 @@ export const useFormulaAst = (formula: string): Ast | undefined => {
 
     if (!ast) return undefined;
 
-    setData(remapAst(hf, ast, address, data));
+    setData(remapAst(hf, ast, address));
 
     setNewFormula(formula);
   }
