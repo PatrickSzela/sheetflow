@@ -9,13 +9,12 @@ import {
   ReactFlowProps,
   ReactFlowProvider,
   useEdgesState,
-  useNodesInitialized,
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo, useState } from "react";
+import { useMemo, useRef } from "react";
 import { generateEdges, generateNodes } from "./flow";
-import { generateElkLayout } from "./useElkLayout";
+import { useElkLayout } from "./useElkLayout";
 
 export interface AstFlowProps extends Omit<ReactFlowProps, "nodes"> {
   ast: Ast;
@@ -32,42 +31,27 @@ export const AstFlowWrapped = (props: AstFlowProps) => {
 const AstFlow = (props: AstFlowProps) => {
   const { ast, ...otherProps } = props;
 
-  const nodesInitialized = useNodesInitialized();
-
-  const [prevAst, setPrevAst] = useState<Ast>();
-  const [prevAst2, setPrevAst2] = useState<Ast>();
-
+  const prevAst = useRef<Ast>();
   const flatAst = useMemo(() => flattenAst(ast), [ast]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  if (prevAst !== ast) {
+  if (prevAst.current !== ast) {
+    prevAst.current = ast;
+
     const _nodes = generateNodes(flatAst);
     const _edges = generateEdges(flatAst);
 
-    setNodes(_nodes);
-    setEdges(_edges);
-
-    setPrevAst(ast);
+    // we append new nodes & edges to show old nodes while elk is calculating positions for the new ones
+    setNodes((prev) => [...prev, ..._nodes]);
+    setEdges((prev) => [...prev, ..._edges]);
 
     console.log("Generated nodes", _nodes);
     console.log("Generated edges", _edges);
   }
 
-  if (nodesInitialized) {
-    (async () => {
-      if (prevAst !== prevAst2 && nodes.length && nodes[0].computed) {
-        setPrevAst2(prevAst);
-
-        const layoutNodes = await generateElkLayout(nodes, edges);
-
-        setNodes(layoutNodes);
-
-        console.log("Layouted nodes", layoutNodes);
-      }
-    })();
-  }
+  useElkLayout();
 
   return (
     <ReactFlow

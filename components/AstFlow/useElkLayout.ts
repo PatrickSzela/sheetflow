@@ -1,5 +1,6 @@
-import { Edge, Node } from "@xyflow/react";
+import { Edge, Node, useNodesInitialized, useReactFlow } from "@xyflow/react";
 import Elk, { ElkExtendedEdge, ElkNode } from "elkjs";
+import { useRef, useState } from "react";
 
 const elk = new Elk();
 
@@ -66,4 +67,65 @@ export const generateElkLayout = async (
       position: { x: node.x ?? 0, y: node.y ?? 0 },
     };
   });
+};
+
+export const useElkLayout = () => {
+  const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
+
+  const prevNodesInitialized = useRef<boolean>(false);
+  const nodesInitialized = useNodesInitialized();
+
+  const [layoutedNodes, setLayoutedNodes] = useState<Node[]>();
+  const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>();
+
+  if (nodesInitialized && !prevNodesInitialized.current) {
+    (async () => {
+      const nodes = getNodes();
+      const edges = getEdges();
+
+      const oldNodesIds = layoutedNodes?.map((i) => i.id) ?? [];
+
+      const nodesToBeLayouted = nodes.filter(
+        (i) => !oldNodesIds.includes(i.id)
+      );
+      const edgesToBeLayouted = edges.filter(
+        (i) => !oldNodesIds.includes(i.source)
+      );
+
+      const prevNodes = layoutedNodes ?? [];
+      const prevEdges = edges.filter((i) => oldNodesIds.includes(i.source));
+
+      if (!nodesToBeLayouted.length) return;
+
+      // hide new nodes & edges until elk has finished calculating layout
+      for (const item of [...nodesToBeLayouted, ...edgesToBeLayouted]) {
+        item.hidden = true;
+      }
+
+      setNodes([...prevNodes, ...nodesToBeLayouted]);
+      setEdges([...prevEdges, ...edgesToBeLayouted]);
+
+      const elkNodes = await generateElkLayout(
+        nodesToBeLayouted,
+        edgesToBeLayouted
+      );
+
+      for (const item of [...elkNodes, ...edgesToBeLayouted]) {
+        item.hidden = false;
+      }
+
+      setLayoutedNodes(elkNodes);
+      setLayoutedEdges(edgesToBeLayouted);
+
+      console.log("Layouted nodes", elkNodes);
+      console.log("Layouted edges", edgesToBeLayouted);
+
+      setNodes(elkNodes);
+      setEdges(edgesToBeLayouted);
+    })();
+  }
+
+  prevNodesInitialized.current = nodesInitialized;
+
+  return { layoutedNodes, layoutedEdges };
 };
