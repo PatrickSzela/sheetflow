@@ -22,8 +22,8 @@ const elkLayoutOptions = {
 export const generateElkNodes = (nodes: Node[]): ElkNode[] => {
   return nodes.map((i) => ({
     id: i.id,
-    width: i.computed?.width ?? i.width ?? 0,
-    height: i.computed?.height ?? i.height ?? 0,
+    width: i.measured?.width ?? i.width ?? 0,
+    height: i.measured?.height ?? i.height ?? 0,
     x: i.position.x,
     y: i.position.y,
     layoutOptions: elkLayoutOptions,
