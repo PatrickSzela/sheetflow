@@ -1,0 +1,48 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Start Storybook",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run storybook",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      // "serverReadyAction": {
+      //   "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
+      //   "uriFormat": "%s",
+      //   "action": "debugWithChrome",
+      // }
+    },
+    {
+      "name": "Launch Firefox against Storybook",
+      "type": "firefox",
+      "request": "launch",
+      "reAttach": true,
+      "url": "http://localhost:6006",
+      "webRoot": "${workspaceFolder}",
+      // https://github.com/storybookjs/storybook/discussions/26153
+      "suggestPathMappingWizard": true,
+      "pathMappings": [
+        {
+          "url": "webpack://sheetflow",
+          "path": "${workspaceFolder}"
+        }
+      ]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Storybook in Firefox",
+      "configurations": ["Start Storybook", "Launch Firefox against Storybook"],
+      "stopAll": true,
+      "presentation": {
+        "hidden": false,
+        "group": "Storybook",
+        "order": 2
+      }
+    }
+  ]
+}
