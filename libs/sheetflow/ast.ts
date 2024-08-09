@@ -46,6 +46,10 @@ export interface AstWithChildren<
   TChild extends Ast[],
 > extends AstBase<TType> {
   children: TChild;
+  requirements: {
+    minChildCount: number;
+    maxChildCount: number;
+  };
 }
 
 export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>

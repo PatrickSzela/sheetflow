@@ -46,6 +46,10 @@ export const remapAst = (
         children: [remapAst(hf, ast.value, address)],
         operatorOnRight: ast.type === HfAstNodeType.PERCENT_OP,
         rawContent,
+        requirements: {
+          minChildCount: 1,
+          maxChildCount: 1,
+        },
       });
     case HfAstNodeType.CONCATENATE_OP:
     case HfAstNodeType.EQUALS_OP:
@@ -66,12 +70,33 @@ export const remapAst = (
           remapAst(hf, ast.right, address),
         ],
         rawContent,
+        requirements: {
+          minChildCount: 2,
+          maxChildCount: 2,
+        },
       });
     case HfAstNodeType.FUNCTION_CALL:
+      console.log(
+        ast.procedureName,
+        hf.getFunctionPlugin(ast.procedureName)?.implementedFunctions[
+          ast.procedureName
+        ]
+      );
+
+      const hfFunction = hf.getFunctionPlugin(ast.procedureName)
+        ?.implementedFunctions[ast.procedureName];
+
       return buildFunctionAst({
         functionName: ast.procedureName,
         children: ast.args.map((i, idx) => remapAst(hf, i, address)),
         rawContent,
+        requirements: {
+          minChildCount:
+            hfFunction?.parameters?.filter(
+              (i) => typeof i.defaultValue === "undefined"
+            ).length ?? 0,
+          maxChildCount: hfFunction?.parameters?.length ?? 0,
+        },
       });
     case HfAstNodeType.NAMED_EXPRESSION:
       return buildNamedExpressionReferenceAst({
@@ -82,6 +107,10 @@ export const remapAst = (
       return buildParenthesisAst({
         children: [remapAst(hf, ast.expression, address)],
         rawContent,
+        requirements: {
+          minChildCount: 1,
+          maxChildCount: 1,
+        },
       });
     case HfAstNodeType.CELL_REFERENCE:
       return buildCellReferenceAst({
