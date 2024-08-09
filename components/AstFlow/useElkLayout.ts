@@ -75,57 +75,57 @@ export const useElkLayout = () => {
   const prevNodesInitialized = useRef<boolean>(false);
   const nodesInitialized = useNodesInitialized();
 
-  const [layoutedNodes, setLayoutedNodes] = useState<Node[]>();
-  const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>();
+  const [laidOutNodes, setLaidOutNodes] = useState<Node[]>();
+  const [laidOutEdges, setLaidOutEdges] = useState<Edge[]>();
 
   if (nodesInitialized && !prevNodesInitialized.current) {
     (async () => {
       const nodes = getNodes();
       const edges = getEdges();
 
-      const oldNodesIds = layoutedNodes?.map((i) => i.id) ?? [];
+      const oldNodesIds = laidOutNodes?.map((i) => i.id) ?? [];
 
-      const nodesToBeLayouted = nodes.filter(
+      const nodesToBeLaidOut = nodes.filter(
         (i) => !oldNodesIds.includes(i.id)
       );
-      const edgesToBeLayouted = edges.filter(
+      const edgesToBeLaidOut = edges.filter(
         (i) => !oldNodesIds.includes(i.source)
       );
 
-      const prevNodes = layoutedNodes ?? [];
+      const prevNodes = laidOutNodes ?? [];
       const prevEdges = edges.filter((i) => oldNodesIds.includes(i.source));
 
-      if (!nodesToBeLayouted.length) return;
+      if (!nodesToBeLaidOut.length) return;
 
       // hide new nodes & edges until elk has finished calculating layout
-      for (const item of [...nodesToBeLayouted, ...edgesToBeLayouted]) {
+      for (const item of [...nodesToBeLaidOut, ...edgesToBeLaidOut]) {
         item.hidden = true;
       }
 
-      setNodes([...prevNodes, ...nodesToBeLayouted]);
-      setEdges([...prevEdges, ...edgesToBeLayouted]);
+      setNodes([...prevNodes, ...nodesToBeLaidOut]);
+      setEdges([...prevEdges, ...edgesToBeLaidOut]);
 
       const elkNodes = await generateElkLayout(
-        nodesToBeLayouted,
-        edgesToBeLayouted
+        nodesToBeLaidOut,
+        edgesToBeLaidOut
       );
 
-      for (const item of [...elkNodes, ...edgesToBeLayouted]) {
+      for (const item of [...elkNodes, ...edgesToBeLaidOut]) {
         item.hidden = false;
       }
 
-      setLayoutedNodes(elkNodes);
-      setLayoutedEdges(edgesToBeLayouted);
+      setLaidOutNodes(elkNodes);
+      setLaidOutEdges(edgesToBeLaidOut);
 
-      console.log("Layouted nodes", elkNodes);
-      console.log("Layouted edges", edgesToBeLayouted);
+      console.log("Laid out nodes", elkNodes);
+      console.log("Laid out edges", edgesToBeLaidOut);
 
       setNodes(elkNodes);
-      setEdges(edgesToBeLayouted);
+      setEdges(edgesToBeLaidOut);
     })();
   }
 
   prevNodesInitialized.current = nodesInitialized;
 
-  return { layoutedNodes, layoutedEdges };
+  return { laidOutNodes, laidOutEdges };
 };
