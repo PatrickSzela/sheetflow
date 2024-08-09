@@ -16,12 +16,12 @@ export const generateNodes = (
       data: { label: `${ast.type}: ${ast.rawContent}` },
       // data: { label: cur.id },
 
-      targetPosition: Position.Right,
-      sourcePosition: Position.Left,
+      targetPosition: Position.Left,
+      sourcePosition: Position.Right,
 
       ...((ast.type === AstNodeType.VALUE ||
         ast.type === AstNodeType.REFERENCE) && {
-        type: "output",
+        type: "input",
       }),
     };
   });
@@ -50,9 +50,9 @@ export const generateEdges = (
       arr = [
         ...arr,
         {
-          id: `${ast.id} - ${child.id}`,
-          source: ast.id,
-          target: child.id,
+          id: `${child.id} - ${ast.id}`,
+          source: child.id,
+          target: ast.id,
           // targetHandle: String.fromCharCode("a".charCodeAt(0) + idx),
         },
       ];

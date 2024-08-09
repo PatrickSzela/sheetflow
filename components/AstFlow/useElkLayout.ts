@@ -6,7 +6,7 @@ const elk = new Elk();
 
 const elkLayoutOptions = {
   "elk.algorithm": "layered",
-  "elk.direction": "LEFT",
+  "elk.direction": "RIGHT",
 
   "elk.layered.spacing.nodeNodeBetweenLayers": "100",
   "elk.spacing.nodeNode": "80",
