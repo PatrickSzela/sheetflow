@@ -4,6 +4,21 @@ import React from "react";
 
 export type BaseNode = Node<{ ast: Ast }, "baseNode">;
 
+const HEADER_HEIGHT = 23;
+const ARG_HEIGHT = 22;
+const FOOTER_HEIGHT = 23;
+
+export const calculateNodeSize = (ast: Ast) => {
+  return {
+    height:
+      HEADER_HEIGHT +
+      ("requirements" in ast ? ast.requirements.maxChildCount : 0) *
+        ARG_HEIGHT +
+      FOOTER_HEIGHT,
+    width: 150,
+  };
+};
+
 // TODO: hella ugly
 
 export const BaseNode = (props: NodeProps<BaseNode>) => {
@@ -19,7 +34,11 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         overflow: "hidden",
       }}
     >
-      <header style={{ borderBottom: "1px solid red" }}>{ast.type}</header>
+      <header
+        style={{ borderBottom: "1px solid red", height: HEADER_HEIGHT - 1 }}
+      >
+        {ast.type}
+      </header>
 
       {"requirements" in ast
         ? Array(ast.requirements.maxChildCount)
@@ -29,20 +48,22 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
 
               return (
                 <React.Fragment key={childId}>
-                  <div>arg {idx}</div>
+                  <div style={{ height: ARG_HEIGHT }}>arg {idx}</div>
 
                   <Handle
                     type="target"
                     position={targetPosition ?? Position.Left}
                     id={childId}
-                    style={{ top: 23 + 22 * idx + 22 / 2 }}
+                    style={{
+                      top: HEADER_HEIGHT + ARG_HEIGHT * idx + ARG_HEIGHT / 2,
+                    }}
                   />
                 </React.Fragment>
               );
             })
         : null}
 
-      <footer style={{ borderTop: "1px solid red" }}>
+      <footer style={{ borderTop: "1px solid red", height: FOOTER_HEIGHT - 1 }}>
         <small style={{ textWrap: "nowrap" }}>{ast.rawContent}</small>
       </footer>
 

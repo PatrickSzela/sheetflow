@@ -1,6 +1,6 @@
-import { BaseNode } from "@/components/nodes";
+import { BaseNode, calculateNodeSize } from "@/components/nodes";
 import { Ast, AstNodeType } from "@/libs/sheetflow";
-import { Edge, Node, Position } from "@xyflow/react";
+import { Edge, Node } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],
@@ -16,13 +16,9 @@ export const generateNodes = (
       position: { x: 0, y: 0 },
       data: { ast },
       type: "baseNode",
-
-      // TODO: calculate approx size of nodes based on the amount of args
-      width: 150,
-      height: 70,
-
-      targetPosition: Position.Left,
-      sourcePosition: Position.Right,
+      ...calculateNodeSize(ast),
+      // targetPosition: Position.Left,
+      // sourcePosition: Position.Right,
     };
   });
 
