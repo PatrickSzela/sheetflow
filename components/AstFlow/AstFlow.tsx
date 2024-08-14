@@ -13,12 +13,17 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo, useRef } from "react";
+import { CellValue } from "hyperformula";
+import { useRef } from "react";
 import { generateEdges, generateNodes } from "./flow";
 import { generateElkLayout } from "./useElkLayout";
 
+// TODO: cleanup
+
 export interface AstFlowProps extends Omit<ReactFlowProps, "nodes"> {
-  ast: Ast;
+  ast: Ast | undefined;
+  flatAst: ReturnType<typeof flattenAst> | undefined;
+  values: CellValue[] | undefined;
 }
 
 export const AstFlowWrapped = (props: AstFlowProps) => {
@@ -30,16 +35,19 @@ export const AstFlowWrapped = (props: AstFlowProps) => {
 };
 
 const AstFlow = (props: AstFlowProps) => {
-  const { ast, ...otherProps } = props;
+  const { ast, flatAst, values, ...otherProps } = props;
 
   const prevAst = useRef<Ast>();
-  const flatAst = useMemo(() => flattenAst(ast), [ast]);
+  const prevValues = useRef<CellValue[]>();
+  const generatedLayout = useRef(0); // to avoid race conditions
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const prevEdges = useRef<Edge[]>();
 
-  if (prevAst.current !== ast) {
+  if (prevAst.current !== ast && flatAst) {
     prevAst.current = ast;
+    generatedLayout.current++;
 
     const nodes = generateNodes(flatAst);
     const edges = generateEdges(flatAst);
@@ -50,7 +58,28 @@ const AstFlow = (props: AstFlowProps) => {
 
       setNodes(nodes);
       setEdges(edges);
+
+      generatedLayout.current--;
     });
+  }
+
+  if (
+    prevValues.current !== values &&
+    values &&
+    generatedLayout.current === 0
+  ) {
+    prevValues.current = values;
+
+    console.log("Modifying edges", values);
+
+    const copy = structuredClone(edges);
+    prevEdges.current = copy;
+
+    copy.map((edge, idx) => {
+      edge.label = `${values[idx + 1]}`;
+    });
+
+    setEdges(copy);
   }
 
   return (

@@ -17,8 +17,6 @@ export const generateNodes = (
       data: { ast },
       type: "baseNode",
       ...calculateNodeSize(ast),
-      // targetPosition: Position.Left,
-      // sourcePosition: Position.Right,
     };
   });
 
@@ -29,31 +27,33 @@ export const generateEdges = (
   flatAst: Ast[],
   skipParenthesis: Boolean = false
 ): Edge[] => {
-  let arr: Edge[] = [];
+  const arr: Edge[] = [];
 
   for (const ast of flatAst) {
     if (!("children" in ast)) continue;
 
     if (skipParenthesis && ast.type === AstNodeType.PARENTHESIS) continue;
 
-    ast.children.forEach((inner, idx) => {
+    for (const inner of ast.children) {
       const child = skipParenthesis
         ? inner.type === AstNodeType.PARENTHESIS
           ? inner.children[0]
           : inner
         : inner;
 
-      arr = [
-        ...arr,
-        {
-          id: `${child.id} - ${ast.id}`,
-          source: child.id,
-          target: ast.id,
-          targetHandle: child.id,
-        },
-      ];
-    });
+      arr.push({
+        id: `${child.id} - ${ast.id}`,
+        source: child.id,
+        target: ast.id,
+        targetHandle: child.id,
+      });
+    }
   }
 
-  return arr;
+  // reorder edges to be in the same order as nodes in `flatAst` for much easier way of displaying data on them
+  return arr.sort(
+    (a, b) =>
+      flatAst.findIndex((ast) => ast.id === a.source) -
+      flatAst.findIndex((ast) => ast.id === b.source)
+  );
 };

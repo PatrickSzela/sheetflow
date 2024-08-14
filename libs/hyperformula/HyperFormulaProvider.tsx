@@ -12,6 +12,8 @@ interface HyperFormulaProviderProps {
   namedExpressions?: SerializedNamedExpression[];
 }
 
+export const SHEETFLOW_FORMULAS = "SheetFlow_Formulas";
+
 const HyperFormulaContext = createContext<HyperFormula | null>(null);
 
 export const HyperFormulaProvider = (
@@ -19,10 +21,19 @@ export const HyperFormulaProvider = (
 ) => {
   const { sheets = {}, configInput, namedExpressions, children } = props;
 
-  const hf = useMemo(
-    () => HyperFormula.buildFromSheets(sheets, configInput, namedExpressions),
-    [configInput, namedExpressions, sheets]
-  );
+  const hf = useMemo(() => {
+    const hf = HyperFormula.buildFromSheets(
+      // TODO: move special sheets to global variable
+      { ...sheets, [SHEETFLOW_FORMULAS]: [] },
+      configInput,
+      namedExpressions
+    );
+
+    // TODO: remove
+    // @ts-expect-error make HF instance available in browser's console
+    window.hf = hf;
+    return hf;
+  }, [configInput, namedExpressions, sheets]);
 
   return (
     <HyperFormulaContext.Provider value={hf}>
