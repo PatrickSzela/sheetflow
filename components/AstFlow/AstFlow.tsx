@@ -43,7 +43,6 @@ const AstFlow = (props: AstFlowProps) => {
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const prevEdges = useRef<Edge[]>();
 
   if (prevAst.current !== ast && flatAst) {
     prevAst.current = ast;
@@ -73,7 +72,6 @@ const AstFlow = (props: AstFlowProps) => {
     console.log("Modifying edges", values);
 
     const copy = structuredClone(edges);
-    prevEdges.current = copy;
 
     copy.map((edge, idx) => {
       edge.label = `${values[idx + 1]}`;
