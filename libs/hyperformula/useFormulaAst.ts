@@ -63,8 +63,8 @@ export const useFormulaAst = (
       const ast = remapAst(hf, hfAst, address);
       const flatAst = flattenAst(ast);
 
-      // place every element of AST as formula
-      flatAst.forEach((ast, idx) => {
+      // place every element of AST as formula; skip the first element (whole formula) since it's already placed in the first column
+      flatAst.slice(1).forEach((ast, idx) => {
         hf.setCellContents(
           { col: idx + 1, row: row, sheet: formulasSheetId },
           `=${ast.rawContent}`
@@ -92,8 +92,7 @@ export const useFormulaAst = (
         (change) =>
           "address" in change &&
           change.sheet === formulasSheetId &&
-          change.row === id.current &&
-          change.col > 0
+          change.row === id.current
       ) as ExportedCellChange | undefined;
 
       if (change) {
@@ -104,9 +103,9 @@ export const useFormulaAst = (
         }
 
         const vals = hf.getRangeValues({
-          start: { col: 1, row: id.current, sheet: formulasSheetId },
+          start: { col: 0, row: id.current, sheet: formulasSheetId },
           end: {
-            col: hf.getSheetDimensions(formulasSheetId).width - 1,
+            col: hf.getSheetDimensions(formulasSheetId).width,
             row: id.current,
             sheet: formulasSheetId,
           },
