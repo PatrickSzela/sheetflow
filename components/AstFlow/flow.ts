@@ -5,7 +5,7 @@ import { Edge, Node } from "@xyflow/react";
 export const generateNodes = (
   flatAst: Ast[],
   skipParenthesis: Boolean = false
-): Node[] => {
+): BaseNode[] => {
   const flat = skipParenthesis
     ? flatAst.filter((i) => i.type !== AstNodeType.PARENTHESIS)
     : flatAst;
@@ -14,7 +14,7 @@ export const generateNodes = (
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
-      data: { ast },
+      data: { ast, values: [] },
       type: "baseNode",
       ...calculateNodeSize(ast),
     };

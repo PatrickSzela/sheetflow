@@ -19,7 +19,9 @@ const elkLayoutOptions = {
   "elk.layered.considerModelOrder.strategy": "PREFER_NODES",
 };
 
-export const generateElkNodes = (nodes: Node[]): ElkNode[] => {
+export const generateElkNodes = <TNode extends Node>(
+  nodes: TNode[]
+): ElkNode[] => {
   return nodes.map((i) => ({
     id: i.id,
     width: i.measured?.width ?? i.width ?? 0,
@@ -30,7 +32,9 @@ export const generateElkNodes = (nodes: Node[]): ElkNode[] => {
   }));
 };
 
-export const generateElkEdges = (edges: Edge[]): ElkExtendedEdge[] => {
+export const generateElkEdges = <TEdge extends Edge>(
+  edges: TEdge[]
+): ElkExtendedEdge[] => {
   return edges.map((i) => ({
     id: i.id,
     sources: [i.source],
@@ -38,7 +42,10 @@ export const generateElkEdges = (edges: Edge[]): ElkExtendedEdge[] => {
   }));
 };
 
-export const generateElkGraph = (nodes: Node[], edges: Edge[]): ElkNode => {
+export const generateElkGraph = <TNode extends Node, TEdge extends Edge>(
+  nodes: TNode[],
+  edges: TEdge[]
+): ElkNode => {
   return {
     id: "root",
     layoutOptions: elkLayoutOptions,
@@ -47,10 +54,10 @@ export const generateElkGraph = (nodes: Node[], edges: Edge[]): ElkNode => {
   };
 };
 
-export const generateElkLayout = async (
-  nodes: Node[],
-  edges: Edge[]
-): Promise<Node[]> => {
+export const generateElkLayout = async <TNode extends Node, TEdge extends Edge>(
+  nodes: TNode[],
+  edges: TEdge[]
+): Promise<TNode[]> => {
   const graph = generateElkGraph(nodes, edges);
 
   const layout = (await elk.layout(graph)).children;
@@ -69,6 +76,7 @@ export const generateElkLayout = async (
   });
 };
 
+// TODO: remove
 export const useElkLayout = () => {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
 
@@ -85,9 +93,7 @@ export const useElkLayout = () => {
 
       const oldNodesIds = laidOutNodes?.map((i) => i.id) ?? [];
 
-      const nodesToBeLaidOut = nodes.filter(
-        (i) => !oldNodesIds.includes(i.id)
-      );
+      const nodesToBeLaidOut = nodes.filter((i) => !oldNodesIds.includes(i.id));
       const edgesToBeLaidOut = edges.filter(
         (i) => !oldNodesIds.includes(i.source)
       );

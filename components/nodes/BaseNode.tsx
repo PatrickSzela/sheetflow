@@ -1,8 +1,9 @@
 import { Ast } from "@/libs/sheetflow";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { CellValue } from "hyperformula";
 import React from "react";
 
-export type BaseNode = Node<{ ast: Ast }, "baseNode">;
+export type BaseNode = Node<{ ast: Ast; values: CellValue[] }, "baseNode">;
 
 const HEADER_HEIGHT = 23;
 const ARG_HEIGHT = 22;
@@ -23,7 +24,7 @@ export const calculateNodeSize = (ast: Ast) => {
 
 export const BaseNode = (props: NodeProps<BaseNode>) => {
   const { data, targetPosition, sourcePosition } = props;
-  const { ast } = data;
+  const { ast, values } = data;
 
   return (
     <div
@@ -48,7 +49,7 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
 
               return (
                 <React.Fragment key={childId}>
-                  <div style={{ height: ARG_HEIGHT }}>arg {idx}</div>
+                  <div style={{ height: ARG_HEIGHT }}>{`${values[idx]}`}</div>
 
                   <Handle
                     type="target"

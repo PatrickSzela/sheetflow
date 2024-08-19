@@ -12,7 +12,7 @@ export const useFormulaAst = (
   ast: Ast | undefined;
   flatAst: ReturnType<typeof flattenAst> | undefined;
   id: number | undefined;
-  values: CellValue[];
+  values: Record<string, CellValue>;
 } => {
   const hf = useHyperFormula();
 
@@ -20,7 +20,8 @@ export const useFormulaAst = (
   const [ast, setAst] = useState<Ast>();
   const [flatAst, setFlatAst] = useState<ReturnType<typeof flattenAst>>();
   const id = useRef<number>();
-  const [values, setValues] = useState<CellValue[]>([]);
+  const flatAst2 = useRef<ReturnType<typeof flattenAst>>();
+  const [values, setValues] = useState<Record<string, CellValue>>({});
   const [mounted, setMounted] = useState(false);
 
   if (newFormula !== formula && hf.validateFormula(formula) && mounted) {
@@ -74,6 +75,7 @@ export const useFormulaAst = (
       id.current = row;
       setAst(ast);
       setFlatAst(flatAst);
+      flatAst2.current = flatAst;
       setNewFormula(formula);
     }
 
@@ -95,7 +97,7 @@ export const useFormulaAst = (
           change.row === id.current
       ) as ExportedCellChange | undefined;
 
-      if (change) {
+      if (change && flatAst2.current) {
         const formulasSheetId = hf.getSheetId(SHEETFLOW_FORMULAS);
 
         if (typeof formulasSheetId === "undefined") {
@@ -111,7 +113,13 @@ export const useFormulaAst = (
           },
         })[0];
 
-        setValues(vals);
+        setValues(
+          Object.fromEntries(
+            vals
+              .slice(0, flatAst2.current.length)
+              .map((val, idx) => [flatAst2.current?.[idx].id, val])
+          )
+        );
       }
     };
 

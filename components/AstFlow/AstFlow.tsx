@@ -1,11 +1,10 @@
-import { nodeTypes } from "@/components/nodes";
+import { BaseNode, nodeTypes } from "@/components/nodes";
 import { Ast, flattenAst } from "@/libs/sheetflow";
 import {
   Background,
   Controls,
   Edge,
   MiniMap,
-  Node,
   ReactFlow,
   ReactFlowProps,
   ReactFlowProvider,
@@ -23,7 +22,7 @@ import { generateElkLayout } from "./useElkLayout";
 export interface AstFlowProps extends Omit<ReactFlowProps, "nodes"> {
   ast: Ast | undefined;
   flatAst: ReturnType<typeof flattenAst> | undefined;
-  values: CellValue[] | undefined;
+  values: Record<string, CellValue> | undefined;
 }
 
 export const AstFlowWrapped = (props: AstFlowProps) => {
@@ -38,10 +37,10 @@ const AstFlow = (props: AstFlowProps) => {
   const { ast, flatAst, values, ...otherProps } = props;
 
   const prevAst = useRef<Ast>();
-  const prevValues = useRef<CellValue[]>();
+  const prevValues = useRef<Record<string, CellValue>>();
   const generatedLayout = useRef(0); // to avoid race conditions
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<BaseNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
   if (prevAst.current !== ast && flatAst) {
@@ -69,21 +68,31 @@ const AstFlow = (props: AstFlowProps) => {
   ) {
     prevValues.current = values;
 
-    console.log("Modifying edges", values);
+    console.log("Modifying edges & nodes", values);
 
-    const copy = structuredClone(edges);
+    const copyEdges = structuredClone(edges);
+    const copyNodes = structuredClone(nodes);
 
-    copy.map((edge, idx) => {
-      edge.label = `${values[idx + 1]}`;
-    });
+    for (const edge of copyEdges) {
+      edge.label = `${values[edge.source]}`;
+    }
 
-    setEdges(copy);
+    for (const node of copyNodes) {
+      node.data.values =
+        "children" in node.data.ast
+          ? node.data.ast.children.map((ast) => values[ast.id])
+          : [];
+    }
+
+    setEdges(copyEdges);
+    setNodes(copyNodes);
   }
 
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
+      // @ts-expect-error
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
