@@ -5,14 +5,13 @@ import {
   Sheets,
 } from "hyperformula";
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
+import { SHEETFLOW_FORMULAS } from "./utils";
 
 interface HyperFormulaProviderProps {
   sheets?: Sheets;
   configInput?: Partial<ConfigParams>;
   namedExpressions?: SerializedNamedExpression[];
 }
-
-export const SHEETFLOW_FORMULAS = "SheetFlow_Formulas";
 
 const HyperFormulaContext = createContext<HyperFormula | null>(null);
 

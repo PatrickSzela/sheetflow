@@ -3,8 +3,9 @@ import { CellValue, ExportedCellChange, SimpleCellAddress } from "hyperformula";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
 import { useEffect, useRef, useState } from "react";
-import { SHEETFLOW_FORMULAS, useHyperFormula } from "./HyperFormulaProvider";
+import { useHyperFormula } from "./HyperFormulaProvider";
 import { remapAst } from "./remapAst";
+import { areHyperFormulaAddressesEqual, getFormulasSheetId } from "./utils";
 
 export const useFormulaAst = (
   formula: string
@@ -18,20 +19,28 @@ export const useFormulaAst = (
 
   const [newFormula, setNewFormula] = useState<string>();
   const [ast, setAst] = useState<Ast>();
-  const [flatAst, setFlatAst] = useState<ReturnType<typeof flattenAst>>();
-  const id = useRef<number>();
-  const flatAst2 = useRef<ReturnType<typeof flattenAst>>();
   const [values, setValues] = useState<Record<string, CellValue>>({});
   const [mounted, setMounted] = useState(false);
 
+  // `useRef` to avoid `useEffect` resubscribing to `valuesUpdated` event after it's being triggered internally & using old values because of placing AST elements in the sheet
+  const id = useRef<number>();
+  const flatAst = useRef<ReturnType<typeof flattenAst>>();
+
+  // place formula in the internal sheet
   if (newFormula !== formula && hf.validateFormula(formula) && mounted) {
-    const formulasSheetId = hf.getSheetId(SHEETFLOW_FORMULAS);
+    const formulasSheetId = getFormulasSheetId(hf);
+    let row = id.current;
 
-    if (typeof formulasSheetId === "undefined") {
-      throw new Error(`The sheet ${SHEETFLOW_FORMULAS} is missing`);
+    if (typeof row === "undefined") {
+      const sheet = hf.getSheetSerialized(formulasSheetId);
+
+      // get first empty row
+      const empty = sheet.find(
+        (row) => typeof row[0] === "undefined" || row[0] === null
+      );
+
+      row = typeof empty === "undefined" ? sheet.length : sheet.indexOf(empty);
     }
-
-    const row = id.current ?? hf.getSheetDimensions(formulasSheetId).height;
 
     const address: SimpleCellAddress = {
       col: 0,
@@ -41,53 +50,53 @@ export const useFormulaAst = (
 
     hf.suspendEvaluation();
 
-    // clear out whole row
+    // clear out the whole row
     hf.removeRows(formulasSheetId, [row, 1]);
     hf.addRows(formulasSheetId, [row, 1]);
 
     hf.setCellContents(address, hf.normalizeFormula(formula));
 
-    //region get formula's AST
-    const formulaVertex = hf.graph.getNodes().find(
-      (v) =>
-        "formula" in v &&
-        "cellAddress" in v &&
+    // get formula's AST
+    const formulaVertex = hf.graph.getNodes().find((node) => {
+      if ("formula" in node && "cellAddress" in node) {
         // @ts-expect-error we're using protected property here
-        hf.simpleCellAddressToString(v.cellAddress, v.cellAddress.sheet) ==
-          hf.simpleCellAddressToString(address, address.sheet)
-    ) as FormulaVertex | undefined;
+        const cellAddress = node.cellAddress;
+        return areHyperFormulaAddressesEqual(cellAddress, address);
+      }
+    }) as FormulaVertex | undefined;
 
     // @ts-expect-error we're using protected property here
     const hfAst = formulaVertex?.formula;
 
-    if (hfAst) {
-      const ast = remapAst(hf, hfAst, address);
-      const flatAst = flattenAst(ast);
+    if (!hfAst)
+      throw new Error(`Failed to retrieve AST from formula \`${formula}\``);
 
-      // place every element of AST as formula; skip the first element (whole formula) since it's already placed in the first column
-      flatAst.slice(1).forEach((ast, idx) => {
-        hf.setCellContents(
-          { col: idx + 1, row: row, sheet: formulasSheetId },
-          `=${ast.rawContent}`
-        );
-      });
+    const ast = remapAst(hf, hfAst, address);
+    const flattenedAst = flattenAst(ast);
 
-      id.current = row;
-      setAst(ast);
-      setFlatAst(flatAst);
-      flatAst2.current = flatAst;
-      setNewFormula(formula);
-    }
+    // place every element of AST as formula in the sheet
+    // skip the first element (whole formula) since it's already placed in the first column
+    flattenedAst.slice(1).forEach((ast, idx) => {
+      hf.setCellContents(
+        { col: idx + 1, row, sheet: formulasSheetId },
+        `=${ast.rawContent}`
+      );
+    });
+
+    id.current = row;
+    flatAst.current = flattenedAst;
+    setAst(ast);
+    setNewFormula(formula);
 
     hf.resumeEvaluation();
   }
 
   // TODO: migrate to useSyncExternalStore?
   useEffect(() => {
-    // retrieve calculated values
-    const func: Listeners["valuesUpdated"] = (changes) => {
-      const formulasSheetId = hf.getSheetId(SHEETFLOW_FORMULAS);
+    const formulasSheetId = getFormulasSheetId(hf);
 
+    // retrieve calculated values
+    const onValuesUpdated: Listeners["valuesUpdated"] = (changes) => {
       if (typeof id.current === "undefined") return;
 
       const change = changes.find(
@@ -97,40 +106,45 @@ export const useFormulaAst = (
           change.row === id.current
       ) as ExportedCellChange | undefined;
 
-      if (change && flatAst2.current) {
-        const formulasSheetId = hf.getSheetId(SHEETFLOW_FORMULAS);
-
-        if (typeof formulasSheetId === "undefined") {
-          throw new Error(`The sheet ${SHEETFLOW_FORMULAS} is missing`);
-        }
-
-        const vals = hf.getRangeValues({
+      if (change && flatAst.current) {
+        const rangeValues = hf.getRangeValues({
           start: { col: 0, row: id.current, sheet: formulasSheetId },
           end: {
-            col: hf.getSheetDimensions(formulasSheetId).width,
+            col: flatAst.current.length - 1,
             row: id.current,
             sheet: formulasSheetId,
           },
         })[0];
 
-        setValues(
-          Object.fromEntries(
-            vals
-              .slice(0, flatAst2.current.length)
-              .map((val, idx) => [flatAst2.current?.[idx].id, val])
-          )
+        const values = Object.fromEntries(
+          rangeValues.map((val, idx) => [flatAst.current?.[idx].id, val])
         );
+
+        setValues(values);
       }
     };
 
-    hf.on("valuesUpdated", func);
+    hf.on("valuesUpdated", onValuesUpdated);
 
     setMounted(true);
 
-    () => {
-      hf.off("valuesUpdated", func);
+    return () => {
+      hf.off("valuesUpdated", onValuesUpdated);
+
+      // empty row on component unmount
+      if (
+        typeof formulasSheetId !== "undefined" &&
+        typeof id.current !== "undefined"
+      ) {
+        hf.suspendEvaluation();
+
+        hf.removeRows(formulasSheetId, [id.current, 1]);
+        hf.addRows(formulasSheetId, [id.current, 1]);
+
+        hf.resumeEvaluation();
+      }
     };
   }, [hf]);
 
-  return { ast, flatAst, id: id.current, values };
+  return { ast, flatAst: flatAst.current, id: id.current, values };
 };

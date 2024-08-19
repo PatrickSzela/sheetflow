@@ -45,6 +45,14 @@ export const getOperator = (type: HfAstNodeType) => {
   }
 };
 
+export const areHyperFormulaAddressesEqual = (
+  address1: SimpleCellAddress,
+  address2: SimpleCellAddress
+) =>
+  address1.col === address2.col &&
+  address1.row === address2.row &&
+  address1.sheet === address2.sheet;
+
 export const areAddressesEqual = (
   hfAddress: SimpleCellAddress,
   address: CellAddress,
@@ -53,8 +61,7 @@ export const areAddressesEqual = (
   const sheetId = hf.getSheetId(address.sheet);
 
   if (typeof sheetId === "undefined") {
-    console.log("wrong sheet id");
-    return false;
+    throw new Error(`Sheet \`${address.sheet}\` not found`);
   }
 
   return (
@@ -209,4 +216,16 @@ export const areAstEqual = (
     default:
       return false;
   }
+};
+
+export const SHEETFLOW_FORMULAS = "SheetFlow_Formulas";
+
+export const getFormulasSheetId = (hf: HyperFormula) => {
+  const id = hf.getSheetId(SHEETFLOW_FORMULAS);
+
+  if (typeof id === "undefined") {
+    throw new Error(`The sheet ${SHEETFLOW_FORMULAS} is missing`);
+  }
+
+  return id;
 };
