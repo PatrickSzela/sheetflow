@@ -1,5 +1,5 @@
 import { BaseNode, nodeTypes } from "@/components/nodes";
-import { Ast, flattenAst } from "@/libs/sheetflow";
+import { Ast, CellValue, flattenAst } from "@/libs/sheetflow";
 import {
   Background,
   Controls,
@@ -12,7 +12,6 @@ import {
   useNodesState,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { CellValue } from "hyperformula";
 import { useRef } from "react";
 import { generateEdges, generateNodes } from "./flow";
 import { generateElkLayout } from "./useElkLayout";
@@ -74,7 +73,7 @@ const AstFlow = (props: AstFlowProps) => {
     const copyNodes = structuredClone(nodes);
 
     for (const edge of copyEdges) {
-      edge.label = `${values[edge.source]}`;
+      edge.label = `${values[edge.source].value}`;
     }
 
     for (const node of copyNodes) {

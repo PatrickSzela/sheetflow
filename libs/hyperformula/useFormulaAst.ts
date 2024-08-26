@@ -1,10 +1,11 @@
-import { Ast, flattenAst } from "@/libs/sheetflow";
-import { CellValue, ExportedCellChange, SimpleCellAddress } from "hyperformula";
+import { Ast, CellValue, flattenAst } from "@/libs/sheetflow";
+import { ExportedCellChange, SimpleCellAddress } from "hyperformula";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
 import { useEffect, useRef, useState } from "react";
 import { useHyperFormula } from "./HyperFormulaProvider";
 import { remapAst } from "./remapAst";
+import { getCellValueDetails, remapCellValue } from "./remapCellValue";
 import { areHyperFormulaAddressesEqual, getFormulasSheetId } from "./utils";
 
 export const useFormulaAst = (
@@ -26,8 +27,14 @@ export const useFormulaAst = (
   const id = useRef<number>();
   const flatAst = useRef<ReturnType<typeof flattenAst>>();
 
+  const normalizedFormula = hf.normalizeFormula(formula);
+
   // place formula in the internal sheet
-  if (newFormula !== formula && hf.validateFormula(formula) && mounted) {
+  if (
+    mounted &&
+    newFormula !== normalizedFormula &&
+    hf.validateFormula(formula)
+  ) {
     const formulasSheetId = getFormulasSheetId(hf);
     let row = id.current;
 
@@ -54,7 +61,7 @@ export const useFormulaAst = (
     hf.removeRows(formulasSheetId, [row, 1]);
     hf.addRows(formulasSheetId, [row, 1]);
 
-    hf.setCellContents(address, hf.normalizeFormula(formula));
+    hf.setCellContents(address, normalizedFormula);
 
     // get formula's AST
     const formulaVertex = hf.graph.getNodes().find((node) => {
@@ -86,7 +93,7 @@ export const useFormulaAst = (
     id.current = row;
     flatAst.current = flattenedAst;
     setAst(ast);
-    setNewFormula(formula);
+    setNewFormula(normalizedFormula);
 
     hf.resumeEvaluation();
   }
@@ -107,18 +114,17 @@ export const useFormulaAst = (
       ) as ExportedCellChange | undefined;
 
       if (change && flatAst.current) {
-        const rangeValues = hf.getRangeValues({
-          start: { col: 0, row: id.current, sheet: formulasSheetId },
-          end: {
-            col: flatAst.current.length - 1,
-            row: id.current,
-            sheet: formulasSheetId,
-          },
-        })[0];
+        let values: Record<string, CellValue> = {};
 
-        const values = Object.fromEntries(
-          rangeValues.map((val, idx) => [flatAst.current?.[idx].id, val])
-        );
+        flatAst.current.forEach((ast, idx) => {
+          const addr = {
+            col: idx,
+            row: id.current ?? -1,
+            sheet: formulasSheetId,
+          };
+
+          values[ast.id] = remapCellValue(getCellValueDetails(hf, addr));
+        });
 
         setValues(values);
       }

@@ -1,6 +1,5 @@
-import { Ast } from "@/libs/sheetflow";
+import { Ast, CellValue } from "@/libs/sheetflow";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
-import { CellValue } from "hyperformula";
 import React from "react";
 
 export type BaseNode = Node<{ ast: Ast; values: CellValue[] }, "baseNode">;
@@ -45,11 +44,14 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         ? Array(ast.requirements.maxChildCount)
             .fill(0)
             .map((_, idx) => {
-              const childId = ast.children[idx].id;
+              // in case of a missing argument(s)
+              const childId = ast.children[idx]?.id ?? idx;
 
               return (
                 <React.Fragment key={childId}>
-                  <div style={{ height: ARG_HEIGHT }}>{`${values[idx]}`}</div>
+                  <div
+                    style={{ height: ARG_HEIGHT }}
+                  >{`${values[idx]?.value}`}</div>
 
                   <Handle
                     type="target"
