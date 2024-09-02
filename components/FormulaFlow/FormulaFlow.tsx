@@ -1,5 +1,5 @@
 import { BaseNode, nodeTypes } from "@/components/nodes";
-import { Ast, CellValue, flattenAst } from "@/libs/sheetflow";
+import { Ast, CellValue } from "@/libs/sheetflow";
 import {
   Background,
   Controls,
@@ -18,11 +18,13 @@ import { generateEdges, generateNodes } from "./generateFlow";
 import "@xyflow/react/dist/style.css";
 
 // TODO: cleanup
+// TODO: get cached value of node from hyperformula for initial values
 
 export interface FormulaFlowProps extends Omit<ReactFlowProps, "nodes"> {
   ast: Ast | undefined;
-  flatAst: ReturnType<typeof flattenAst> | undefined;
+  flatAst: Ast[] | undefined;
   values: Record<string, CellValue> | undefined;
+  skipParenthesis?: Boolean;
 }
 
 export const FormulaFlow = (props: FormulaFlowProps) => {
@@ -34,21 +36,29 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { ast, flatAst, values, ...otherProps } = props;
+  const { ast, flatAst, values, skipParenthesis, ...otherProps } = props;
 
   const prevAst = useRef<Ast>();
+  const prevSkipParenthesis = useRef<Boolean>();
   const prevValues = useRef<Record<string, CellValue>>();
+
   const generatedLayout = useRef(0); // to avoid race conditions
+  const injectValues = useRef(false); // to avoid race conditions
 
   const [nodes, setNodes, onNodesChange] = useNodesState<BaseNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  if (prevAst.current !== ast && flatAst) {
+  if (
+    (prevAst.current !== ast ||
+      prevSkipParenthesis.current !== skipParenthesis) &&
+    flatAst
+  ) {
     prevAst.current = ast;
+    prevSkipParenthesis.current = skipParenthesis;
     generatedLayout.current++;
 
-    const nodes = generateNodes(flatAst);
-    const edges = generateEdges(flatAst);
+    const nodes = generateNodes(flatAst, skipParenthesis);
+    const edges = generateEdges(flatAst, skipParenthesis);
 
     generateElkLayout(nodes, edges).then((nodes) => {
       console.log("Generated nodes", nodes);
@@ -58,15 +68,18 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       setEdges(edges);
 
       generatedLayout.current--;
+
+      injectValues.current = true;
     });
   }
 
   if (
-    prevValues.current !== values &&
     values &&
-    generatedLayout.current === 0
+    generatedLayout.current === 0 &&
+    (injectValues.current || prevValues.current !== values)
   ) {
     prevValues.current = values;
+    injectValues.current = false;
 
     console.log("Modifying edges & nodes", values);
 

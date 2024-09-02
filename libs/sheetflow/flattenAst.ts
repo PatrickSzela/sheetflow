@@ -1,41 +1,19 @@
 import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
 
-// TODO: fix types
-// TODO: pass only IDs as children, not whole objects?
-
-export const flattenAst = (
-  ast: Ast,
-  nearestParenthesis?: string
-): (Ast & { nearestParenthesis?: string })[] => {
+export const flattenAst = (ast: Ast): Ast[] => {
   switch (ast.type) {
     case AstNodeType.VALUE:
       // TODO: finish array
-      return ast.subtype === AstNodeSubtype.ARRAY
-        ? []
-        : [{ ...ast, nearestParenthesis }];
-    case AstNodeType.REFERENCE:
-      return [{ ...ast, nearestParenthesis }];
-    case AstNodeType.FUNCTION:
-      return [
-        { ...ast, nearestParenthesis },
-        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
-      ];
-    case AstNodeType.UNARY_EXPRESSION:
-      return [
-        { ...ast, nearestParenthesis },
-        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
-      ];
-    case AstNodeType.BINARY_EXPRESSION:
-      return [
-        { ...ast, nearestParenthesis },
-        ...ast.children.map((i) => flattenAst(i, nearestParenthesis)).flat(),
-      ];
-    case AstNodeType.PARENTHESIS:
-      return [
-        { ...ast, nearestParenthesis },
-        ...ast.children.map((i) => flattenAst(i, ast.id)).flat(),
-      ];
+      return ast.subtype === AstNodeSubtype.ARRAY ? [] : [ast];
+
     case AstNodeType.ERROR:
+    case AstNodeType.REFERENCE:
       return [ast];
+
+    case AstNodeType.FUNCTION:
+    case AstNodeType.UNARY_EXPRESSION:
+    case AstNodeType.BINARY_EXPRESSION:
+    case AstNodeType.PARENTHESIS:
+      return [ast, ...ast.children.map((i) => flattenAst(i)).flat()];
   }
 };

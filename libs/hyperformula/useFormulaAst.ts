@@ -12,7 +12,7 @@ export const useFormulaAst = (
   formula: string
 ): {
   ast: Ast | undefined;
-  flatAst: ReturnType<typeof flattenAst> | undefined;
+  flatAst: Ast[] | undefined;
   id: number | undefined;
   values: Record<string, CellValue>;
 } => {
@@ -25,7 +25,7 @@ export const useFormulaAst = (
 
   // `useRef` to avoid `useEffect` resubscribing to `valuesUpdated` event after it's being triggered internally & using old values because of placing AST elements in the sheet
   const id = useRef<number>();
-  const flatAst = useRef<ReturnType<typeof flattenAst>>();
+  const flatAst = useRef<Ast[]>();
 
   const normalizedFormula = hf.validateFormula(formula)
     ? hf.normalizeFormula(formula)

@@ -44,8 +44,8 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         ? Array(ast.requirements.maxChildCount)
             .fill(0)
             .map((_, idx) => {
-              // in case of a missing argument(s)
-              const childId = ast.children[idx]?.id ?? idx;
+              // TODO: figure out a way to extract names for args
+              const childId = `${idx}`;
 
               return (
                 <React.Fragment key={childId}>

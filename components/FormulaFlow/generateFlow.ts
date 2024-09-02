@@ -23,6 +23,13 @@ export const generateNodes = (
   return nodes;
 };
 
+const findNearestNonParenthesisChild = (ast: Ast) => {
+  if (ast.type === AstNodeType.PARENTHESIS)
+    return findNearestNonParenthesisChild(ast.children[0]);
+
+  return ast;
+};
+
 export const generateEdges = (
   flatAst: Ast[],
   skipParenthesis: Boolean = false
@@ -34,19 +41,20 @@ export const generateEdges = (
 
     if (skipParenthesis && ast.type === AstNodeType.PARENTHESIS) continue;
 
+    let idx = 0;
     for (const inner of ast.children) {
       const child = skipParenthesis
-        ? inner.type === AstNodeType.PARENTHESIS
-          ? inner.children[0]
-          : inner
+        ? findNearestNonParenthesisChild(inner)
         : inner;
 
       arr.push({
         id: `${child.id} - ${ast.id}`,
         source: child.id,
         target: ast.id,
-        targetHandle: child.id,
+        targetHandle: `${idx}`,
       });
+
+      idx++;
     }
   }
 
