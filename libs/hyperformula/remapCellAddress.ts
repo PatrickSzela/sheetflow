@@ -1,10 +1,10 @@
-import { CellAddress } from "@/libs/sheetflow";
+import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
 
 export const remapCellAddress = (
   hf: HyperFormula,
   { row, col, sheet }: SimpleCellAddress
-): CellAddress => ({
+): SheetFlow.CellAddress => ({
   column: col,
   row: row,
   // TODO: store as ID like hyperformula?

@@ -11,28 +11,29 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { useRef } from "react";
-import { generateEdges, generateNodes } from "./flow";
-import { generateElkLayout } from "./useElkLayout";
+import { generateElkLayout } from "./elkLayout";
+import { generateEdges, generateNodes } from "./generateFlow";
+
+import "@xyflow/react/dist/style.css";
 
 // TODO: cleanup
 
-export interface AstFlowProps extends Omit<ReactFlowProps, "nodes"> {
+export interface FormulaFlowProps extends Omit<ReactFlowProps, "nodes"> {
   ast: Ast | undefined;
   flatAst: ReturnType<typeof flattenAst> | undefined;
   values: Record<string, CellValue> | undefined;
 }
 
-export const AstFlowWrapped = (props: AstFlowProps) => {
+export const FormulaFlow = (props: FormulaFlowProps) => {
   return (
     <ReactFlowProvider>
-      <AstFlow {...props} />
+      <FormulaFlowInner {...props} />
     </ReactFlowProvider>
   );
 };
 
-const AstFlow = (props: AstFlowProps) => {
+const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { ast, flatAst, values, ...otherProps } = props;
 
   const prevAst = useRef<Ast>();

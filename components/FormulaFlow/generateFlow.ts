@@ -1,6 +1,6 @@
 import { BaseNode, calculateNodeSize } from "@/components/nodes";
 import { Ast, AstNodeType } from "@/libs/sheetflow";
-import { Edge, Node } from "@xyflow/react";
+import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],

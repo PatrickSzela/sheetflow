@@ -5,9 +5,12 @@ import {
   Sheets,
 } from "hyperformula";
 import { PropsWithChildren, createContext, useContext, useMemo } from "react";
-import { SHEETFLOW_FORMULAS } from "./utils";
 
-interface HyperFormulaProviderProps {
+export enum SpecialSheets {
+  FORMULAS = "SheetFlow_Formulas",
+}
+
+export interface HyperFormulaProviderProps {
   sheets?: Sheets;
   configInput?: Partial<ConfigParams>;
   namedExpressions?: SerializedNamedExpression[];
@@ -22,8 +25,7 @@ export const HyperFormulaProvider = (
 
   const hf = useMemo(() => {
     const hf = HyperFormula.buildFromSheets(
-      // TODO: move special sheets to global variable
-      { ...sheets, [SHEETFLOW_FORMULAS]: [] },
+      { ...sheets, [SpecialSheets.FORMULAS]: [] },
       configInput,
       namedExpressions
     );

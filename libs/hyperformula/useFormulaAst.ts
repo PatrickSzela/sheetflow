@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useHyperFormula } from "./HyperFormulaProvider";
 import { remapAst } from "./remapAst";
 import { getCellValueDetails, remapCellValue } from "./remapCellValue";
-import { areHyperFormulaAddressesEqual, getFormulasSheetId } from "./utils";
+import { areHfAddressesEqual, getFormulasSheetId } from "./utils";
 
 export const useFormulaAst = (
   formula: string
@@ -70,7 +70,7 @@ export const useFormulaAst = (
       if ("formula" in node && "cellAddress" in node) {
         // @ts-expect-error we're using protected property here
         const cellAddress = node.cellAddress;
-        return areHyperFormulaAddressesEqual(cellAddress, address);
+        return areHfAddressesEqual(cellAddress, address);
       }
     }) as FormulaVertex | undefined;
 

@@ -1,5 +1,8 @@
 import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
 
+// TODO: fix types
+// TODO: pass only IDs as children, not whole objects?
+
 export const flattenAst = (
   ast: Ast,
   nearestParenthesis?: string

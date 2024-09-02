@@ -1,69 +1,50 @@
-import {
-  Ast,
-  buildArrayAst,
-  buildBinaryExpressionAst,
-  buildCellRangeReferenceAst,
-  buildCellReferenceAst,
-  buildColumnRangeReferenceAst,
-  buildEmptyAst,
-  buildErrorAst,
-  buildFunctionAst,
-  buildNamedExpressionReferenceAst,
-  buildNumberAst,
-  buildParenthesisAst,
-  buildRowRangeReferenceAst,
-  buildStringAst,
-  buildUnaryExpressionAst,
-} from "@/libs/sheetflow";
+import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import {
-  Ast as HfAst,
-  AstNodeType as HfAstNodeType,
-} from "hyperformula/commonjs/parser";
+import { Ast, AstNodeType } from "hyperformula/commonjs/parser";
 import { remapCellAddress } from "./remapCellAddress";
 import { getOperator } from "./utils";
 
 export const remapAst = (
   hf: HyperFormula,
-  ast: HfAst,
+  ast: Ast,
   address: SimpleCellAddress
-): Ast => {
+): SheetFlow.Ast => {
   // @ts-expect-error we're using protected property here
   const rawContent = hf._unparser.unparse(ast, address).slice(1);
 
   switch (ast.type) {
-    case HfAstNodeType.EMPTY:
-      return buildEmptyAst({ value: null, rawContent: "" });
-    case HfAstNodeType.NUMBER:
-      return buildNumberAst({ value: ast.value, rawContent });
-    case HfAstNodeType.STRING:
-      return buildStringAst({ value: ast.value, rawContent });
-    case HfAstNodeType.MINUS_UNARY_OP:
-    case HfAstNodeType.PLUS_UNARY_OP:
-    case HfAstNodeType.PERCENT_OP:
-      return buildUnaryExpressionAst({
+    case AstNodeType.EMPTY:
+      return SheetFlow.buildEmptyAst({ value: null, rawContent: "" });
+    case AstNodeType.NUMBER:
+      return SheetFlow.buildNumberAst({ value: ast.value, rawContent });
+    case AstNodeType.STRING:
+      return SheetFlow.buildStringAst({ value: ast.value, rawContent });
+    case AstNodeType.MINUS_UNARY_OP:
+    case AstNodeType.PLUS_UNARY_OP:
+    case AstNodeType.PERCENT_OP:
+      return SheetFlow.buildUnaryExpressionAst({
         operator: getOperator(ast.type),
         children: [remapAst(hf, ast.value, address)],
-        operatorOnRight: ast.type === HfAstNodeType.PERCENT_OP,
+        operatorOnRight: ast.type === AstNodeType.PERCENT_OP,
         rawContent,
         requirements: {
           minChildCount: 1,
           maxChildCount: 1,
         },
       });
-    case HfAstNodeType.CONCATENATE_OP:
-    case HfAstNodeType.EQUALS_OP:
-    case HfAstNodeType.NOT_EQUAL_OP:
-    case HfAstNodeType.GREATER_THAN_OP:
-    case HfAstNodeType.LESS_THAN_OP:
-    case HfAstNodeType.GREATER_THAN_OR_EQUAL_OP:
-    case HfAstNodeType.LESS_THAN_OR_EQUAL_OP:
-    case HfAstNodeType.PLUS_OP:
-    case HfAstNodeType.MINUS_OP:
-    case HfAstNodeType.TIMES_OP:
-    case HfAstNodeType.DIV_OP:
-    case HfAstNodeType.POWER_OP:
-      return buildBinaryExpressionAst({
+    case AstNodeType.CONCATENATE_OP:
+    case AstNodeType.EQUALS_OP:
+    case AstNodeType.NOT_EQUAL_OP:
+    case AstNodeType.GREATER_THAN_OP:
+    case AstNodeType.LESS_THAN_OP:
+    case AstNodeType.GREATER_THAN_OR_EQUAL_OP:
+    case AstNodeType.LESS_THAN_OR_EQUAL_OP:
+    case AstNodeType.PLUS_OP:
+    case AstNodeType.MINUS_OP:
+    case AstNodeType.TIMES_OP:
+    case AstNodeType.DIV_OP:
+    case AstNodeType.POWER_OP:
+      return SheetFlow.buildBinaryExpressionAst({
         operator: getOperator(ast.type),
         children: [
           remapAst(hf, ast.left, address),
@@ -75,7 +56,7 @@ export const remapAst = (
           maxChildCount: 2,
         },
       });
-    case HfAstNodeType.FUNCTION_CALL:
+    case AstNodeType.FUNCTION_CALL:
       console.log(
         ast.procedureName,
         hf.getFunctionPlugin(ast.procedureName)?.implementedFunctions[
@@ -86,7 +67,7 @@ export const remapAst = (
       const hfFunction = hf.getFunctionPlugin(ast.procedureName)
         ?.implementedFunctions[ast.procedureName];
 
-      return buildFunctionAst({
+      return SheetFlow.buildFunctionAst({
         functionName: ast.procedureName,
         children: ast.args.map((i, idx) => remapAst(hf, i, address)),
         rawContent,
@@ -98,13 +79,13 @@ export const remapAst = (
           maxChildCount: hfFunction?.parameters?.length ?? 0,
         },
       });
-    case HfAstNodeType.NAMED_EXPRESSION:
-      return buildNamedExpressionReferenceAst({
+    case AstNodeType.NAMED_EXPRESSION:
+      return SheetFlow.buildNamedExpressionReferenceAst({
         expressionName: ast.expressionName,
         rawContent,
       });
-    case HfAstNodeType.PARENTHESIS:
-      return buildParenthesisAst({
+    case AstNodeType.PARENTHESIS:
+      return SheetFlow.buildParenthesisAst({
         children: [remapAst(hf, ast.expression, address)],
         rawContent,
         requirements: {
@@ -112,16 +93,16 @@ export const remapAst = (
           maxChildCount: 1,
         },
       });
-    case HfAstNodeType.CELL_REFERENCE:
-      return buildCellReferenceAst({
+    case AstNodeType.CELL_REFERENCE:
+      return SheetFlow.buildCellReferenceAst({
         reference: remapCellAddress(
           hf,
           ast.reference.toSimpleCellAddress(address)
         ),
         rawContent,
       });
-    case HfAstNodeType.CELL_RANGE:
-      return buildCellRangeReferenceAst({
+    case AstNodeType.CELL_RANGE:
+      return SheetFlow.buildCellRangeReferenceAst({
         start: remapCellAddress(hf, ast.start.toSimpleCellAddress(address)),
         end: remapCellAddress(hf, ast.end.toSimpleCellAddress(address)),
         sheet:
@@ -129,8 +110,8 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
-    case HfAstNodeType.COLUMN_RANGE:
-      return buildColumnRangeReferenceAst({
+    case AstNodeType.COLUMN_RANGE:
+      return SheetFlow.buildColumnRangeReferenceAst({
         start: ast.start.col,
         end: ast.end.col,
         sheet:
@@ -138,8 +119,8 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
-    case HfAstNodeType.ROW_RANGE:
-      return buildRowRangeReferenceAst({
+    case AstNodeType.ROW_RANGE:
+      return SheetFlow.buildRowRangeReferenceAst({
         start: ast.start.row,
         end: ast.end.row,
         sheet:
@@ -147,26 +128,24 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
-    case HfAstNodeType.ERROR:
-      return buildErrorAst({
+    case AstNodeType.ERROR:
+      return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
       });
-    case HfAstNodeType.ERROR_WITH_RAW_INPUT:
-      return buildErrorAst({
+    case AstNodeType.ERROR_WITH_RAW_INPUT:
+      return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
       });
-    case HfAstNodeType.ARRAY:
-      return buildArrayAst({
-        value: ast.args.map((a, idx1) =>
-          a.map((b, idx2) => remapAst(hf, b, address))
-        ),
+    case AstNodeType.ARRAY:
+      return SheetFlow.buildArrayAst({
+        value: ast.args.map((a) => a.map((b) => remapAst(hf, b, address))),
         rawContent,
       });
 
     default:
-      return buildErrorAst({
+      return SheetFlow.buildErrorAst({
         error: "AST node type doesn't match any of the case clauses",
         rawContent,
       });
