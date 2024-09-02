@@ -29,21 +29,28 @@ export const remapCellValueDetailedType = (
   switch (subtype) {
     case CellValueDetailedType.NUMBER_CURRENCY:
       return SheetFlow.CellValueSubtype.NUMBER_CURRENCY;
+
     case CellValueDetailedType.NUMBER_DATE:
       return SheetFlow.CellValueSubtype.NUMBER_DATE;
+
     case CellValueDetailedType.NUMBER_DATETIME:
       return SheetFlow.CellValueSubtype.NUMBER_DATETIME;
+
     case CellValueDetailedType.NUMBER_PERCENT:
       return SheetFlow.CellValueSubtype.NUMBER_PERCENT;
+
     case CellValueDetailedType.NUMBER_RAW:
       return SheetFlow.CellValueSubtype.NUMBER_RAW;
+
     case CellValueDetailedType.NUMBER_TIME:
       return SheetFlow.CellValueSubtype.NUMBER_TIME;
+
     default:
       throw new Error(`Cannot remap \`${subtype}\` detailed type`);
   }
 };
 
+// TODO: figure out a better way to format this monstrosity
 export const remapCellValue = (
   details: HfCellValueDetails
 ): SheetFlow.CellValue => {

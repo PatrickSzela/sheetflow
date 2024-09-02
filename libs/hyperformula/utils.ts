@@ -77,18 +77,21 @@ export const areAstEqual = (
         sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.EMPTY
       );
+
     case AstNodeType.NUMBER:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.NUMBER &&
         sheetflowAst.value === hfAst.value
       );
+
     case AstNodeType.STRING:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.STRING &&
         sheetflowAst.value === hfAst.value
       );
+
     case AstNodeType.MINUS_UNARY_OP:
     case AstNodeType.PLUS_UNARY_OP:
     case AstNodeType.PERCENT_OP:
@@ -105,6 +108,7 @@ export const areAstEqual = (
             )
           : true)
       );
+
     case AstNodeType.CONCATENATE_OP:
     case AstNodeType.EQUALS_OP:
     case AstNodeType.NOT_EQUAL_OP:
@@ -137,6 +141,7 @@ export const areAstEqual = (
             )
           : true)
       );
+
     case AstNodeType.FUNCTION_CALL:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.FUNCTION &&
@@ -150,12 +155,14 @@ export const areAstEqual = (
               .includes(false)
           : true)
       );
+
     case AstNodeType.NAMED_EXPRESSION:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.NAMED_EXPRESSION &&
         sheetflowAst.expressionName === hfAst.expressionName
       );
+
     case AstNodeType.PARENTHESIS:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.PARENTHESIS &&
@@ -169,6 +176,7 @@ export const areAstEqual = (
             )
           : true)
       );
+
     case AstNodeType.CELL_REFERENCE:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
@@ -179,6 +187,7 @@ export const areAstEqual = (
           hf
         )
       );
+
     case AstNodeType.CELL_RANGE:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
@@ -194,6 +203,7 @@ export const areAstEqual = (
           hf
         )
       );
+
     case AstNodeType.COLUMN_RANGE:
       const cStart = hfAst.start.toSimpleColumnAddress(address);
       const cEnd = hfAst.end.toSimpleColumnAddress(address);
@@ -205,6 +215,7 @@ export const areAstEqual = (
         cEnd.col === sheetflowAst.end &&
         cStart.sheet === hf.getSheetId(sheetflowAst.sheet)
       );
+
     case AstNodeType.ROW_RANGE:
       const rStart = hfAst.start.toSimpleRowAddress(address);
       const rEnd = hfAst.end.toSimpleRowAddress(address);
@@ -216,16 +227,19 @@ export const areAstEqual = (
         rEnd.row === sheetflowAst.end &&
         rStart.sheet === hf.getSheetId(sheetflowAst.sheet)
       );
+
     case AstNodeType.ERROR:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.ERROR &&
         hfAst.error.type === sheetflowAst.error
       );
+
     case AstNodeType.ERROR_WITH_RAW_INPUT:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.ERROR &&
         hfAst.error.type === sheetflowAst.error
       );
+
     case AstNodeType.ARRAY:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
@@ -241,6 +255,7 @@ export const areAstEqual = (
           .flat()
           .includes(false)
       );
+
     default:
       return false;
   }

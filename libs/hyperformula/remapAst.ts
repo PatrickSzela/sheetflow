@@ -15,10 +15,13 @@ export const remapAst = (
   switch (ast.type) {
     case AstNodeType.EMPTY:
       return SheetFlow.buildEmptyAst({ value: null, rawContent: "" });
+
     case AstNodeType.NUMBER:
       return SheetFlow.buildNumberAst({ value: ast.value, rawContent });
+
     case AstNodeType.STRING:
       return SheetFlow.buildStringAst({ value: ast.value, rawContent });
+
     case AstNodeType.MINUS_UNARY_OP:
     case AstNodeType.PLUS_UNARY_OP:
     case AstNodeType.PERCENT_OP:
@@ -32,6 +35,7 @@ export const remapAst = (
           maxChildCount: 1,
         },
       });
+
     case AstNodeType.CONCATENATE_OP:
     case AstNodeType.EQUALS_OP:
     case AstNodeType.NOT_EQUAL_OP:
@@ -56,6 +60,7 @@ export const remapAst = (
           maxChildCount: 2,
         },
       });
+
     case AstNodeType.FUNCTION_CALL:
       console.log(
         ast.procedureName,
@@ -79,11 +84,13 @@ export const remapAst = (
           maxChildCount: hfFunction?.parameters?.length ?? 0,
         },
       });
+
     case AstNodeType.NAMED_EXPRESSION:
       return SheetFlow.buildNamedExpressionReferenceAst({
         expressionName: ast.expressionName,
         rawContent,
       });
+
     case AstNodeType.PARENTHESIS:
       return SheetFlow.buildParenthesisAst({
         children: [remapAst(hf, ast.expression, address)],
@@ -93,6 +100,7 @@ export const remapAst = (
           maxChildCount: 1,
         },
       });
+
     case AstNodeType.CELL_REFERENCE:
       return SheetFlow.buildCellReferenceAst({
         reference: remapCellAddress(
@@ -101,6 +109,7 @@ export const remapAst = (
         ),
         rawContent,
       });
+
     case AstNodeType.CELL_RANGE:
       return SheetFlow.buildCellRangeReferenceAst({
         start: remapCellAddress(hf, ast.start.toSimpleCellAddress(address)),
@@ -110,6 +119,7 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
+
     case AstNodeType.COLUMN_RANGE:
       return SheetFlow.buildColumnRangeReferenceAst({
         start: ast.start.col,
@@ -119,6 +129,7 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
+
     case AstNodeType.ROW_RANGE:
       return SheetFlow.buildRowRangeReferenceAst({
         start: ast.start.row,
@@ -128,16 +139,19 @@ export const remapAst = (
           "MISSING",
         rawContent,
       });
+
     case AstNodeType.ERROR:
       return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
       });
+
     case AstNodeType.ERROR_WITH_RAW_INPUT:
       return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
       });
+
     case AstNodeType.ARRAY:
       return SheetFlow.buildArrayAst({
         value: ast.args.map((a) => a.map((b) => remapAst(hf, b, address))),
