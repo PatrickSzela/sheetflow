@@ -27,13 +27,15 @@ export const useFormulaAst = (
   const id = useRef<number>();
   const flatAst = useRef<ReturnType<typeof flattenAst>>();
 
-  const normalizedFormula = hf.normalizeFormula(formula);
+  const normalizedFormula = hf.validateFormula(formula)
+    ? hf.normalizeFormula(formula)
+    : undefined;
 
   // place formula in the internal sheet
   if (
     mounted &&
-    newFormula !== normalizedFormula &&
-    hf.validateFormula(formula)
+    typeof normalizedFormula !== "undefined" &&
+    newFormula !== normalizedFormula
   ) {
     const formulasSheetId = getFormulasSheetId(hf);
     let row = id.current;
