@@ -1,5 +1,5 @@
 import { BaseNode, calculateNodeSize } from "@/components/nodes";
-import { Ast, AstNodeType } from "@/libs/sheetflow";
+import { Ast, AstNodeType, CellValue } from "@/libs/sheetflow";
 import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
@@ -64,4 +64,28 @@ export const generateEdges = (
       flatAst.findIndex((ast) => ast.id === a.source) -
       flatAst.findIndex((ast) => ast.id === b.source)
   );
+};
+
+export const injectValuesToFlow = (
+  nodes: BaseNode[],
+  edges: Edge[],
+  values: Record<string, CellValue>
+): [BaseNode[], Edge[]] => {
+  console.log("Modifying edges & nodes with values", values);
+
+  const copyEdges = structuredClone(edges);
+  const copyNodes = structuredClone(nodes);
+
+  for (const edge of copyEdges) {
+    edge.label = `${values[edge.source].value}`;
+  }
+
+  for (const node of copyNodes) {
+    node.data.values =
+      "children" in node.data.ast
+        ? node.data.ast.children.map((ast) => values[ast.id])
+        : [];
+  }
+
+  return [copyNodes, copyEdges];
 };

@@ -13,12 +13,15 @@ import {
 } from "@xyflow/react";
 import { useRef } from "react";
 import { generateElkLayout } from "./elkLayout";
-import { generateEdges, generateNodes } from "./generateFlow";
+import {
+  generateEdges,
+  generateNodes,
+  injectValuesToFlow,
+} from "./generateFlow";
 
 import "@xyflow/react/dist/style.css";
 
 // TODO: cleanup
-// TODO: get cached value of node from hyperformula for initial values
 
 export interface FormulaFlowProps extends Omit<ReactFlowProps, "nodes"> {
   ast: Ast | undefined;
@@ -42,20 +45,33 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const prevSkipParenthesis = useRef<Boolean>();
   const prevValues = useRef<Record<string, CellValue>>();
 
-  const generatedLayout = useRef(0); // to avoid race conditions
-  const injectValues = useRef(false); // to avoid race conditions
+  const generatingLayout = useRef(0); // to avoid race conditions
 
   const [nodes, setNodes, onNodesChange] = useNodesState<BaseNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
+  const updateFlowWithValues = (
+    nodes: BaseNode[],
+    edges: Edge[],
+    values: Record<string, CellValue>
+  ) => {
+    const [newNodes, newEdges] = injectValuesToFlow(nodes, edges, values);
+
+    setNodes(newNodes);
+    setEdges(newEdges);
+
+    prevValues.current = values;
+  };
+
+  // on ast/skipParenthesis change
   if (
-    (prevAst.current !== ast ||
-      prevSkipParenthesis.current !== skipParenthesis) &&
-    flatAst
+    flatAst &&
+    values &&
+    (prevAst.current !== ast || prevSkipParenthesis.current !== skipParenthesis)
   ) {
     prevAst.current = ast;
     prevSkipParenthesis.current = skipParenthesis;
-    generatedLayout.current++;
+    generatingLayout.current++;
 
     const nodes = generateNodes(flatAst, skipParenthesis);
     const edges = generateEdges(flatAst, skipParenthesis);
@@ -64,41 +80,21 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       console.log("Generated nodes", nodes);
       console.log("Generated edges", edges);
 
-      setNodes(nodes);
-      setEdges(edges);
+      updateFlowWithValues(nodes, edges, values);
 
-      generatedLayout.current--;
-
-      injectValues.current = true;
+      generatingLayout.current--;
     });
   }
 
+  // on values updated
   if (
     values &&
-    generatedLayout.current === 0 &&
-    (injectValues.current || prevValues.current !== values)
+    nodes.length &&
+    generatingLayout.current === 0 &&
+    prevValues.current !== values
   ) {
-    prevValues.current = values;
-    injectValues.current = false;
-
-    console.log("Modifying edges & nodes", values);
-
-    const copyEdges = structuredClone(edges);
-    const copyNodes = structuredClone(nodes);
-
-    for (const edge of copyEdges) {
-      edge.label = `${values[edge.source].value}`;
-    }
-
-    for (const node of copyNodes) {
-      node.data.values =
-        "children" in node.data.ast
-          ? node.data.ast.children.map((ast) => values[ast.id])
-          : [];
-    }
-
-    setEdges(copyEdges);
-    setNodes(copyNodes);
+    console.log("Updating values...");
+    updateFlowWithValues(nodes, edges, values);
   }
 
   return (
