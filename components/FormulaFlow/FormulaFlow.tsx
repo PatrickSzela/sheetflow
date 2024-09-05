@@ -1,17 +1,20 @@
 import { BaseNode, nodeTypes } from "@/components/nodes";
-import { Ast, CellValue } from "@/libs/sheetflow";
+import { Ast, CellValue, flattenAst } from "@/libs/sheetflow";
 import {
   Background,
   Controls,
   Edge,
   MiniMap,
+  OnSelectionChangeFunc,
   ReactFlow,
   ReactFlowProps,
   ReactFlowProvider,
   useEdgesState,
   useNodesState,
+  useOnSelectionChange,
+  useReactFlow,
 } from "@xyflow/react";
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { generateElkLayout } from "./elkLayout";
 import {
   generateEdges,
@@ -50,8 +53,11 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
   const generatingLayout = useRef(0); // to avoid race conditions
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<BaseNode>([]);
+  const [nodes, setNodes, _onNodesChange] = useNodesState<BaseNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const { updateNodeData } = useReactFlow<BaseNode>();
+
+  const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
   const updateFlowWithValues = (
     nodes: BaseNode[],
@@ -100,15 +106,48 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     updateFlowWithValues(nodes, edges, values);
   }
 
+  const onSelectionChange = useCallback<OnSelectionChangeFunc>(
+    ({ edges, nodes: _nodes }) => {
+      // `OnSelectionChangeFunc` isn't a generic type
+      const nodes = _nodes as BaseNode[];
+      let arr = prevHighlightedAst;
+
+      for (const ast of arr) {
+        updateNodeData(ast.id, { highlighted: false });
+      }
+
+      arr = [];
+
+      for (const node of nodes) {
+        const flatAst = flattenAst(node.data.ast);
+
+        arr = [...arr, ...flatAst];
+
+        for (const child of flatAst) {
+          updateNodeData(child.id, { highlighted: true });
+        }
+      }
+
+      setPrevHighlightedAst(arr);
+    },
+    [prevHighlightedAst, updateNodeData]
+  );
+
+  useOnSelectionChange({ onChange: onSelectionChange });
+
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
-      onNodesChange={onNodesChange}
+      onNodesChange={_onNodesChange}
       onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       colorMode="system"
       nodesConnectable={false}
+      elevateNodesOnSelect
+      elevateEdgesOnSelect
+      fitView
+      onlyRenderVisibleElements
       {...otherProps}
     >
       <MiniMap />

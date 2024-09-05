@@ -3,7 +3,7 @@ import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 
 export type BaseNode = Node<
-  { ast: Ast; values: CellValue[]; hasOutput?: boolean },
+  { ast: Ast; values: CellValue[]; hasOutput?: boolean; highlighted?: boolean },
   "baseNode"
 >;
 
@@ -25,8 +25,9 @@ export const calculateNodeSize = (ast: Ast) => {
 // TODO: hella ugly
 
 export const BaseNode = (props: NodeProps<BaseNode>) => {
-  const { data, targetPosition, sourcePosition, isConnectable } = props;
-  const { ast, values, hasOutput = true } = data;
+  const { data, targetPosition, sourcePosition, isConnectable, selected } =
+    props;
+  const { ast, values, hasOutput = true, highlighted = false } = data;
 
   return (
     <div
@@ -34,6 +35,7 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         background: "white",
         minWidth: 150,
         border: "1px solid red",
+        boxShadow: `0 0 15px rgba(255,0,0,${selected ? 1 : highlighted ? 0.5 : 0})`,
         overflow: "hidden",
       }}
     >
