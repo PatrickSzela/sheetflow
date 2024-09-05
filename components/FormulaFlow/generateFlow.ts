@@ -10,11 +10,11 @@ export const generateNodes = (
     ? flatAst.filter((i) => i.type !== AstNodeType.PARENTHESIS)
     : flatAst;
 
-  const nodes: BaseNode[] = flat.map((ast) => {
+  const nodes: BaseNode[] = flat.map((ast, idx) => {
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
-      data: { ast, values: [] },
+      data: { ast, values: [], hasOutput: idx !== 0 },
       type: "baseNode",
       ...calculateNodeSize(ast),
     };

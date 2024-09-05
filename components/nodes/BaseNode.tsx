@@ -2,7 +2,10 @@ import { Ast, CellValue } from "@/libs/sheetflow";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 
-export type BaseNode = Node<{ ast: Ast; values: CellValue[] }, "baseNode">;
+export type BaseNode = Node<
+  { ast: Ast; values: CellValue[]; hasOutput?: boolean },
+  "baseNode"
+>;
 
 const HEADER_HEIGHT = 23;
 const ARG_HEIGHT = 22;
@@ -23,7 +26,7 @@ export const calculateNodeSize = (ast: Ast) => {
 
 export const BaseNode = (props: NodeProps<BaseNode>) => {
   const { data, targetPosition, sourcePosition } = props;
-  const { ast, values } = data;
+  const { ast, values, hasOutput = true } = data;
 
   return (
     <div
@@ -66,11 +69,13 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
             })
         : null}
 
+      {hasOutput ? (
+        <Handle type="source" position={sourcePosition ?? Position.Right} />
+      ) : null}
+
       <footer style={{ borderTop: "1px solid red", height: FOOTER_HEIGHT - 1 }}>
         <small style={{ textWrap: "nowrap" }}>{ast.rawContent}</small>
       </footer>
-
-      <Handle type="source" position={sourcePosition ?? Position.Right} />
     </div>
   );
 };
