@@ -1,9 +1,9 @@
 import { Edge, Node } from "@xyflow/react";
-import Elk, { ElkExtendedEdge, ElkNode } from "elkjs";
+import Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
 
 const elk = new Elk();
 
-const elkLayoutOptions = {
+const elkLayoutOptions: LayoutOptions = {
   "elk.algorithm": "layered",
   "elk.direction": "RIGHT",
 

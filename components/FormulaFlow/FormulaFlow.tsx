@@ -23,7 +23,10 @@ import "@xyflow/react/dist/style.css";
 
 // TODO: cleanup
 
-export interface FormulaFlowProps extends Omit<ReactFlowProps, "nodes"> {
+export interface FormulaFlowProps<
+  TNode extends BaseNode = BaseNode,
+  TEdge extends Edge = Edge,
+> extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   ast: Ast | undefined;
   flatAst: Ast[] | undefined;
   values: Record<string, CellValue> | undefined;
@@ -101,7 +104,6 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     <ReactFlow
       nodes={nodes}
       edges={edges}
-      // @ts-expect-error
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
