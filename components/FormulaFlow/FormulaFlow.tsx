@@ -106,6 +106,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       colorMode="system"
+      nodesConnectable={false}
       {...otherProps}
     >
       <MiniMap />

@@ -25,7 +25,7 @@ export const calculateNodeSize = (ast: Ast) => {
 // TODO: hella ugly
 
 export const BaseNode = (props: NodeProps<BaseNode>) => {
-  const { data, targetPosition, sourcePosition } = props;
+  const { data, targetPosition, sourcePosition, isConnectable } = props;
   const { ast, values, hasOutput = true } = data;
 
   return (
@@ -60,6 +60,7 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
                     type="target"
                     position={targetPosition ?? Position.Left}
                     id={childId}
+                    isConnectable={isConnectable}
                     style={{
                       top: HEADER_HEIGHT + ARG_HEIGHT * idx + ARG_HEIGHT / 2,
                     }}
@@ -70,7 +71,11 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         : null}
 
       {hasOutput ? (
-        <Handle type="source" position={sourcePosition ?? Position.Right} />
+        <Handle
+          type="source"
+          position={sourcePosition ?? Position.Right}
+          isConnectable={isConnectable}
+        />
       ) : null}
 
       <footer style={{ borderTop: "1px solid red", height: FOOTER_HEIGHT - 1 }}>
