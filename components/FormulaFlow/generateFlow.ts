@@ -1,5 +1,5 @@
 import { BaseNode, calculateNodeSize } from "@/components/nodes";
-import { Ast, AstNodeType, CellValue } from "@/libs/sheetflow";
+import { Ast, AstNodeType, printCellValue, Value } from "@/libs/sheetflow";
 import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
@@ -69,7 +69,7 @@ export const generateEdges = (
 export const injectValuesToFlow = (
   nodes: BaseNode[],
   edges: Edge[],
-  values: Record<string, CellValue>
+  values: Record<string, Value>
 ): [BaseNode[], Edge[]] => {
   console.log("Modifying edges & nodes with values", values);
 
@@ -77,7 +77,7 @@ export const injectValuesToFlow = (
   const copyNodes = structuredClone(nodes);
 
   for (const edge of copyEdges) {
-    edge.label = `${values[edge.source].value}`;
+    edge.label = printCellValue(values[edge.source]);
   }
 
   for (const node of copyNodes) {

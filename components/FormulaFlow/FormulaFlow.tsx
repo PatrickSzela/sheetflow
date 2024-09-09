@@ -1,5 +1,5 @@
 import { BaseNode, nodeTypes } from "@/components/nodes";
-import { Ast, CellValue, flattenAst } from "@/libs/sheetflow";
+import { Ast, flattenAst, Value } from "@/libs/sheetflow";
 import {
   Background,
   Controls,
@@ -32,7 +32,7 @@ export interface FormulaFlowProps<
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   ast: Ast | undefined;
   flatAst: Ast[] | undefined;
-  values: Record<string, CellValue> | undefined;
+  values: Record<string, Value> | undefined;
   skipParenthesis?: Boolean;
 }
 
@@ -49,7 +49,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
   const prevAst = useRef<Ast>();
   const prevSkipParenthesis = useRef<Boolean>();
-  const prevValues = useRef<Record<string, CellValue>>();
+  const prevValues = useRef<Record<string, Value>>();
 
   const generatingLayout = useRef(0); // to avoid race conditions
 
@@ -62,7 +62,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const updateFlowWithValues = (
     nodes: BaseNode[],
     edges: Edge[],
-    values: Record<string, CellValue>
+    values: Record<string, Value>
   ) => {
     const [newNodes, newEdges] = injectValuesToFlow(nodes, edges, values);
 

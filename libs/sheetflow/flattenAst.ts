@@ -1,11 +1,8 @@
-import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
+import { Ast, AstNodeType } from "./ast";
 
 export const flattenAst = (ast: Ast): Ast[] => {
   switch (ast.type) {
     case AstNodeType.VALUE:
-      // TODO: finish array
-      return ast.subtype === AstNodeSubtype.ARRAY ? [] : [ast];
-
     case AstNodeType.ERROR:
     case AstNodeType.REFERENCE:
       return [ast];

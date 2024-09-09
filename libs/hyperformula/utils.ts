@@ -1,7 +1,6 @@
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
 import { Ast, AstNodeType } from "hyperformula/commonjs/parser";
-import { SpecialSheets } from "./HyperFormulaProvider";
 
 export const getOperator = (type: AstNodeType) => {
   switch (type) {
@@ -259,14 +258,4 @@ export const areAstEqual = (
     default:
       return false;
   }
-};
-
-export const getFormulasSheetId = (hf: HyperFormula) => {
-  const id = hf.getSheetId(SpecialSheets.FORMULAS);
-
-  if (typeof id === "undefined") {
-    throw new Error(`The sheet ${SpecialSheets.FORMULAS} is missing`);
-  }
-
-  return id;
 };

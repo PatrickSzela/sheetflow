@@ -63,9 +63,20 @@ export const buildErrorCellValue: BuildFn<ErrorCellValue> = (args) => ({
   ...args,
 });
 
+export const printCellValue = (value: Value) => {
+  // TODO: improve arrays & nulls
+  if (Array.isArray(value)) {
+    return JSON.stringify(value.map((i) => i.map((x) => x.value)));
+  } else {
+    return `${value.value}`;
+  }
+};
+
 export type CellValue =
   | NumberCellValue
   | StringCellValue
   | EmptyCellValue
   | BooleanCellValue
   | ErrorCellValue;
+
+export type Value = CellValue | CellValue[][];

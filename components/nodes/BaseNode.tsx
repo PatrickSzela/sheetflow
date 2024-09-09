@@ -1,9 +1,14 @@
-import { Ast, CellValue } from "@/libs/sheetflow";
+import { Ast, printCellValue, Value } from "@/libs/sheetflow";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 
 export type BaseNode = Node<
-  { ast: Ast; values: CellValue[]; hasOutput?: boolean; highlighted?: boolean },
+  {
+    ast: Ast;
+    values: Value[];
+    hasOutput?: boolean;
+    highlighted?: boolean;
+  },
   "baseNode"
 >;
 
@@ -54,9 +59,9 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
 
               return (
                 <React.Fragment key={childId}>
-                  <div
-                    style={{ height: ARG_HEIGHT }}
-                  >{`${values[idx]?.value}`}</div>
+                  <div style={{ height: ARG_HEIGHT }}>
+                    {printCellValue(values[idx])}
+                  </div>
 
                   <Handle
                     type="target"
