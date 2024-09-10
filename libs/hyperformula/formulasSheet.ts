@@ -19,7 +19,7 @@ export const getFormulasSheetId = (
   return id;
 };
 
-export const addFormulasSheet = (
+export const addFormulaSheet = (
   hf: HyperFormula,
   uuid: string,
   index: number,
@@ -37,6 +37,33 @@ export const addFormulasSheet = (
   }
 
   return { sheetName, sheetId };
+};
+
+export const updateFormulaSheet = (
+  hf: HyperFormula,
+  sheetId: number,
+  uuid: string,
+  index: number,
+  contents: RawCellContent[][]
+) => {
+  const sheetName = buildFormulasSheetName(uuid, index);
+
+  hf.renameSheet(sheetId, sheetName);
+  hf.setSheetContent(sheetId, contents);
+  
+  return { sheetName, sheetId };
+};
+
+export const addOrUpdateFormulaSheet = (
+  hf: HyperFormula,
+  sheetId: number | undefined,
+  uuid: string,
+  index: number,
+  contents: RawCellContent[][]
+) => {
+  return typeof sheetId === "undefined"
+    ? addFormulaSheet(hf, uuid, index, contents)
+    : updateFormulaSheet(hf, sheetId, uuid, index, contents);
 };
 
 export const removeFormulasSheets = (hf: HyperFormula, uuid: string) => {

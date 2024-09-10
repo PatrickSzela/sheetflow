@@ -4,7 +4,7 @@ import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellV
 import { Listeners } from "hyperformula/typings/Emitter";
 import { useEffect, useRef, useState } from "react";
 import {
-  addFormulasSheet,
+  addOrUpdateFormulaSheet,
   getFormulasSheetId,
   removeFormulasSheets,
 } from "./formulasSheet";
@@ -33,6 +33,7 @@ export const useFormulaAst = (
   // `useRef` to avoid `useEffect` resubscribing to `valuesUpdated` event after it's being triggered internally & using old values because of placing AST elements in the sheet
   const id = useRef<string>();
   const flatAst = useRef<Ast[]>();
+  const sheets = useRef<number[]>([]);
 
   const normalizedFormula = hf.validateFormula(formula)
     ? hf.normalizeFormula(formula)
@@ -46,14 +47,17 @@ export const useFormulaAst = (
   ) {
     hf.suspendEvaluation();
 
-    // remove all previous sheets
-    if (typeof id.current !== "undefined") {
-      removeFormulasSheets(hf, id.current);
-    }
+    const uuid = crypto.randomUUID();
 
-    let uuid = crypto.randomUUID();
+    const { sheetId } = addOrUpdateFormulaSheet(
+      hf,
+      sheets.current[0],
+      uuid,
+      0,
+      [[normalizedFormula]]
+    );
 
-    const { sheetId } = addFormulasSheet(hf, uuid, 0, [[normalizedFormula]]);
+    sheets.current[0] = sheetId;
 
     const address: SimpleCellAddress = {
       row: 0,
@@ -88,7 +92,15 @@ export const useFormulaAst = (
         ? `=ARRAYFORMULA(${ast.rawContent})`
         : `=${ast.rawContent}`;
 
-      addFormulasSheet(hf, uuid, idx + 1, [[formula]]);
+      const { sheetId } = addOrUpdateFormulaSheet(
+        hf,
+        sheets.current[idx + 1],
+        uuid,
+        idx + 1,
+        [[formula]]
+      );
+
+      sheets.current[idx + 1] = sheetId;
     });
 
     id.current = uuid;
