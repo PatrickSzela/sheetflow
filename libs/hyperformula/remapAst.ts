@@ -8,7 +8,8 @@ export const remapAst = (
   hf: HyperFormula,
   ast: Ast,
   address: SimpleCellAddress,
-  rootUUID?: string
+  rootUUID?: string,
+  isArrayFormula?: boolean
 ): SheetFlow.Ast => {
   // @ts-expect-error we're using protected property here
   const rawContent = hf._unparser.unparse(ast, address).slice(1);
@@ -19,6 +20,7 @@ export const remapAst = (
         value: null,
         rawContent: "",
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.NUMBER:
@@ -26,6 +28,7 @@ export const remapAst = (
         value: ast.value,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.STRING:
@@ -33,6 +36,7 @@ export const remapAst = (
         value: ast.value,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.MINUS_UNARY_OP:
@@ -40,10 +44,11 @@ export const remapAst = (
     case AstNodeType.PERCENT_OP:
       return SheetFlow.buildUnaryExpressionAst({
         operator: getOperator(ast.type),
-        children: [remapAst(hf, ast.value, address)],
+        children: [remapAst(hf, ast.value, address, undefined, isArrayFormula)],
         operatorOnRight: ast.type === AstNodeType.PERCENT_OP,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
         requirements: {
           minChildCount: 1,
           maxChildCount: 1,
@@ -65,11 +70,12 @@ export const remapAst = (
       return SheetFlow.buildBinaryExpressionAst({
         operator: getOperator(ast.type),
         children: [
-          remapAst(hf, ast.left, address),
-          remapAst(hf, ast.right, address),
+          remapAst(hf, ast.left, address, undefined, isArrayFormula),
+          remapAst(hf, ast.right, address, undefined, isArrayFormula),
         ],
         rawContent,
         id: rootUUID,
+        isArrayFormula,
         requirements: {
           minChildCount: 2,
           maxChildCount: 2,
@@ -77,21 +83,20 @@ export const remapAst = (
       });
 
     case AstNodeType.FUNCTION_CALL:
-      console.log(
-        ast.procedureName,
-        hf.getFunctionPlugin(ast.procedureName)?.implementedFunctions[
-          ast.procedureName
-        ]
-      );
-
       const hfFunction = hf.getFunctionPlugin(ast.procedureName)
         ?.implementedFunctions[ast.procedureName];
 
+      const arrayFormula =
+        isArrayFormula || hfFunction?.method === "arrayformula";
+
       return SheetFlow.buildFunctionAst({
         functionName: ast.procedureName,
-        children: ast.args.map((i, idx) => remapAst(hf, i, address)),
+        children: ast.args.map((i) =>
+          remapAst(hf, i, address, undefined, arrayFormula)
+        ),
         rawContent,
         id: rootUUID,
+        isArrayFormula: arrayFormula,
         requirements: {
           minChildCount:
             hfFunction?.parameters?.filter(
@@ -106,13 +111,17 @@ export const remapAst = (
         expressionName: ast.expressionName,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.PARENTHESIS:
       return SheetFlow.buildParenthesisAst({
-        children: [remapAst(hf, ast.expression, address)],
+        children: [
+          remapAst(hf, ast.expression, address, undefined, isArrayFormula),
+        ],
         rawContent,
         id: rootUUID,
+        isArrayFormula,
         requirements: {
           minChildCount: 1,
           maxChildCount: 1,
@@ -127,6 +136,7 @@ export const remapAst = (
         ),
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.CELL_RANGE:
@@ -138,6 +148,7 @@ export const remapAst = (
           "MISSING",
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.COLUMN_RANGE:
@@ -149,6 +160,7 @@ export const remapAst = (
           "MISSING",
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.ROW_RANGE:
@@ -160,6 +172,7 @@ export const remapAst = (
           "MISSING",
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.ERROR:
@@ -167,6 +180,7 @@ export const remapAst = (
         error: ast.error.type,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.ERROR_WITH_RAW_INPUT:
@@ -174,13 +188,17 @@ export const remapAst = (
         error: ast.error.type,
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     case AstNodeType.ARRAY:
       return SheetFlow.buildArrayAst({
-        value: ast.args.map((a) => a.map((b) => remapAst(hf, b, address))),
+        value: ast.args.map((a) =>
+          a.map((b) => remapAst(hf, b, address, undefined, isArrayFormula))
+        ),
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
 
     default:
@@ -188,6 +206,7 @@ export const remapAst = (
         error: "AST node type doesn't match any of the case clauses",
         rawContent,
         id: rootUUID,
+        isArrayFormula,
       });
   }
 };

@@ -83,7 +83,12 @@ export const useFormulaAst = (
     // place every element of AST as formula in the sheets
     // skip the first element (whole formula) since it's already placed in the first sheet
     flattenedAst.slice(1).forEach((ast, idx) => {
-      addFormulasSheet(hf, uuid, idx + 1, [[`=${ast.rawContent}`]]);
+      // every language supported by HF doesn't translate `ARRAYFORMULA` function name, so this should theoretically always work
+      const formula = ast.isArrayFormula
+        ? `=ARRAYFORMULA(${ast.rawContent})`
+        : `=${ast.rawContent}`;
+
+      addFormulasSheet(hf, uuid, idx + 1, [[formula]]);
     });
 
     id.current = uuid;

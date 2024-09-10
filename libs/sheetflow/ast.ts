@@ -34,6 +34,7 @@ export interface AstBase<TType extends AstNodeType = AstNodeType> {
   type: TType;
   id: string;
   rawContent: string;
+  isArrayFormula?: boolean;
 }
 
 export interface AstWithSubtype<
