@@ -68,7 +68,7 @@ export const printCellValue = (value: Value) => {
   if (Array.isArray(value)) {
     return JSON.stringify(value.map((i) => i.map((x) => x.value)));
   } else {
-    return `${value.value}`;
+    return `${value?.value}`;
   }
 };
 
