@@ -15,3 +15,7 @@ declare module "hyperformula/commonjs/Config" {
 
   export { Config };
 }
+
+declare module "hyperformula/es/i18n/languages" {
+  export { enGB };
+}

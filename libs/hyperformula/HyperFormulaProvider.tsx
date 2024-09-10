@@ -4,7 +4,26 @@ import {
   SerializedNamedExpression,
   Sheets,
 } from "hyperformula";
-import { PropsWithChildren, createContext, useContext, useMemo } from "react";
+import {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useMemo,
+  useRef,
+} from "react";
+import * as Languages from "hyperformula/es/i18n/languages";
+
+export const registerAllLanguages = () => {
+  const langs = HyperFormula.getRegisteredLanguagesCodes();
+
+  for (const [lang, pack] of Object.entries(Languages).filter(
+    ([lang]) => !langs.includes(lang)
+  )) {
+    HyperFormula.registerLanguage(lang, pack);
+  }
+};
+
+registerAllLanguages();
 
 export enum SpecialSheets {
   FORMULAS = "SheetFlow_Formulas",
@@ -23,10 +42,13 @@ export const HyperFormulaProvider = (
 ) => {
   const { sheets = {}, configInput, namedExpressions, children } = props;
 
+  const prevConfig = useRef<typeof configInput>(configInput);
+
   const hf = useMemo(() => {
+    // TODO: move outside of provider
     const hf = HyperFormula.buildFromSheets(
       { ...sheets, [SpecialSheets.FORMULAS]: [] },
-      configInput,
+      prevConfig.current,
       namedExpressions
     );
 
@@ -34,7 +56,15 @@ export const HyperFormulaProvider = (
     // @ts-expect-error make HF instance available in browser's console
     window.hf = hf;
     return hf;
-  }, [configInput, namedExpressions, sheets]);
+  }, [namedExpressions, sheets]);
+
+  if (configInput && prevConfig.current !== configInput) {
+    prevConfig.current = configInput;
+
+    hf.updateConfig(configInput);
+
+    console.log("Updated HyperFormula config", configInput);
+  }
 
   return (
     <HyperFormulaContext.Provider value={hf}>
