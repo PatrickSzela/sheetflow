@@ -1,4 +1,4 @@
-declare module "hyperformula/commonjs/parser" {
+declare module "hyperformula/es/parser" {
   import {
     Ast,
     AstNodeType,
@@ -10,7 +10,7 @@ declare module "hyperformula/commonjs/parser" {
   export { Ast, AstNodeType, CellAddress, Unparser, buildLexerConfig };
 }
 
-declare module "hyperformula/commonjs/Config" {
+declare module "hyperformula/es/Config" {
   import { Config } from "hyperformula/typings/Config";
 
   export { Config };

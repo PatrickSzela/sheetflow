@@ -1,6 +1,6 @@
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import { Ast, AstNodeType } from "hyperformula/commonjs/parser";
+import { Ast, AstNodeType } from "hyperformula/es/parser";
 import { remapCellAddress } from "./remapCellAddress";
 import { getOperator } from "./utils";
 
