@@ -14,7 +14,7 @@ export const generateNodes = (
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
-      data: { ast, values: [], hasOutput: idx !== 0 },
+      data: { ast, hasOutput: idx !== 0 },
       type: "baseNode",
       ...calculateNodeSize(ast),
     };
@@ -81,7 +81,9 @@ export const injectValuesToFlow = (
   }
 
   for (const node of copyNodes) {
-    node.data.values =
+    node.data.value = values[node.data.ast.id];
+
+    node.data.childrenValues =
       "children" in node.data.ast
         ? node.data.ast.children.map((ast) => values[ast.id])
         : [];

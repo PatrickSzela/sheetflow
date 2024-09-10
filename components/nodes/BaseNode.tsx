@@ -5,7 +5,8 @@ import React from "react";
 export type BaseNode = Node<
   {
     ast: Ast;
-    values: Value[];
+    value?: Value;
+    childrenValues?: Value[];
     hasOutput?: boolean;
     highlighted?: boolean;
   },
@@ -26,6 +27,7 @@ export const calculateNodeSize = (ast: Ast) => {
     height:
       HEADER_HEIGHT +
       getPossibleChildrenCount(ast) * ARG_HEIGHT +
+      ARG_HEIGHT +
       FOOTER_HEIGHT,
     width: 150,
   };
@@ -36,7 +38,13 @@ export const calculateNodeSize = (ast: Ast) => {
 export const BaseNode = (props: NodeProps<BaseNode>) => {
   const { data, targetPosition, sourcePosition, isConnectable, selected } =
     props;
-  const { ast, values, hasOutput = true, highlighted = false } = data;
+  const {
+    ast,
+    value,
+    childrenValues,
+    hasOutput = true,
+    highlighted = false,
+  } = data;
 
   const childCount = getPossibleChildrenCount(ast);
 
@@ -48,6 +56,7 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         border: "1px solid red",
         boxShadow: `0 0 15px rgba(255,0,0,${selected ? 1 : highlighted ? 0.5 : 0})`,
         overflow: "hidden",
+        boxSizing: "border-box",
       }}
     >
       <header
@@ -56,38 +65,58 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         {ast.type}
       </header>
 
-      {Array(childCount)
-        .fill(0)
-        .map((_, idx) => {
-          // TODO: figure out a way to extract names for args
-          const childId = `${idx}`;
+      <main>
+        {Array(childCount)
+          .fill(0)
+          .map((_, idx) => {
+            // TODO: figure out a way to extract names for args
+            const childId = `${idx}`;
 
-          return (
-            <React.Fragment key={childId}>
-              <div style={{ height: ARG_HEIGHT }}>
-                {printCellValue(values[idx])}
-              </div>
+            return (
+              <React.Fragment key={childId}>
+                {childrenValues ? (
+                  <div style={{ height: ARG_HEIGHT, padding: "0 3px" }}>
+                    {printCellValue(childrenValues[idx])}
+                  </div>
+                ) : null}
 
-              <Handle
-                type="target"
-                position={targetPosition ?? Position.Left}
-                id={childId}
-                isConnectable={isConnectable}
-                style={{
-                  top: HEADER_HEIGHT + ARG_HEIGHT * idx + ARG_HEIGHT / 2,
-                }}
-              />
-            </React.Fragment>
-          );
-        })}
+                <Handle
+                  type="target"
+                  position={targetPosition ?? Position.Left}
+                  id={childId}
+                  isConnectable={isConnectable}
+                  style={{
+                    top: HEADER_HEIGHT + ARG_HEIGHT * idx + ARG_HEIGHT / 2,
+                  }}
+                />
+              </React.Fragment>
+            );
+          })}
 
-      {hasOutput ? (
-        <Handle
-          type="source"
-          position={sourcePosition ?? Position.Right}
-          isConnectable={isConnectable}
-        />
-      ) : null}
+        {value && (
+          <div
+            style={{
+              height: ARG_HEIGHT,
+              textAlign: "right",
+              borderTop: "solid 1px red",
+              padding: "0 3px",
+            }}
+          >
+            {printCellValue(value)}
+          </div>
+        )}
+
+        {hasOutput ? (
+          <Handle
+            type="source"
+            position={sourcePosition ?? Position.Right}
+            isConnectable={isConnectable}
+            style={{
+              top: HEADER_HEIGHT + ARG_HEIGHT * childCount + ARG_HEIGHT / 2,
+            }}
+          />
+        ) : null}
+      </main>
 
       <footer style={{ borderTop: "1px solid red", height: FOOTER_HEIGHT - 1 }}>
         <small style={{ textWrap: "nowrap" }}>{ast.rawContent}</small>
