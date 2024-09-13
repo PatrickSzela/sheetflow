@@ -1,4 +1,14 @@
-import { Ast, flattenAst, Value } from "@/libs/sheetflow";
+import {
+  remapCellAddress,
+  remapCellRange,
+} from "@/libs/hyperformula/remapCellAddress";
+import {
+  Ast,
+  CellAddress,
+  CellRange,
+  flattenAst,
+  Value,
+} from "@/libs/sheetflow";
 import { SimpleCellAddress } from "hyperformula";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
@@ -14,6 +24,7 @@ import { getCellValueDetails, remapCellValue } from "./remapCellValue";
 import { areHfAddressesEqual } from "./utils";
 
 // TODO: simplify
+// TODO: return address where the formula is stored
 
 export const useFormulaAst = (
   formula: string
@@ -22,6 +33,7 @@ export const useFormulaAst = (
   flatAst: Ast[] | undefined;
   uuid: string | undefined;
   values: Record<string, Value>;
+  precedents: (CellAddress | CellRange)[];
 } => {
   const hf = useHyperFormula();
 
@@ -29,6 +41,7 @@ export const useFormulaAst = (
   const [ast, setAst] = useState<Ast>();
   const [values, setValues] = useState<Record<string, Value>>({});
   const [mounted, setMounted] = useState(false);
+  const [precedents, setPrecedents] = useState<(CellAddress | CellRange)[]>([]);
 
   // `useRef` to avoid `useEffect` resubscribing to `valuesUpdated` event after it's being triggered internally & using old values because of placing AST elements in the sheet
   const id = useRef<string>();
@@ -103,10 +116,18 @@ export const useFormulaAst = (
       sheets.current[idx + 1] = sheetId;
     });
 
+    // we could extract precedents from AST... but this is easier :D
+    const precedents = hf
+      .getCellPrecedents(address)
+      .map((i) =>
+        "start" in i ? remapCellRange(hf, i) : remapCellAddress(hf, i)
+      );
+
     id.current = uuid;
     flatAst.current = flattenedAst;
     setAst(ast);
     setNewFormula(normalizedFormula);
+    setPrecedents(precedents);
 
     hf.resumeEvaluation();
   }
@@ -142,7 +163,10 @@ export const useFormulaAst = (
 
             if (typeof arrayVertex === "undefined") {
               throw new Error(
-                `Unable to retrieve array from cell \`${hf.simpleCellAddressToString(addr, id)}\``
+                `Unable to retrieve array from cell \`${hf.simpleCellAddressToString(
+                  addr,
+                  id
+                )}\``
               );
             }
 
@@ -188,5 +212,11 @@ export const useFormulaAst = (
     };
   }, [hf]);
 
-  return { ast, flatAst: flatAst.current, uuid: id.current, values };
+  return {
+    ast,
+    flatAst: flatAst.current,
+    uuid: id.current,
+    values,
+    precedents,
+  };
 };

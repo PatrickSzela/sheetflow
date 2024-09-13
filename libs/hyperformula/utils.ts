@@ -37,6 +37,16 @@ export const getOperator = (type: AstNodeType) => {
   }
 };
 
+export const getSheetIdWithError = (hf: HyperFormula, sheetName: string) => {
+  const id = hf.getSheetId(sheetName);
+
+  if (typeof id === "undefined") {
+    throw new Error(`The sheet \`${sheetName}\` doesn't exists`);
+  }
+
+  return id;
+};
+
 export const areHfAddressesEqual = (
   hfAddress1: SimpleCellAddress,
   hfAddress2: SimpleCellAddress
@@ -50,11 +60,7 @@ export const areAddressesEqual = (
   sheetflowAddress: SheetFlow.CellAddress,
   hf: HyperFormula
 ) => {
-  const sheetId = hf.getSheetId(sheetflowAddress.sheet);
-
-  if (typeof sheetId === "undefined") {
-    throw new Error(`Sheet \`${sheetflowAddress.sheet}\` not found`);
-  }
+  const sheetId = getSheetIdWithError(hf, sheetflowAddress.sheet);
 
   return (
     hfAddress.col === sheetflowAddress.column &&
@@ -212,7 +218,7 @@ export const areAstEqual = (
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.COLUMN_RANGE &&
         cStart.col === sheetflowAst.start &&
         cEnd.col === sheetflowAst.end &&
-        cStart.sheet === hf.getSheetId(sheetflowAst.sheet)
+        cStart.sheet === getSheetIdWithError(hf, sheetflowAst.sheet)
       );
 
     case AstNodeType.ROW_RANGE:
@@ -224,7 +230,7 @@ export const areAstEqual = (
         sheetflowAst.subtype === SheetFlow.AstNodeSubtype.ROW_RANGE &&
         rStart.row === sheetflowAst.start &&
         rEnd.row === sheetflowAst.end &&
-        rStart.sheet === hf.getSheetId(sheetflowAst.sheet)
+        rStart.sheet === getSheetIdWithError(hf, sheetflowAst.sheet)
       );
 
     case AstNodeType.ERROR:

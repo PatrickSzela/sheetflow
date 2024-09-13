@@ -1,12 +1,24 @@
 import * as SheetFlow from "@/libs/sheetflow";
-import { HyperFormula, SimpleCellAddress } from "hyperformula";
+import { HyperFormula, SimpleCellAddress, SimpleCellRange } from "hyperformula";
+
+// TODO: unmap functions
 
 export const remapCellAddress = (
   hf: HyperFormula,
   { row, col, sheet }: SimpleCellAddress
-): SheetFlow.CellAddress => ({
-  column: col,
-  row: row,
-  // TODO: store as ID like hyperformula?
-  sheet: hf.getSheetName(sheet) ?? "MISSING",
-});
+): SheetFlow.CellAddress =>
+  SheetFlow.buildCellAddress(
+    col,
+    row,
+    // TODO: store as ID like hyperformula?
+    hf.getSheetName(sheet) ?? "MISSING"
+  );
+
+export const remapCellRange = (
+  hf: HyperFormula,
+  { start, end }: SimpleCellRange
+): SheetFlow.CellRange =>
+  SheetFlow.buildCellRange(
+    remapCellAddress(hf, start),
+    remapCellAddress(hf, end)
+  );
