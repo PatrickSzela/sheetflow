@@ -1,7 +1,6 @@
+import { getSheetIdWithError } from "@/libs/hyperformula";
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress, SimpleCellRange } from "hyperformula";
-
-// TODO: unmap functions
 
 export const remapCellAddress = (
   hf: HyperFormula,
@@ -14,6 +13,15 @@ export const remapCellAddress = (
     hf.getSheetName(sheet) ?? "MISSING"
   );
 
+export const unmapCellAddress = (
+  hf: HyperFormula,
+  { column, row, sheet }: SheetFlow.CellAddress
+): SimpleCellAddress => ({
+  col: column,
+  row,
+  sheet: getSheetIdWithError(hf, sheet),
+});
+
 export const remapCellRange = (
   hf: HyperFormula,
   { start, end }: SimpleCellRange
@@ -22,3 +30,11 @@ export const remapCellRange = (
     remapCellAddress(hf, start),
     remapCellAddress(hf, end)
   );
+
+export const unmapCellRange = (
+  hf: HyperFormula,
+  { start, end }: SheetFlow.CellRange
+): SimpleCellRange => ({
+  start: unmapCellAddress(hf, start),
+  end: unmapCellAddress(hf, end),
+});

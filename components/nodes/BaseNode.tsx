@@ -54,7 +54,9 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
         background: "white",
         minWidth: 150,
         border: "1px solid red",
-        boxShadow: `0 0 15px rgba(255,0,0,${selected ? 1 : highlighted ? 0.5 : 0})`,
+        boxShadow: `0 0 15px rgba(255,0,0,${
+          selected ? 1 : highlighted ? 0.5 : 0
+        })`,
         overflow: "hidden",
         boxSizing: "border-box",
       }}
@@ -74,11 +76,9 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
 
             return (
               <React.Fragment key={childId}>
-                {childrenValues ? (
-                  <div style={{ height: ARG_HEIGHT, padding: "0 3px" }}>
-                    {printCellValue(childrenValues[idx])}
-                  </div>
-                ) : null}
+                <div style={{ height: ARG_HEIGHT, padding: "0 3px" }}>
+                  {childrenValues ? printCellValue(childrenValues[idx]) : ""}
+                </div>
 
                 <Handle
                   type="target"
@@ -93,18 +93,16 @@ export const BaseNode = (props: NodeProps<BaseNode>) => {
             );
           })}
 
-        {value && (
-          <div
-            style={{
-              height: ARG_HEIGHT,
-              textAlign: "right",
-              borderTop: "solid 1px red",
-              padding: "0 3px",
-            }}
-          >
-            {printCellValue(value)}
-          </div>
-        )}
+        <div
+          style={{
+            height: ARG_HEIGHT,
+            textAlign: "right",
+            borderTop: "solid 1px red",
+            padding: "0 3px",
+          }}
+        >
+          {value ? printCellValue(value) : ""}
+        </div>
 
         {hasOutput ? (
           <Handle

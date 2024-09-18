@@ -1,12 +1,6 @@
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
-import {
-  getSheetIdWithError,
-  useFormulaAst,
-  useHyperFormula,
-} from "@/libs/hyperformula";
-import { buildStringFromCellAddress, CellList } from "@/libs/sheetflow";
-import { SimpleCellAddress } from "hyperformula";
+import { CellList, useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
 import { useMemo, useState } from "react";
 
 // TODO: support references without sheet name in address
@@ -18,7 +12,7 @@ export interface FormulaEditorProps {
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
   const { defaultFormula, flowProps } = props;
-  const hf = useHyperFormula();
+  const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
   const { ast, flatAst, values, precedents } = useFormulaAst(formula);
@@ -29,23 +23,15 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     for (const address of precedents) {
       // TODO: support ranges
       if ("column" in address) {
-        const sheetId = hf.getSheetId(address.sheet);
-
         // TODO: add info about missing sheet
-        if (typeof sheetId === "undefined") continue;
-
-        const stringAddress = buildStringFromCellAddress(address);
-
-        list[stringAddress] = hf.getCellSerialized({
-          col: address.column,
-          row: address.row,
-          sheet: sheetId,
-        });
+        if (!sf.doesSheetExists(address.sheet)) continue;
+        const stringAddress = sf.cellAddressToString(address);
+        list[stringAddress] = sf.getCell(address);
       }
     }
 
     return list;
-  }, [hf, precedents]);
+  }, [sf, precedents]);
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
@@ -53,13 +39,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
         <DependenciesEditor
           cells={cellList}
           onChange={(address, value) => {
-            const addr: SimpleCellAddress = {
-              col: address.column,
-              row: address.row,
-              sheet: getSheetIdWithError(hf, address.sheet),
-            };
-
-            hf.setCellContents(addr, value);
+            sf.setCell(sf.stringToCellAddress(address), value);
           }}
         />
       </aside>

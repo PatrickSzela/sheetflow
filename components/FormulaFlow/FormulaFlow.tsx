@@ -28,7 +28,7 @@ import "@xyflow/react/dist/style.css";
 
 export interface FormulaFlowProps<
   TNode extends BaseNode = BaseNode,
-  TEdge extends Edge = Edge,
+  TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   ast: Ast | undefined;
   flatAst: Ast[] | undefined;

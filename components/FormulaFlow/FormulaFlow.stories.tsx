@@ -1,11 +1,11 @@
-import { HyperFormulaProvider, useFormulaAst } from "@/libs/hyperformula";
+import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
+import { SheetFlowProvider, Sheets, useFormulaAst } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ConfigParams, Sheets } from "hyperformula";
-import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
-import { useMemo } from "react";
 import * as Languages from "hyperformula/es/i18n/languages";
+import { useMemo } from "react";
+import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
 
-const options: Partial<ConfigParams> = {
+const options: HyperFormulaConfig = {
   licenseKey: "gpl-v3",
   language: "enUS",
 };
@@ -46,7 +46,7 @@ const meta = {
   },
   decorators: [
     (Story, c) => {
-      const config = useMemo<Partial<ConfigParams>>(
+      const config = useMemo<HyperFormulaConfig>(
         () => ({
           ...options,
           language: c.args.language,
@@ -55,9 +55,13 @@ const meta = {
       );
 
       return (
-        <HyperFormulaProvider sheets={sheets} configInput={config}>
+        <SheetFlowProvider
+          engine={HyperFormulaEngine}
+          sheets={sheets}
+          config={config}
+        >
           <Story />
-        </HyperFormulaProvider>
+        </SheetFlowProvider>
       );
     },
   ],

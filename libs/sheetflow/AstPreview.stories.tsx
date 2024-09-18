@@ -1,8 +1,8 @@
-import { HyperFormulaProvider } from "@/libs/hyperformula";
+import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
+import { Sheets, useFormulaAst } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ConfigParams, Sheets } from "hyperformula";
-import { useFormulaAst } from "@/libs/hyperformula";
 import { ObjectInspector } from "react-inspector";
+import { SheetFlowProvider } from "./SheetFlowProvider";
 
 interface AstPreviewProps {
   formula?: string;
@@ -16,7 +16,7 @@ const AstPreview = (props: AstPreviewProps) => {
   return <ObjectInspector expandLevel={10} data={data} />;
 };
 
-const options: Partial<ConfigParams> = {
+const options: HyperFormulaConfig = {
   licenseKey: "gpl-v3",
 };
 
@@ -29,9 +29,13 @@ const meta = {
   component: AstPreview,
   decorators: [
     (Story) => (
-      <HyperFormulaProvider sheets={sheets} configInput={options}>
+      <SheetFlowProvider
+        engine={HyperFormulaEngine}
+        sheets={sheets}
+        config={options}
+      >
         <Story />
-      </HyperFormulaProvider>
+      </SheetFlowProvider>
     ),
   ],
 } satisfies Meta<AstPreviewProps>;

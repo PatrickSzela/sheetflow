@@ -1,11 +1,10 @@
+import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
-  getSheetIdWithError,
-  HyperFormulaProvider,
-  useHyperFormula,
-} from "@/libs/hyperformula";
-import { getCellLists } from "@/libs/sheetflow";
+  SheetFlowProvider,
+  Sheets,
+  useSheetFlow,
+} from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ConfigParams, Sheets, SimpleCellAddress } from "hyperformula";
 import * as Languages from "hyperformula/es/i18n/languages";
 import { useMemo } from "react";
 import {
@@ -15,7 +14,7 @@ import {
 
 // TODO: share stuff between stories
 
-const options: Partial<ConfigParams> = {
+const options: HyperFormulaConfig = {
   licenseKey: "gpl-v3",
   language: "enUS",
 };
@@ -34,21 +33,15 @@ interface DependenciesEditorFromStringProps
 
 const DependenciesEditorFromString =
   ({}: DependenciesEditorFromStringProps) => {
-    const hf = useHyperFormula();
-    const sheets = getCellLists(hf.getAllSheetsSerialized());
+    const sf = useSheetFlow();
+    const sheets = sf.getCellLists();
 
     return (
       <div style={{ height: "100vh" }}>
         <DependenciesEditor
           cells={sheets}
           onChange={(address, value) => {
-            const addr: SimpleCellAddress = {
-              col: address.column,
-              row: address.row,
-              sheet: getSheetIdWithError(hf, address.sheet),
-            };
-
-            hf.setCellContents(addr, value);
+            sf.setCell(sf.stringToCellAddress(address), value);
           }}
         />
       </div>
@@ -63,7 +56,7 @@ const meta = {
   },
   decorators: [
     (Story, c) => {
-      const config = useMemo<Partial<ConfigParams>>(
+      const config = useMemo<HyperFormulaConfig>(
         () => ({
           ...options,
           language: c.args.language,
@@ -72,9 +65,13 @@ const meta = {
       );
 
       return (
-        <HyperFormulaProvider sheets={sheets} configInput={config}>
+        <SheetFlowProvider
+          engine={HyperFormulaEngine}
+          sheets={sheets}
+          config={config}
+        >
           <Story />
-        </HyperFormulaProvider>
+        </SheetFlowProvider>
       );
     },
   ],

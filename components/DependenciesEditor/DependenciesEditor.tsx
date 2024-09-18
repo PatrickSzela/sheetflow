@@ -1,13 +1,8 @@
-import {
-  buildCellAddressFromString,
-  Cell,
-  CellAddress,
-  CellList,
-} from "@/libs/sheetflow";
+import { CellContent, CellList } from "@/libs/sheetflow";
 
 export interface DependenciesEditorProps {
   cells: CellList;
-  onChange?: (address: CellAddress, value: Cell) => void;
+  onChange?: (address: string, value: CellContent) => void;
 }
 
 // TODO: group cells by sheet
@@ -33,7 +28,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
               }
               onChange={(e) => {
                 const v = e.currentTarget.value;
-                let newVal: Cell;
+                let newVal: CellContent;
 
                 if (v === "") {
                   newVal = null;
@@ -43,7 +38,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
                   newVal = v;
                 }
 
-                onChange?.(buildCellAddressFromString(address), newVal);
+                onChange?.(address, newVal);
               }}
             />
           </div>

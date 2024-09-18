@@ -4,3 +4,6 @@ export * from "./cellAddress";
 export * from "./cellValue";
 export * from "./flattenAst";
 export * from "./sheet";
+export * from "./sheetflow";
+export * from "./SheetFlowProvider";
+export * from "./useFormulaAst";

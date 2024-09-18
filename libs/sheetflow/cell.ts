@@ -1,1 +1,1 @@
-export type Cell = string | number | boolean | Date | null | undefined;
+export type CellContent = string | number | boolean | Date | null | undefined;
