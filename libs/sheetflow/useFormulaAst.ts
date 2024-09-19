@@ -84,7 +84,13 @@ export const useFormulaAst = (
       // empty row on component unmount
       if (typeof id.current !== "undefined") {
         sf.pauseEvaluation();
+
         sf.removePlacedAst(id.current);
+
+        // trigger placing formulas
+        setMounted(false);
+        setNewFormula(undefined);
+
         sf.resumeEvaluation();
       }
     };
