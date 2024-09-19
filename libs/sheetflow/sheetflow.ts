@@ -4,10 +4,15 @@
 import TypedEmitter from "typed-emitter";
 import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
 import { CellContent } from "./cell";
-import { buildCellAddress, CellAddress, CellRange } from "./cellAddress";
+import {
+  buildCellAddress,
+  buildCellRange,
+  CellAddress,
+  CellRange,
+} from "./cellAddress";
 import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
-import { NamedExpressions, NamedExpression } from "./namedExpression";
+import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { CellList, Sheet, Sheets } from "./sheet";
 import { buildFormulaSheetName } from "./utils";
 
@@ -24,6 +29,8 @@ export type Events = {
 export type EngineEventEmitter = TypedEmitter<Events>;
 
 // TODO: move rest of the helpers in here
+// TODO: row/column range to string and from string
+// TODO: unify ranges
 
 export abstract class SheetFlow {
   protected _astSheets: Record<string, string[]>;
@@ -37,50 +44,60 @@ export abstract class SheetFlow {
   }
 
   abstract stringToCellAddress(address: string): CellAddress;
+  abstract stringToCellRange(range: string): CellRange;
   abstract cellAddressToString(address: CellAddress): string;
+  abstract cellRangeToString(range: CellRange): string;
 
   abstract getCellValue(address: CellAddress): CellValue;
-  abstract getArrayCellValue(address: CellAddress): CellValue[][];
+  abstract getArrayCellValue(address: CellAddress): Value;
 
   abstract getCell(address: CellAddress): CellContent;
   abstract setCell(address: CellAddress, content: CellContent): void;
 
   // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
   getPrecedents(flatAst: Ast[]): Precedents {
-    const precedents: Precedents = [];
+    const precedents: Record<string, Precedent> = {};
 
     for (const ast of flatAst) {
       if (ast.type !== AstNodeType.REFERENCE) continue;
 
       switch (ast.subtype) {
         case AstNodeSubtype.CELL:
-          precedents.push({ ...ast.reference });
+          precedents[this.cellAddressToString(ast.reference)] = {
+            ...ast.reference,
+          };
           break;
 
         case AstNodeSubtype.NAMED_EXPRESSION:
-          precedents.push(ast.expressionName);
+          precedents[ast.expressionName] = ast.expressionName;
           break;
 
         case AstNodeSubtype.CELL_RANGE:
-          precedents.push({ start: { ...ast.start }, end: { ...ast.end } });
+          const cellRange = buildCellRange(ast.start, ast.end);
+          precedents[this.cellRangeToString(cellRange)] = cellRange;
           break;
 
         case AstNodeSubtype.COLUMN_RANGE:
-          precedents.push({
-            start: buildCellAddress(ast.start, 0, ast.sheet),
-            end: buildCellAddress(ast.start, Infinity, ast.sheet),
-          });
-          break;
+          // // TODO: column range to string
+          // precedents[ast.rawContent] = buildCellRange(
+          //   buildCellAddress(ast.start, 0, ast.sheet),
+          //   buildCellAddress(ast.start, Infinity, ast.sheet)
+          // );
+          // break;
+          throw new Error("Row range not supported");
 
         case AstNodeSubtype.ROW_RANGE:
-          precedents.push({
-            start: buildCellAddress(0, ast.start, ast.sheet),
-            end: buildCellAddress(Infinity, ast.start, ast.sheet),
-          });
-          break;
+          // // TODO: row range to string
+          // precedents[ast.rawContent] = buildCellRange(
+          //   buildCellAddress(0, ast.start, ast.sheet),
+          //   buildCellAddress(Infinity, ast.start, ast.sheet)
+          // );
+          // break;
+          throw new Error("Row range not supported");
       }
     }
-    return precedents;
+
+    return Object.values(precedents);
   }
 
   abstract addSheet(name: string, content?: Sheet): void;
@@ -202,8 +219,7 @@ export abstract class SheetFlow {
 
     for (const name of this._astSheets[uuid]) {
       const address = buildCellAddress(0, 0, name);
-      // TODO: support arrays
-      values.push(this.getCellValue(address));
+      values.push(this.getArrayCellValue(address));
     }
 
     return values;

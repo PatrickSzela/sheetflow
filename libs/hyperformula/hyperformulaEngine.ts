@@ -4,6 +4,7 @@ import { remapAst, remapSheet, remapSheets } from "@/libs/hyperformula";
 import {
   CellAddress,
   CellContent,
+  CellRange,
   Change,
   EngineEventEmitter,
   Events,
@@ -12,6 +13,7 @@ import {
 } from "@/libs/sheetflow";
 import EventEmitter from "events";
 import {
+  CellValue,
   ConfigParams,
   ExportedCellChange,
   ExportedChange,
@@ -21,7 +23,12 @@ import {
 import * as Languages from "hyperformula/es/i18n/languages";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
-import { remapCellAddress, unmapCellAddress } from "./remapCellAddress";
+import {
+  remapCellAddress,
+  remapCellRange,
+  unmapCellAddress,
+  unmapCellRange,
+} from "./remapCellAddress";
 import {
   getCellValueDetails,
   remapCellValue,
@@ -83,6 +90,16 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapCellAddress(this.hf, hfAddress);
   }
 
+  stringToCellRange(range: string, sheetName?: string) {
+    const [relRange, sheet] = range.split("!").reverse();
+    const sheetId = getSheetIdWithError(this.hf, sheet ?? sheetName);
+
+    const hfRange = this.hf.simpleCellRangeFromString(relRange, sheetId);
+    if (!hfRange) throw new Error();
+
+    return remapCellRange(this.hf, hfRange);
+  }
+
   cellAddressToString(address: CellAddress) {
     const addr = unmapCellAddress(this.hf, address);
 
@@ -97,6 +114,20 @@ export class HyperFormulaEngine extends SheetFlow {
     return string;
   }
 
+  cellRangeToString(range: CellRange) {
+    const hfRange = unmapCellRange(this.hf, range);
+
+    // -1 so string address always contains sheet name
+    const string = this.hf.simpleCellRangeToString(hfRange, -1);
+
+    if (!string)
+      throw new Error(
+        `Failed to convert address \`${JSON.stringify(hfRange)}\` to string`
+      );
+
+    return string;
+  }
+
   getCellValue(address: CellAddress) {
     return remapDetailedCellValue(
       getCellValueDetails(this.hf, unmapCellAddress(this.hf, address))
@@ -104,37 +135,23 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   getArrayCellValue(address: CellAddress) {
+    // HyperFormula doesn't have an easy way of extracting value of a cell when that cell contains:
+    // - a cell range - returns `Cell range not allowed.` error
+    // - an inline array - returns only first value in the array, would require manually extracting value from every cell
+    // so instead we just convert contents of that cell into a formula, because that works for some reason...
+
     const addr = unmapCellAddress(this.hf, address);
+    const contents = this.hf.getCellSerialized(addr);
+    let value: CellValue | CellValue[][];
 
-    if (this.hf.isCellPartOfArray(addr)) {
-      const arrayVertex = this.hf.arrayMapping.getArrayByCorner(addr);
-
-      if (!arrayVertex) {
-        throw new Error(
-          `Unable to retrieve array from cell \`${this.cellAddressToString(
-            address
-          )}\``
-        );
-      }
-
-      const { width, height } = arrayVertex;
-
-      const arr = Array(height)
-        .fill(null)
-        .map(() => Array(width).fill(null));
-
-      for (let row = 0; row < height; row++) {
-        for (let col = 0; col < width; col++) {
-          arr[row][col] = remapDetailedCellValue(
-            getCellValueDetails(this.hf, { col, row, sheet: addr.sheet })
-          );
-        }
-      }
-
-      return arr;
+    // TODO: add safeguards
+    if (typeof contents === "string" && this.hf.validateFormula(contents)) {
+      value = this.hf.calculateFormula(contents, addr.sheet);
     } else {
-      return [[this.getCellValue(address)]];
+      value = this.hf.calculateFormula(`=${contents}`, addr.sheet);
     }
+
+    return remapCellValue(value);
   }
 
   getCell(address: CellAddress) {

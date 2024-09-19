@@ -1,6 +1,7 @@
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import {
+  buildCellAddress,
   CellList,
   NamedExpressions,
   useFormulaAst,
@@ -30,17 +31,32 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     const namedExpressions: NamedExpressions = [];
 
     for (const precedent of precedents) {
-      // TODO: support ranges
-      // TODO: deduplicate items
-      if (typeof precedent === "object" && "column" in precedent) {
-        // TODO: add info about missing sheet
-        if (!sf.doesSheetExists(precedent.sheet)) continue;
-        const stringAddress = sf.cellAddressToString(precedent);
-        cells[stringAddress] = sf.getCell(precedent);
-      } else if (typeof precedent === "string") {
+      // TODO: support row/column ranges
+      if (typeof precedent === "string") {
         // TODO: add info about missing named expression
         if (!sf.doesNamedExpressionExists(precedent)) continue;
+
         namedExpressions.push(sf.getNamedExpression(precedent));
+      } else if (typeof precedent === "object") {
+        if ("column" in precedent) {
+          // TODO: add info about missing sheet
+          if (!sf.doesSheetExists(precedent.sheet)) continue;
+
+          const stringAddress = sf.cellAddressToString(precedent);
+          cells[stringAddress] = sf.getCell(precedent);
+        } else if ("start" in precedent) {
+          if (!sf.doesSheetExists(precedent.start.sheet)) continue;
+
+          const { start, end } = precedent;
+
+          for (let row = start.row; row <= end.row; row++) {
+            for (let col = start.column; col <= end.column; col++) {
+              const address = buildCellAddress(col, row, precedent.start.sheet);
+              const stringAddress = sf.cellAddressToString(address);
+              cells[stringAddress] = sf.getCell(address);
+            }
+          }
+        }
       }
     }
 
