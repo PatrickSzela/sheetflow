@@ -18,6 +18,7 @@ import {
   ExportedCellChange,
   ExportedChange,
   HyperFormula,
+  NoRelativeAddressesAllowedError,
   SerializedNamedExpression,
 } from "hyperformula";
 import * as Languages from "hyperformula/es/i18n/languages";
@@ -239,10 +240,17 @@ export class HyperFormulaEngine extends SheetFlow {
     const sheetId =
       scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
-    if (!this.hf.listNamedExpressions().includes(name)) {
-      this.hf.addNamedExpression(name, content, sheetId);
-    } else {
-      this.hf.changeNamedExpression(name, content, sheetId);
+    try {
+      if (!this.hf.listNamedExpressions().includes(name)) {
+        this.hf.addNamedExpression(name, content, sheetId);
+      } else {
+        this.hf.changeNamedExpression(name, content, sheetId);
+      }
+    } catch (e) {
+      if (e instanceof NoRelativeAddressesAllowedError) {
+        // TODO: add info about absolute addresses not supported
+        console.warn("Relative addresses not allowed in named expression");
+      } else throw e;
     }
   }
 

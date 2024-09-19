@@ -27,7 +27,6 @@ export const useFormulaAst = (
 
   // place formulas in the internal sheets
   if (mounted && newFormula !== formula && sf.isFormulaValid(formula)) {
-    console.time('init')
     sf.pauseEvaluation();
 
     const { ast, flatAst, uuid } = sf.getFormulaAst(formula, true, id.current);
@@ -40,17 +39,14 @@ export const useFormulaAst = (
     setPrecedents(precedents);
 
     sf.resumeEvaluation();
-    console.timeEnd('init')
   }
 
   // TODO: migrate to useSyncExternalStore?
   useEffect(() => {
-
     // retrieve calculated values
     // TODO: move logic to the wrapper
     const onValuesChanged: Events["valuesChanged"] = (changes) => {
-    console.time('calc')
-    if (typeof id.current === "undefined") return;
+      if (typeof id.current === "undefined") return;
 
       const uuid = id.current;
 
@@ -74,8 +70,7 @@ export const useFormulaAst = (
 
         setValues(obj);
       }
-    console.timeEnd('calc')
-  };
+    };
 
     sf.on("valuesChanged", onValuesChanged);
 
