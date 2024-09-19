@@ -85,6 +85,7 @@ export abstract class SheetFlow {
 
   abstract addSheet(name: string, content?: Sheet): void;
   abstract removeSheet(name: string): void;
+  abstract renameSheet(name: string, newName: string): void;
   abstract getSheet(name: string): Sheet;
   abstract setSheet(name: string, content: Sheet): void;
   abstract doesSheetExists(name: string): boolean;
@@ -114,7 +115,11 @@ export abstract class SheetFlow {
   abstract on: EngineEventEmitter["on"];
   abstract off: EngineEventEmitter["off"];
 
-  getFormulaAst(formula: string, removePlacedAst: boolean = true) {
+  getFormulaAst(
+    formula: string,
+    placeAst: boolean = true,
+    replaceUuid?: string
+  ) {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
@@ -122,13 +127,35 @@ export abstract class SheetFlow {
     const uuid = crypto.randomUUID();
     const address = buildCellAddress(0, 0, buildFormulaSheetName(uuid, 0));
 
-    this.addSheet(address.sheet, [[normalizedFormula]]);
-    this._astSheets[uuid] = [address.sheet];
+    if (replaceUuid) {
+      if (!(replaceUuid in this._astSheets))
+        throw new Error(`UUID \`${replaceUuid}\` not found`);
+
+      this._astSheets[uuid] = this._astSheets[replaceUuid].map(
+        (astSheetName, idx) => {
+          const name = buildFormulaSheetName(uuid, idx);
+
+          this.renameSheet(astSheetName, name);
+          this.setSheet(name, [[]]);
+
+          return name;
+        }
+      );
+
+      delete this._astSheets[replaceUuid];
+
+      this.setSheet(address.sheet, [[normalizedFormula]]);
+    } else {
+      this.addSheet(address.sheet, [[normalizedFormula]]);
+      this._astSheets[uuid] = [address.sheet];
+    }
 
     const ast = this.getAst(address);
     const flatAst = flattenAst(ast);
 
-    if (removePlacedAst) {
+    if (placeAst) {
+      this.placeAst(flatAst, uuid, 1);
+    } else {
       this.removePlacedAst(uuid);
     }
 
@@ -137,18 +164,22 @@ export abstract class SheetFlow {
 
   // TODO: store AST as named expressions instead of sheets once supported
   // https://github.com/handsontable/hyperformula/issues/241
-  placeAst(flatAst: Ast[], uuid: string) {
-    flatAst.forEach((ast, idx) => {
+  placeAst(flatAst: Ast[], uuid: string, startingIndex: number = 0) {
+    flatAst.slice(startingIndex).forEach((ast, idx) => {
       // TODO: move to HyperFormula
       // every language supported by HF doesn't translate `ARRAYFORMULA` function name, so this should theoretically always work
       const formula = ast.isArrayFormula
         ? `=ARRAYFORMULA(${ast.rawContent})`
         : `=${ast.rawContent}`;
 
-      const sheetName = buildFormulaSheetName(uuid, idx + 1);
+      const sheetName = buildFormulaSheetName(uuid, idx + startingIndex);
 
-      this.addSheet(sheetName, [[formula]]);
-      this._astSheets[uuid].push(sheetName);
+      if (this._astSheets[uuid][idx + startingIndex]) {
+        this.setSheet(sheetName, [[formula]]);
+      } else {
+        this.addSheet(sheetName, [[formula]]);
+        this._astSheets[uuid].push(sheetName);
+      }
     });
   }
 

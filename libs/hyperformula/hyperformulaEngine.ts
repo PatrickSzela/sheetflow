@@ -157,6 +157,11 @@ export class HyperFormulaEngine extends SheetFlow {
     this.hf.removeSheet(sheetId);
   }
 
+  renameSheet(name: string, newName: string): void {
+    const sheetId = getSheetIdWithError(this.hf, name);
+    this.hf.renameSheet(sheetId, newName);
+  }
+
   getSheet(name: string) {
     const sheetId = getSheetIdWithError(this.hf, name);
     return remapSheet(this.hf.getSheetSerialized(sheetId));

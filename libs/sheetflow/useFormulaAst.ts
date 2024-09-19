@@ -29,10 +29,8 @@ export const useFormulaAst = (
   if (mounted && newFormula !== formula && sf.isFormulaValid(formula)) {
     sf.pauseEvaluation();
 
-    const { ast, flatAst, uuid } = sf.getFormulaAst(formula, false);
+    const { ast, flatAst, uuid } = sf.getFormulaAst(formula, true, id.current);
     const precedents = sf.getPrecedents(flatAst);
-
-    sf.placeAst(flatAst.slice(1), uuid);
 
     id.current = uuid;
     flattenedAst.current = flatAst;
@@ -81,7 +79,7 @@ export const useFormulaAst = (
     return () => {
       sf.off("valuesChanged", onValuesChanged);
 
-      // empty row on component unmount
+      // remove sheets on component unmount
       if (typeof id.current !== "undefined") {
         sf.pauseEvaluation();
 
