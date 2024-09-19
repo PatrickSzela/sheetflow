@@ -1,3 +1,5 @@
+import { CellContent } from "./cell";
+
 export enum CellValueType {
   NUMBER = "NUMBER",
   STRING = "STRING",
@@ -62,6 +64,26 @@ export const buildErrorCellValue: BuildFn<ErrorCellValue> = (args) => ({
   type: CellValueType.ERROR,
   ...args,
 });
+
+export const buildCellValueFromCellContent = (
+  value: CellContent
+): CellValue => {
+  if (typeof value === "string") {
+    return buildStringCellValue({ value });
+  } else if (typeof value === "number") {
+    return buildNumberCellValue({
+      subtype: CellValueSubtype.NUMBER_RAW,
+      value,
+    });
+  } else if (typeof value === "boolean") {
+    return buildBooleanCellValue({ value });
+  } else if (value instanceof Date) {
+    // TODO: support date
+    throw new Error("Date is not yet implemented");
+  } else {
+    return buildEmptyCellValue({ value: null });
+  }
+};
 
 export const printCellValue = (value: Value) => {
   // TODO: improve arrays & nulls

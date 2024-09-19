@@ -2,17 +2,20 @@
 /* eslint-disable react/no-is-mounted */
 
 import TypedEmitter from "typed-emitter";
-import { Ast } from "./ast";
+import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
 import { CellContent } from "./cell";
 import { buildCellAddress, CellAddress, CellRange } from "./cellAddress";
 import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
+import { NamedExpressions, NamedExpression } from "./namedExpression";
 import { CellList, Sheet, Sheets } from "./sheet";
 import { buildFormulaSheetName } from "./utils";
 
 export type CellChange = { address: CellAddress; value: Value };
 export type NamedExpressionChange = { name: string; value: Value };
-export type Change = (CellChange | NamedExpressionChange);
+export type Change = CellChange | NamedExpressionChange;
+export type Precedent = CellAddress | CellRange | string;
+export type Precedents = Precedent[];
 
 export type Events = {
   valuesChanged: (changes: Change[]) => void;
@@ -42,7 +45,43 @@ export abstract class SheetFlow {
   abstract getCell(address: CellAddress): CellContent;
   abstract setCell(address: CellAddress, content: CellContent): void;
 
-  abstract getCellPrecedents(address: CellAddress): (CellAddress | CellRange)[];
+  // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
+  getPrecedents(flatAst: Ast[]): Precedents {
+    const precedents: Precedents = [];
+
+    for (const ast of flatAst) {
+      if (ast.type !== AstNodeType.REFERENCE) continue;
+
+      switch (ast.subtype) {
+        case AstNodeSubtype.CELL:
+          precedents.push({ ...ast.reference });
+          break;
+
+        case AstNodeSubtype.NAMED_EXPRESSION:
+          precedents.push(ast.expressionName);
+          break;
+
+        case AstNodeSubtype.CELL_RANGE:
+          precedents.push({ start: { ...ast.start }, end: { ...ast.end } });
+          break;
+
+        case AstNodeSubtype.COLUMN_RANGE:
+          precedents.push({
+            start: buildCellAddress(ast.start, 0, ast.sheet),
+            end: buildCellAddress(ast.start, Infinity, ast.sheet),
+          });
+          break;
+
+        case AstNodeSubtype.ROW_RANGE:
+          precedents.push({
+            start: buildCellAddress(0, ast.start, ast.sheet),
+            end: buildCellAddress(Infinity, ast.start, ast.sheet),
+          });
+          break;
+      }
+    }
+    return precedents;
+  }
 
   abstract addSheet(name: string, content?: Sheet): void;
   abstract removeSheet(name: string): void;
@@ -52,6 +91,17 @@ export abstract class SheetFlow {
   abstract getAllSheets(): Sheets;
 
   abstract getAllSheetNames(): string[];
+
+  abstract getNamedExpressions(): NamedExpressions;
+  abstract getNamedExpression(name: string, scope?: string): NamedExpression;
+  abstract setNamedExpression(
+    name: string,
+    content: CellContent,
+    scope?: string
+  ): void;
+  abstract removeNamedExpression(name: string, scope?: string): void;
+  abstract getNamedExpressionValue(name: string, scope?: string): Value;
+  abstract doesNamedExpressionExists(name: string, scope?: string): boolean;
 
   abstract isFormulaValid(formula: string): boolean;
   abstract normalizeFormula(formula: string): string;
@@ -85,7 +135,8 @@ export abstract class SheetFlow {
     return { uuid, ast, flatAst, address };
   }
 
-  // TODO: store AST as named expressions instead of sheets?
+  // TODO: store AST as named expressions instead of sheets once supported
+  // https://github.com/handsontable/hyperformula/issues/241
   placeAst(flatAst: Ast[], uuid: string) {
     flatAst.forEach((ast, idx) => {
       // TODO: move to HyperFormula
@@ -102,7 +153,8 @@ export abstract class SheetFlow {
   }
 
   removePlacedAst(uuid: string) {
-    if (!(uuid in this._astSheets)) throw new Error();
+    if (!(uuid in this._astSheets))
+      throw new Error(`UUID \`${uuid}\` not found`);
 
     for (const name of this._astSheets[uuid]) {
       this.removeSheet(name);
@@ -114,7 +166,8 @@ export abstract class SheetFlow {
   getPlacedAstValues(uuid: string) {
     const values: Value[] = [];
 
-    if (!(uuid in this._astSheets)) throw new Error();
+    if (!(uuid in this._astSheets))
+      throw new Error(`UUID \`${uuid}\` not found`);
 
     for (const name of this._astSheets[uuid]) {
       const address = buildCellAddress(0, 0, name);

@@ -51,7 +51,7 @@ export const remapCellValueDetailedType = (
 };
 
 // TODO: figure out a better way to format this monstrosity
-export const remapCellValue = (
+export const remapDetailedCellValue = (
   details: HfCellValueDetails
 ): SheetFlow.CellValue => {
   if (
@@ -87,5 +87,27 @@ export const remapCellValue = (
     throw new Error(
       `Cannot remap type \`${details.type}\` with value \`${details.value}\``
     );
+  }
+};
+
+const remapCellValueHelper = (value: CellValue): SheetFlow.CellValue => {
+  if (value instanceof DetailedCellError) {
+    return remapDetailedCellValue({
+      type: CellValueType.ERROR,
+      subtype: CellValueDetailedType.ERROR,
+      value,
+    });
+  } else {
+    return SheetFlow.buildCellValueFromCellContent(value);
+  }
+};
+
+export const remapCellValue = (
+  value: CellValue | CellValue[][]
+): SheetFlow.Value => {
+  if (Array.isArray(value)) {
+    return value.map((row) => row.map((cell) => remapCellValueHelper(cell)));
+  } else {
+    return remapCellValueHelper(value);
   }
 };

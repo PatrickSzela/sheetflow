@@ -1,9 +1,8 @@
-import { Ast } from "@/libs/sheetflow/ast";
-import { CellAddress, CellRange } from "@/libs/sheetflow/cellAddress";
-import { Value } from "@/libs/sheetflow/cellValue";
-import { Events } from "@/libs/sheetflow/sheetflow";
-import { useSheetFlow } from "@/libs/sheetflow/SheetFlowProvider";
 import { useEffect, useRef, useState } from "react";
+import { Ast } from "./ast";
+import { Value } from "./cellValue";
+import { Events, Precedents } from "./sheetflow";
+import { useSheetFlow } from "./SheetFlowProvider";
 
 export const useFormulaAst = (
   formula: string
@@ -12,7 +11,7 @@ export const useFormulaAst = (
   flatAst: Ast[] | undefined;
   uuid: string | undefined;
   values: Record<string, Value>;
-  precedents: (CellAddress | CellRange)[];
+  precedents: Precedents;
 } => {
   const sf = useSheetFlow();
 
@@ -20,7 +19,7 @@ export const useFormulaAst = (
   const [ast, setAst] = useState<Ast>();
   const [values, setValues] = useState<Record<string, Value>>({});
   const [mounted, setMounted] = useState(false);
-  const [precedents, setPrecedents] = useState<(CellAddress | CellRange)[]>([]);
+  const [precedents, setPrecedents] = useState<Precedents>([]);
 
   // `useRef` to avoid `useEffect` resubscribing to `valuesUpdated` event after it's being triggered internally & using old values because of placing AST elements in the sheet
   const id = useRef<string>();
@@ -30,8 +29,8 @@ export const useFormulaAst = (
   if (mounted && newFormula !== formula && sf.isFormulaValid(formula)) {
     sf.pauseEvaluation();
 
-    const { ast, flatAst, uuid, address } = sf.getFormulaAst(formula, false);
-    const precedents = sf.getCellPrecedents(address);
+    const { ast, flatAst, uuid } = sf.getFormulaAst(formula, false);
+    const precedents = sf.getPrecedents(flatAst);
 
     sf.placeAst(flatAst.slice(1), uuid);
 
@@ -57,10 +56,9 @@ export const useFormulaAst = (
       const change = changes.find((change) => {
         if ("address" in change) {
           return change.address.sheet.includes(uuid);
-        } else {
-          // TODO: support named expressions
-          return false;
         }
+
+        return false;
       });
 
       // retrieve all values

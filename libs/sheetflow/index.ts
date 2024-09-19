@@ -3,6 +3,7 @@ export * from "./cell";
 export * from "./cellAddress";
 export * from "./cellValue";
 export * from "./flattenAst";
+export * from "./namedExpression";
 export * from "./sheet";
 export * from "./sheetflow";
 export * from "./SheetFlowProvider";

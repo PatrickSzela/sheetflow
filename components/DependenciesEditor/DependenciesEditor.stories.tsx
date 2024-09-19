@@ -40,7 +40,7 @@ const DependenciesEditorFromString =
       <div style={{ height: "100vh" }}>
         <DependenciesEditor
           cells={sheets}
-          onChange={(address, value) => {
+          onCellChange={(address, value) => {
             sf.setCell(sf.stringToCellAddress(address), value);
           }}
         />

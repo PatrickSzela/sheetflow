@@ -16,16 +16,18 @@ import {
   ExportedCellChange,
   ExportedChange,
   HyperFormula,
+  SerializedNamedExpression,
 } from "hyperformula";
 import * as Languages from "hyperformula/es/i18n/languages";
 import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
+import { remapCellAddress, unmapCellAddress } from "./remapCellAddress";
 import {
-  remapCellAddress,
-  remapCellRange,
-  unmapCellAddress,
-} from "./remapCellAddress";
-import { getCellValueDetails, remapCellValue } from "./remapCellValue";
+  getCellValueDetails,
+  remapCellValue,
+  remapDetailedCellValue,
+} from "./remapCellValue";
+import { remapNamedExpression } from "./remapNamedExpression";
 import { areHfAddressesEqual, getSheetIdWithError } from "./utils";
 
 export const registerAllLanguages = () => {
@@ -96,7 +98,7 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   getCellValue(address: CellAddress) {
-    return remapCellValue(
+    return remapDetailedCellValue(
       getCellValueDetails(this.hf, unmapCellAddress(this.hf, address))
     );
   }
@@ -123,7 +125,7 @@ export class HyperFormulaEngine extends SheetFlow {
 
       for (let row = 0; row < height; row++) {
         for (let col = 0; col < width; col++) {
-          arr[row][col] = remapCellValue(
+          arr[row][col] = remapDetailedCellValue(
             getCellValueDetails(this.hf, { col, row, sheet: addr.sheet })
           );
         }
@@ -142,14 +144,6 @@ export class HyperFormulaEngine extends SheetFlow {
 
   setCell(address: CellAddress, content: CellContent) {
     this.hf.setCellContents(unmapCellAddress(this.hf, address), content);
-  }
-
-  getCellPrecedents(address: CellAddress) {
-    return this.hf
-      .getCellPrecedents(unmapCellAddress(this.hf, address))
-      .map((i) =>
-        "start" in i ? remapCellRange(this.hf, i) : remapCellAddress(this.hf, i)
-      );
   }
 
   addSheet(name: string, content?: CellContent[][]) {
@@ -183,6 +177,80 @@ export class HyperFormulaEngine extends SheetFlow {
 
   getAllSheetNames() {
     return this.hf.getSheetNames();
+  }
+
+  getNamedExpressions() {
+    return this.hf
+      .getAllNamedExpressionsSerialized()
+      .map((i) => remapNamedExpression(this.hf, i));
+  }
+
+  getNamedExpression(name: string, scope?: string) {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    // `getNamedExpression` provided by HyperFormula won't return named formula's expression if it's not a formula, so we need to extract it ourselves
+    // based on `getAllNamedExpressionsSerialized` https://github.com/handsontable/hyperformula/blob/master/src/Serialization.ts#L140
+
+    const namedExpression =
+      this.hf.dependencyGraph.namedExpressions.namedExpressionForScope(
+        name,
+        sheetId
+      );
+
+    if (!namedExpression)
+      throw new Error(
+        `Named expression \`${name}\` (scope \`${scope}\`) doesn't exists`
+      );
+
+    const serialized: SerializedNamedExpression = {
+      name,
+      expression: this.hf.getCellSerialized(namedExpression.address),
+      options: namedExpression.options,
+      scope: sheetId,
+    };
+
+    return remapNamedExpression(this.hf, serialized);
+  }
+
+  setNamedExpression(name: string, content: CellContent, scope?: string) {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    if (!this.hf.listNamedExpressions().includes(name)) {
+      this.hf.addNamedExpression(name, content, sheetId);
+    } else {
+      this.hf.changeNamedExpression(name, content, sheetId);
+    }
+  }
+
+  removeNamedExpression(name: string, scope?: string) {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    this.hf.removeNamedExpression(name, sheetId);
+  }
+
+  getNamedExpressionValue(name: string, scope?: string) {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    const val = this.hf.getNamedExpressionValue(name, sheetId);
+    if (val === undefined) throw new Error();
+
+    return remapCellValue(val);
+  }
+
+  doesNamedExpressionExists(name: string, scope?: string): boolean {
+    let exists = false;
+
+    try {
+      exists = !!this.getNamedExpression(name, scope);
+    } catch (e) {
+      exists = false;
+    }
+
+    return exists;
   }
 
   isFormulaValid(formula: string) {
@@ -253,7 +321,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return this.eventEmitter;
   };
 
-  protected remapChange(change: ExportedChange) {
+  protected remapChange(change: ExportedChange): Change {
     if (change instanceof ExportedCellChange) {
       const address = remapCellAddress(this.hf, change.address);
 
@@ -262,8 +330,10 @@ export class HyperFormulaEngine extends SheetFlow {
         value: this.getCellValue(address),
       };
     } else {
-      // TODO: support named expressions
-      throw new Error("Named expressions aren't (yet) supported");
+      return {
+        name: change.name,
+        value: remapCellValue(change.newValue),
+      };
     }
   }
 
