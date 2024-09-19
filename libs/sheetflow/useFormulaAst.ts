@@ -86,8 +86,11 @@ export const useFormulaAst = (
         sf.removePlacedAst(id.current);
 
         // trigger placing formulas
-        setMounted(false);
+        id.current = undefined;
+        flattenedAst.current = undefined;
+        setAst(undefined);
         setNewFormula(undefined);
+        setPrecedents([]);
 
         sf.resumeEvaluation();
       }
