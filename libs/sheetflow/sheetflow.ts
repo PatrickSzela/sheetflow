@@ -181,6 +181,11 @@ export abstract class SheetFlow {
 
   // TODO: store AST as named expressions instead of sheets once supported
   // https://github.com/handsontable/hyperformula/issues/241
+  // Issues:
+  // - only absolute addresses are allowed
+  // - call calculateFormula instead of getNamedExpressionValue
+  // - named expression name limitations
+  // - nodes from getNodes() contain address instead of named expression's name and no scope
   placeAst(flatAst: Ast[], uuid: string, startingIndex: number = 0) {
     flatAst.slice(startingIndex).forEach((ast, idx) => {
       // TODO: move to HyperFormula
