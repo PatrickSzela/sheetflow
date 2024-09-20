@@ -29,7 +29,7 @@ export const useFormulaAst = (
   if (mounted && newFormula !== formula && sf.isFormulaValid(formula)) {
     sf.pauseEvaluation();
 
-    const { ast, flatAst, uuid } = sf.getFormulaAst(formula, true, id.current);
+    const { ast, flatAst, uuid } = sf.getFormulaAst(formula, id.current, true);
     const precedents = sf.getPrecedents(flatAst);
 
     id.current = uuid;
@@ -46,22 +46,14 @@ export const useFormulaAst = (
     // retrieve calculated values
     // TODO: move logic to the wrapper
     const onValuesChanged: Events["valuesChanged"] = (changes) => {
-      if (typeof id.current === "undefined") return;
+      if (id.current === undefined || flattenedAst.current === undefined)
+        return;
 
       const uuid = id.current;
 
-      // check if any result of formula's parts have changed
-      const change = changes.find((change) => {
-        if ("address" in change) {
-          return change.address.sheet.includes(uuid);
-        }
-
-        return false;
-      });
-
       // retrieve all values
-      if (change && flattenedAst.current) {
-        const values = sf.getPlacedAstValues(uuid);
+      if (sf.isFormulaAstPartOfChanges(uuid, changes)) {
+        const values = sf.getFormulaAstValues(uuid);
         const obj: Record<string, Value> = {};
 
         flattenedAst.current.forEach((ast, idx) => {
@@ -83,7 +75,7 @@ export const useFormulaAst = (
       if (typeof id.current !== "undefined") {
         sf.pauseEvaluation();
 
-        sf.removePlacedAst(id.current);
+        sf.removeFormulaAst(id.current);
 
         // trigger placing formulas
         id.current = undefined;

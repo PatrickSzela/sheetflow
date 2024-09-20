@@ -26,3 +26,14 @@ export const buildCellRange = (
   start,
   end,
 });
+
+export const areAddressesEqual = (
+  address1: CellAddress,
+  address2: CellAddress
+) => {
+  return (
+    address1.column === address2.column &&
+    address1.row === address2.row &&
+    address1.sheet === address2.sheet
+  );
+};

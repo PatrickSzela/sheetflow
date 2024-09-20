@@ -2,6 +2,7 @@
 /* eslint-disable react/no-is-mounted */
 import { remapAst, remapSheet, remapSheets } from "@/libs/hyperformula";
 import {
+  Ast,
   CellAddress,
   CellContent,
   CellRange,
@@ -10,7 +11,9 @@ import {
   Events,
   SheetFlow,
   Sheets,
+  Value,
 } from "@/libs/sheetflow";
+import { SpecialSheets } from "@/libs/sheetflow/utils";
 import EventEmitter from "events";
 import {
   CellValue,
@@ -72,7 +75,9 @@ export class HyperFormulaEngine extends SheetFlow {
   constructor(sheets?: Sheets, config?: HyperFormulaConfig) {
     super();
 
-    this.hf = HyperFormula.buildFromSheets(sheets ?? {}, config);
+    const _sheets = { ...sheets, [SpecialSheets.FORMULAS]: [] };
+
+    this.hf = HyperFormula.buildFromSheets(_sheets, config);
     this.eventEmitter = new EventEmitter() as EngineEventEmitter;
     this.eventListeners = { valuesChanged: new Map() };
 
@@ -202,6 +207,12 @@ export class HyperFormulaEngine extends SheetFlow {
     return this.hf.getSheetNames();
   }
 
+  clearRow(sheet: string, index: number): void {
+    const sheetId = getSheetIdWithError(this.hf, sheet);
+    this.hf.removeRows(sheetId, [index, 1]);
+    this.hf.addRows(sheetId, [index, 1]);
+  }
+
   getNamedExpressions() {
     return this.hf
       .getAllNamedExpressionsSerialized()
@@ -314,6 +325,18 @@ export class HyperFormulaEngine extends SheetFlow {
     }
 
     return remapAst(this.hf, hfAst, addr, uuid);
+  }
+
+  astToFormula(ast: Ast): string {
+    // every language supported by HyperFormula doesn't translate `ARRAYFORMULA` function name, so this should theoretically always work
+    return ast.isArrayFormula
+      ? `=ARRAYFORMULA(${ast.rawContent})`
+      : `=${ast.rawContent}`;
+  }
+
+  calculateFormula(formula: string, sheet: string): Value {
+    const sheetId = getSheetIdWithError(this.hf, sheet);
+    return remapCellValue(this.hf.calculateFormula(formula, sheetId));
   }
 
   pauseEvaluation() {

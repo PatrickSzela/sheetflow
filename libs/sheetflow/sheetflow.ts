@@ -14,7 +14,7 @@ import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { CellList, Sheet, Sheets } from "./sheet";
-import { buildFormulaSheetName } from "./utils";
+import { SpecialSheets } from "./utils";
 
 export type CellChange = { address: CellAddress; value: Value };
 export type NamedExpressionChange = { name: string; value: Value };
@@ -25,18 +25,30 @@ export type Precedents = Precedent[];
 export type Events = {
   valuesChanged: (changes: Change[]) => void;
 };
-
 export type EngineEventEmitter = TypedEmitter<Events>;
+
+export type AstSheetData = Record<
+  string,
+  { row: number; ast: Ast; flatAst: Ast[]; address: CellAddress }
+>;
 
 // TODO: move rest of the helpers in here
 // TODO: row/column range to string and from string
 // TODO: unify ranges
 
+// TODO: store AST as named expressions instead of in a sheet once supported
+// https://github.com/handsontable/hyperformula/issues/241
+// Issues:
+// - only absolute addresses are allowed
+// - call calculateFormula instead of getNamedExpressionValue
+// - named expression name limitations
+// - nodes from getNodes() contain address instead of named expression's name and no scope
+
 export abstract class SheetFlow {
-  protected _astSheets: Record<string, string[]>;
+  protected astSheets: AstSheetData;
 
   constructor() {
-    this._astSheets = {};
+    this.astSheets = {};
   }
 
   static build(sheets?: Sheets, config?: any): SheetFlow {
@@ -110,6 +122,8 @@ export abstract class SheetFlow {
 
   abstract getAllSheetNames(): string[];
 
+  abstract clearRow(sheet: string, index: number): void;
+
   abstract getNamedExpressions(): NamedExpressions;
   abstract getNamedExpression(name: string, scope?: string): NamedExpression;
   abstract setNamedExpression(
@@ -125,6 +139,8 @@ export abstract class SheetFlow {
   abstract normalizeFormula(formula: string): string;
 
   abstract getAst(address: CellAddress, uuid?: string): Ast;
+  abstract astToFormula(ast: Ast): string;
+  abstract calculateFormula(formula: string, sheet: string): Value;
 
   abstract pauseEvaluation(): void;
   abstract resumeEvaluation(): void;
@@ -132,102 +148,119 @@ export abstract class SheetFlow {
   abstract on: EngineEventEmitter["on"];
   abstract off: EngineEventEmitter["off"];
 
-  getFormulaAst(
-    formula: string,
-    placeAst: boolean = true,
-    replaceUuid?: string
-  ) {
+  protected getFirstAvailableRow() {
+    let values = Object.values(this.astSheets);
+    if (!values.length) return 0;
+
+    // while this will break if there are duplicates in the array or if the number isn't an integer, but this should never happen
+    const items = values.map((i) => i.row).sort((a, b) => a - b);
+    const empty = items.find((row, idx) => row !== idx);
+
+    if (empty === undefined) return items.length + 1;
+    return empty - 1;
+  }
+
+  getFormulaAst(formula: string, replaceUuid?: string, place: boolean = false) {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
     const normalizedFormula = this.normalizeFormula(formula);
     const uuid = crypto.randomUUID();
-    const address = buildCellAddress(0, 0, buildFormulaSheetName(uuid, 0));
+    let row = 0;
 
     if (replaceUuid) {
-      if (!(replaceUuid in this._astSheets))
+      if (!(replaceUuid in this.astSheets))
         throw new Error(`UUID \`${replaceUuid}\` not found`);
 
-      this._astSheets[uuid] = this._astSheets[replaceUuid].map(
-        (astSheetName, idx) => {
-          const name = buildFormulaSheetName(uuid, idx);
-
-          this.renameSheet(astSheetName, name);
-          this.setSheet(name, [[]]);
-
-          return name;
-        }
-      );
-
-      delete this._astSheets[replaceUuid];
-
-      this.setSheet(address.sheet, [[normalizedFormula]]);
+      row = this.astSheets[replaceUuid].row;
+      delete this.astSheets[replaceUuid];
     } else {
-      this.addSheet(address.sheet, [[normalizedFormula]]);
-      this._astSheets[uuid] = [address.sheet];
+      row = this.getFirstAvailableRow();
     }
 
-    const ast = this.getAst(address);
+    const address = buildCellAddress(0, row, SpecialSheets.FORMULAS);
+
+    this.clearRow(address.sheet, row);
+    this.setCell(address, normalizedFormula);
+
+    const ast = this.getAst(address, uuid);
     const flatAst = flattenAst(ast);
 
-    if (placeAst) {
-      this.placeAst(flatAst, uuid, 1);
+    if (place) {
+      this.astSheets[uuid] = { row, ast, flatAst, address };
+      this.placeFormulaAst(flatAst, uuid, 1);
     } else {
-      this.removePlacedAst(uuid);
+      this.removeFormulaAst(uuid);
     }
 
     return { uuid, ast, flatAst, address };
   }
 
-  // TODO: store AST as named expressions instead of sheets once supported
-  // https://github.com/handsontable/hyperformula/issues/241
-  // Issues:
-  // - only absolute addresses are allowed
-  // - call calculateFormula instead of getNamedExpressionValue
-  // - named expression name limitations
-  // - nodes from getNodes() contain address instead of named expression's name and no scope
-  placeAst(flatAst: Ast[], uuid: string, startingIndex: number = 0) {
+  placeFormulaAst(flatAst: Ast[], uuid: string, startingIndex: number = 0) {
+    const row =
+      uuid in this.astSheets
+        ? this.astSheets[uuid].row
+        : this.getFirstAvailableRow();
+
     flatAst.slice(startingIndex).forEach((ast, idx) => {
-      // TODO: move to HyperFormula
-      // every language supported by HF doesn't translate `ARRAYFORMULA` function name, so this should theoretically always work
-      const formula = ast.isArrayFormula
-        ? `=ARRAYFORMULA(${ast.rawContent})`
-        : `=${ast.rawContent}`;
+      const address = buildCellAddress(
+        idx + startingIndex,
+        row,
+        SpecialSheets.FORMULAS
+      );
 
-      const sheetName = buildFormulaSheetName(uuid, idx + startingIndex);
-
-      if (this._astSheets[uuid][idx + startingIndex]) {
-        this.setSheet(sheetName, [[formula]]);
-      } else {
-        this.addSheet(sheetName, [[formula]]);
-        this._astSheets[uuid].push(sheetName);
-      }
+      this.setCell(address, this.astToFormula(ast));
     });
   }
 
-  removePlacedAst(uuid: string) {
-    if (!(uuid in this._astSheets))
+  removeFormulaAst(uuid: string) {
+    if (!(uuid in this.astSheets))
       throw new Error(`UUID \`${uuid}\` not found`);
 
-    for (const name of this._astSheets[uuid]) {
-      this.removeSheet(name);
-    }
-
-    delete this._astSheets[uuid];
+    this.clearRow(SpecialSheets.FORMULAS, this.astSheets[uuid].row);
+    delete this.astSheets[uuid];
   }
 
-  getPlacedAstValues(uuid: string) {
-    const values: Value[] = [];
+  calculateFormulaAst(flatAst: Ast[]): Value[] {
+    return flatAst.map((ast) =>
+      this.calculateFormula(this.astToFormula(ast), SpecialSheets.FORMULAS)
+    );
+  }
 
-    if (!(uuid in this._astSheets))
+  getFormulaAstValues(uuid: string) {
+    if (!(uuid in this.astSheets))
       throw new Error(`UUID \`${uuid}\` not found`);
 
-    for (const name of this._astSheets[uuid]) {
-      const address = buildCellAddress(0, 0, name);
-      values.push(this.getArrayCellValue(address));
-    }
+    return this.calculateFormulaAst(this.astSheets[uuid].flatAst);
+  }
 
-    return values;
+  // TODO: remove
+  getPlacedFormulaAstValues(uuid: string) {
+    if (!(uuid in this.astSheets))
+      throw new Error(`UUID \`${uuid}\` not found`);
+
+    const { row, flatAst } = this.astSheets[uuid];
+
+    return flatAst.map((_, idx) => {
+      const address = buildCellAddress(idx, row, SpecialSheets.FORMULAS);
+      return this.getArrayCellValue(address);
+    });
+  }
+
+  isFormulaAstPartOfChanges(uuid: string, changes: Change[]): boolean {
+    if (!(uuid in this.astSheets))
+      throw new Error(`UUID \`${uuid}\` not found`);
+
+    return !!changes.find((change) => {
+      if ("address" in change) {
+        return (
+          change.address.sheet === SpecialSheets.FORMULAS &&
+          change.address.row === this.astSheets[uuid].row
+        );
+      }
+
+      return false;
+    });
   }
 
   getCellList(sheetName: string) {
