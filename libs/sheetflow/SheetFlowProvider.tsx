@@ -1,12 +1,14 @@
-import { SheetFlow } from "./sheetflow";
-import { Sheets } from "./sheet";
 import { createContext, PropsWithChildren, useContext, useMemo } from "react";
+import { NamedExpressions } from "./namedExpression";
+import { Sheets } from "./sheet";
+import { SheetFlow } from "./sheetflow";
 
 export interface SheetFlowProviderProps {
   engine: typeof SheetFlow;
   sheets?: Sheets;
+  namedExpressions?: NamedExpressions;
   config?: any;
-  // TODO: named expressions, proper engine config type
+  // TODO: proper engine config type
 }
 
 const SheetFlowContext = createContext<SheetFlow | null>(null);
@@ -14,14 +16,20 @@ const SheetFlowContext = createContext<SheetFlow | null>(null);
 export const SheetFlowProvider = (
   props: PropsWithChildren<SheetFlowProviderProps>
 ) => {
-  const { engine, sheets = {}, config, children } = props;
+  const {
+    engine,
+    sheets = {},
+    namedExpressions = [],
+    config,
+    children,
+  } = props;
 
-  const _engine = useMemo(() => {
-    return engine.build(sheets, config);
-  }, [config, engine, sheets]);
+  const engineInstance = useMemo(() => {
+    return engine.build(sheets, namedExpressions, config);
+  }, [config, engine, namedExpressions, sheets]);
 
   return (
-    <SheetFlowContext.Provider value={_engine}>
+    <SheetFlowContext.Provider value={engineInstance}>
       {children}
     </SheetFlowContext.Provider>
   );

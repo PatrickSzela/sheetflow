@@ -9,6 +9,7 @@ import {
   Change,
   EngineEventEmitter,
   Events,
+  NamedExpressions,
   SheetFlow,
   Sheets,
   Value,
@@ -38,7 +39,10 @@ import {
   remapCellValue,
   remapDetailedCellValue,
 } from "./remapCellValue";
-import { remapNamedExpression } from "./remapNamedExpression";
+import {
+  remapNamedExpression,
+  unmapNamedExpression,
+} from "./remapNamedExpression";
 import { areHfAddressesEqual, getSheetIdWithError } from "./utils";
 
 export const registerAllLanguages = () => {
@@ -68,16 +72,35 @@ export class HyperFormulaEngine extends SheetFlow {
   protected eventEmitter: EngineEventEmitter;
   protected eventListeners: EventListeners;
 
-  static build(sheets?: Sheets, config?: HyperFormulaConfig) {
-    return new HyperFormulaEngine(sheets, config);
+  static build(
+    sheets?: Sheets,
+    namedExpressions?: NamedExpressions,
+    config?: HyperFormulaConfig
+  ) {
+    return new HyperFormulaEngine(sheets, namedExpressions, config);
   }
 
-  constructor(sheets?: Sheets, config?: HyperFormulaConfig) {
+  constructor(
+    sheets?: Sheets,
+    namedExpressions?: NamedExpressions,
+    config?: HyperFormulaConfig
+  ) {
     super();
 
     const _sheets = { ...sheets, [SpecialSheets.FORMULAS]: [] };
 
     this.hf = HyperFormula.buildFromSheets(_sheets, config);
+
+    if (namedExpressions) {
+      for (const namedExpression of namedExpressions) {
+        const { name, expression, scope } = unmapNamedExpression(
+          this.hf,
+          namedExpression
+        );
+        this.hf.addNamedExpression(name, expression, scope);
+      }
+    }
+
     this.eventEmitter = new EventEmitter() as EngineEventEmitter;
     this.eventListeners = { valuesChanged: new Map() };
 

@@ -51,7 +51,11 @@ export abstract class SheetFlow {
     this.astSheets = {};
   }
 
-  static build(sheets?: Sheets, config?: any): SheetFlow {
+  static build(
+    sheets?: Sheets,
+    namedExpressions?: NamedExpressions,
+    config?: any
+  ): SheetFlow {
     throw new Error("Called `build` function on an abstract class");
   }
 

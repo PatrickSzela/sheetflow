@@ -44,7 +44,6 @@ export const useFormulaAst = (
   // TODO: migrate to useSyncExternalStore?
   useEffect(() => {
     // retrieve calculated values
-    // TODO: move logic to the wrapper
     const onValuesChanged: Events["valuesChanged"] = (changes) => {
       if (id.current === undefined || flattenedAst.current === undefined)
         return;
