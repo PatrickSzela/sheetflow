@@ -18,10 +18,11 @@ export interface FormulaEditorProps {
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
   const { defaultFormula, flowProps } = props;
+
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { ast, flatAst, values, precedents = [] } = useFormulaAst(formula);
+  const { flatAst, values, precedents = [] } = useFormulaAst(formula);
 
   const filteredPrecedents = useMemo<{
     cells: CellList;
@@ -85,12 +86,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
         />
 
         <div style={{ flex: 1 }}>
-          <FormulaFlow
-            ast={ast}
-            flatAst={flatAst}
-            values={values}
-            {...flowProps}
-          />
+          <FormulaFlow flatAst={flatAst} values={values} {...flowProps} />
         </div>
       </main>
     </div>

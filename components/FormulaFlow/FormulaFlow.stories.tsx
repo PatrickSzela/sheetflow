@@ -24,12 +24,11 @@ const FormulaFlowFromString = ({
   formula,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { ast, flatAst, values } = useFormulaAst(formula);
+  const { flatAst, values } = useFormulaAst(formula);
 
   return (
     <div style={{ height: "100vh" }}>
       <FormulaFlow
-        ast={ast}
         flatAst={flatAst}
         values={values}
         skipParenthesis={skipParenthesis}

@@ -30,7 +30,6 @@ export interface FormulaFlowProps<
   TNode extends BaseNode = BaseNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
-  ast: Ast | undefined;
   flatAst: Ast[] | undefined;
   values: Record<string, Value> | undefined;
   skipParenthesis?: Boolean;
@@ -45,7 +44,7 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { ast, flatAst, values, skipParenthesis, ...otherProps } = props;
+  const { flatAst, values, skipParenthesis, ...otherProps } = props;
 
   const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<BaseNode>([]);
   const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
