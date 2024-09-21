@@ -9,7 +9,9 @@ const config: StorybookConfig = {
   ],
   framework: {
     name: "@storybook/nextjs",
-    options: {},
+    options: {
+      strictMode: true
+    },
   },
   docs: {},
   staticDirs: ["../public"],
