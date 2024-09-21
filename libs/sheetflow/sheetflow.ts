@@ -164,23 +164,13 @@ export abstract class SheetFlow {
     return empty - 1;
   }
 
-  getFormulaAst(formula: string, replaceUuid?: string, place: boolean = false) {
+  getFormulaAst(formula: string, place: boolean = false) {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
     const normalizedFormula = this.normalizeFormula(formula);
     const uuid = crypto.randomUUID();
-    let row = 0;
-
-    if (replaceUuid) {
-      if (!(replaceUuid in this.astSheets))
-        throw new Error(`UUID \`${replaceUuid}\` not found`);
-
-      row = this.astSheets[replaceUuid].row;
-      delete this.astSheets[replaceUuid];
-    } else {
-      row = this.getFirstAvailableRow();
-    }
+    const row = this.getFirstAvailableRow();
 
     const address = buildCellAddress(0, row, SpecialSheets.FORMULAS);
 

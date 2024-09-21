@@ -24,7 +24,7 @@ const FormulaFlowFromString = ({
   formula,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { flatAst, values } = useFormulaAst(formula);
+  const { flatAst, values, error } = useFormulaAst(formula);
 
   return (
     <div style={{ height: "100vh" }}>
@@ -33,6 +33,22 @@ const FormulaFlowFromString = ({
         values={values}
         skipParenthesis={skipParenthesis}
       />
+
+      {error ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.85)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "white",
+          }}
+        >
+          {error}
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -22,7 +22,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { flatAst, values, precedents = [] } = useFormulaAst(formula);
+  const { flatAst, values, precedents = [], error } = useFormulaAst(formula);
 
   const filteredPrecedents = useMemo<{
     cells: CellList;
@@ -82,7 +82,15 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <input
           defaultValue={defaultFormula}
-          onChange={(e) => setFormula(e.target.value)}
+          onChange={(e) => {
+            setFormula(e.target.value);
+          }}
+          style={{
+            ...(error && {
+              borderColor: "red",
+              backgroundColor: "rgba(255,0,0,0.15)",
+            }),
+          }}
         />
 
         <div style={{ flex: 1 }}>
