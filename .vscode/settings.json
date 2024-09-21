@@ -1,3 +1,17 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "cSpell.words": [
+    "ARRAYFORMULA",
+    "BRANDES",
+    "DATETIME",
+    "elkjs",
+    "hyperformula",
+    "KOEPF",
+    "nextjs",
+    "sheetflow",
+    "unmap",
+    "unparse",
+    "unparser",
+    "xyflow"
+  ]
 }
