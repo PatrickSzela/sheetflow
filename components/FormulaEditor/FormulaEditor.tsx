@@ -21,7 +21,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { ast, flatAst, values, precedents } = useFormulaAst(formula);
+  const { ast, flatAst, values, precedents = [] } = useFormulaAst(formula);
 
   const filteredPrecedents = useMemo<{
     cells: CellList;

@@ -14,7 +14,7 @@ import {
   useOnSelectionChange,
   useReactFlow,
 } from "@xyflow/react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { generateElkLayout } from "./elkLayout";
 import {
   generateEdges,
@@ -47,64 +47,58 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { ast, flatAst, values, skipParenthesis, ...otherProps } = props;
 
-  const prevAst = useRef<Ast>();
-  const prevSkipParenthesis = useRef<Boolean>();
-  const prevValues = useRef<Record<string, Value>>();
-
-  const generatingLayout = useRef(0); // to avoid race conditions
-
-  const [nodes, setNodes, _onNodesChange] = useNodesState<BaseNode>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<BaseNode>([]);
+  const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
   const { updateNodeData } = useReactFlow<BaseNode>();
 
+  const [nodes, setNodes] = useState<BaseNode[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
-  const updateFlowWithValues = (
-    nodes: BaseNode[],
-    edges: Edge[],
-    values: Record<string, Value>
-  ) => {
-    const [newNodes, newEdges] = injectValuesToFlow(nodes, edges, values);
+  // useRef to avoid rerendering flow while nodes & edges don't have values injected yet
+  const generatingLayout = useRef(true);
 
-    setNodes(newNodes);
-    setEdges(newEdges);
+  // generate layout
+  useEffect(() => {
+    if (!flatAst) return;
 
-    prevValues.current = values;
-  };
+    generatingLayout.current = true;
 
-  // on ast/skipParenthesis change
-  if (
-    flatAst &&
-    values &&
-    (prevAst.current !== ast || prevSkipParenthesis.current !== skipParenthesis)
-  ) {
-    prevAst.current = ast;
-    prevSkipParenthesis.current = skipParenthesis;
-    generatingLayout.current++;
+    let ignoreLayout = false;
 
     const nodes = generateNodes(flatAst, skipParenthesis);
     const edges = generateEdges(flatAst, skipParenthesis);
 
-    generateElkLayout(nodes, edges).then((nodes) => {
-      console.log("Generated nodes", nodes);
+    const generateLayout = async () => {
+      const elkNodes = await generateElkLayout(nodes, edges);
+
+      if (ignoreLayout) return;
+
+      console.log("Generated nodes", elkNodes);
       console.log("Generated edges", edges);
 
-      updateFlowWithValues(nodes, edges, values);
+      setNodes(elkNodes);
+      setEdges(edges);
 
-      generatingLayout.current--;
-    });
-  }
+      generatingLayout.current = false;
+    };
 
-  // on values updated
-  if (
-    values &&
-    nodes.length &&
-    generatingLayout.current === 0 &&
-    prevValues.current !== values
-  ) {
-    console.log("Updating values...");
-    updateFlowWithValues(nodes, edges, values);
-  }
+    generateLayout();
+
+    return () => {
+      ignoreLayout = true;
+    };
+  }, [flatAst, skipParenthesis]);
+
+  // inject calculated values to layout and place it
+  useEffect(() => {
+    if (!values || generatingLayout.current) return;
+
+    const [newNodes, newEdges] = injectValuesToFlow(nodes, edges, values);
+
+    setRFNodes(newNodes);
+    setRFEdges(newEdges);
+  }, [edges, nodes, setRFEdges, setRFNodes, values]);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {
@@ -137,10 +131,10 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
   return (
     <ReactFlow
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={_onNodesChange}
-      onEdgesChange={onEdgesChange}
+      nodes={rfNodes}
+      edges={rfEdges}
+      onNodesChange={onRFNodesChange}
+      onEdgesChange={onRFEdgesChange}
       nodeTypes={nodeTypes}
       colorMode="system"
       nodesConnectable={false}
