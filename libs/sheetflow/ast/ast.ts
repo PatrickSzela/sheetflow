@@ -1,0 +1,157 @@
+import { ArrayAst } from "./arrayAst";
+import { BinaryExpressionAst } from "./binaryExpressionAst";
+import { CellRangeReferenceAst } from "./cellRangeReferenceAst";
+import { CellReferenceAst } from "./cellReferenceAst";
+import { ColumnRangeReferenceAst } from "./columnRangeReferenceAst";
+import { EmptyAst } from "./emptyAst";
+import { ErrorAst } from "./errorAst";
+import { FunctionAst } from "./functionAst";
+import { NamedExpressionReferenceAst } from "./namedExpressionReferenceAst";
+import { NumberAst } from "./numberAst";
+import { ParenthesisAst } from "./parenthesisAst";
+import { RowRangeReferenceAst } from "./rowRangeReferenceAst";
+import { StringAst } from "./stringAst";
+import { UnaryExpressionAst } from "./unaryExpressionAst";
+
+export type Ast =
+  | EmptyAst
+  | NumberAst
+  | StringAst
+  | ArrayAst
+  | CellReferenceAst
+  | CellRangeReferenceAst
+  | ColumnRangeReferenceAst
+  | RowRangeReferenceAst
+  | NamedExpressionReferenceAst
+  | FunctionAst
+  | UnaryExpressionAst
+  | BinaryExpressionAst
+  | ParenthesisAst
+  | ErrorAst;
+
+export enum AstNodeType {
+  VALUE = "VALUE",
+  REFERENCE = "REFERENCE",
+  FUNCTION = "FUNCTION",
+  UNARY_EXPRESSION = "UNARY_EXPRESSION",
+  BINARY_EXPRESSION = "BINARY_EXPRESSION",
+  PARENTHESIS = "PARENTHESIS",
+  ERROR = "ERROR",
+}
+
+export enum AstNodeSubtype {
+  // value
+  EMPTY = "EMPTY",
+  NUMBER = "NUMBER",
+  STRING = "STRING",
+  ARRAY = "ARRAY",
+
+  // reference
+  CELL = "CELL",
+  NAMED_EXPRESSION = "NAMED_EXPRESSION",
+  CELL_RANGE = "RANGE",
+  COLUMN_RANGE = "COLUMN_RANGE",
+  ROW_RANGE = "ROW_RANGE",
+}
+
+export enum Operators {
+  "-" = "-",
+  "+" = "+",
+  "%" = "%",
+  "&" = "&",
+  "=" = "=",
+  "<>" = "<>",
+  ">" = ">",
+  "<" = "<",
+  ">=" = ">=",
+  "<=" = "<=",
+  "*" = "*",
+  "/" = "/",
+  "^" = "^",
+}
+
+export type Operator = `${Operators}`;
+
+export type BuildAstFnArgs<T extends AstBase> = Omit<
+  T,
+  "type" | "subtype" | "id"
+> & {
+  id?: T["id"];
+};
+export type BuildFn<T extends AstBase> = (args: BuildAstFnArgs<T>) => T;
+
+export interface AstBase<TType extends AstNodeType = AstNodeType> {
+  type: TType;
+  id: string;
+  rawContent: string;
+  isArrayFormula?: boolean;
+}
+export const isAst = (ast: any): ast is AstBase => {
+  const { type, id, rawContent, isArrayFormula } = ast as AstBase;
+
+  return (
+    type in AstNodeType &&
+    typeof id === "string" &&
+    typeof rawContent === "string" &&
+    typeof rawContent === "string" &&
+    (typeof isArrayFormula === "boolean" || isArrayFormula === undefined)
+  );
+};
+
+export interface AstWithSubtype<
+  TType extends AstNodeType,
+  TSubtype extends AstNodeSubtype
+> extends AstBase<TType> {
+  subtype: TSubtype;
+}
+
+export interface AstWithChildren<
+  TType extends AstNodeType,
+  TChild extends Ast[]
+> extends AstBase<TType> {
+  children: TChild;
+  requirements: {
+    minChildCount: number;
+    maxChildCount: number;
+  };
+}
+export const isAstWithChildren = (
+  ast: any
+): ast is AstWithChildren<AstNodeType, Ast[]> => {
+  const { children, requirements } = ast as AstWithChildren<AstNodeType, Ast[]>;
+
+  return (
+    isAst(ast) &&
+    Array.isArray(children) &&
+    typeof requirements === "object" &&
+    typeof requirements.minChildCount === "number" &&
+    requirements.minChildCount >= 0 &&
+    typeof requirements.maxChildCount === "number" &&
+    requirements.maxChildCount >= 0
+  );
+};
+
+export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
+  extends AstWithSubtype<AstNodeType.VALUE, TSubtype> {
+  value: TValue;
+}
+
+export const isAstWithValue = (
+  ast: any
+): ast is AstWithValue<AstNodeSubtype, any> => {
+  const { type, subtype } = ast as AstWithValue<AstNodeSubtype, any>;
+
+  return (
+    isAst(ast) &&
+    type === AstNodeType.VALUE &&
+    subtype in AstNodeSubtype &&
+    "value" in ast
+  );
+};
+
+export interface RangeReferenceAst<TSubtype extends AstNodeSubtype, TStartEnd>
+  extends AstWithSubtype<AstNodeType.REFERENCE, TSubtype> {
+  start: TStartEnd;
+  end: TStartEnd;
+  sheet: string;
+}

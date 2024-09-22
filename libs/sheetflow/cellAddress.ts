@@ -4,11 +4,6 @@ export interface CellAddress {
   sheet: string;
 }
 
-export interface CellRange {
-  start: CellAddress;
-  end: CellAddress;
-}
-
 export const buildCellAddress = (
   column: number,
   row: number,
@@ -19,18 +14,23 @@ export const buildCellAddress = (
   sheet,
 });
 
-export const buildCellRange = (
-  start: CellAddress,
-  end: CellAddress
-): CellRange => ({
-  start,
-  end,
-});
+export const isCellAddress = (address: any): address is CellAddress => {
+  const { column, row, sheet } = (address ?? {}) as CellAddress;
 
-export const areAddressesEqual = (
+  return (
+    typeof column === "number" &&
+    column >= 0 &&
+    typeof row === "number" &&
+    row >= 0 &&
+    typeof sheet === "string" &&
+    sheet.length > 0
+  );
+};
+
+export const areCellAddressesEqual = (
   address1: CellAddress,
   address2: CellAddress
-) => {
+): boolean => {
   return (
     address1.column === address2.column &&
     address1.row === address2.row &&

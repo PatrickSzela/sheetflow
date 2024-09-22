@@ -3,6 +3,8 @@ import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import {
   buildCellAddress,
   CellList,
+  isCellAddress,
+  isCellRange,
   NamedExpressions,
   useFormulaAst,
   useSheetFlow,
@@ -39,13 +41,13 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
         namedExpressions.push(sf.getNamedExpression(precedent));
       } else if (typeof precedent === "object") {
-        if ("column" in precedent) {
+        if (isCellAddress(precedent)) {
           // TODO: add info about missing sheet
           if (!sf.doesSheetExists(precedent.sheet)) continue;
 
           const stringAddress = sf.cellAddressToString(precedent);
           cells[stringAddress] = sf.getCell(precedent);
-        } else if ("start" in precedent) {
+        } else if (isCellRange(precedent)) {
           if (!sf.doesSheetExists(precedent.start.sheet)) continue;
 
           const { start, end } = precedent;

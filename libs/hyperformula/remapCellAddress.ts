@@ -1,6 +1,6 @@
-import { getSheetIdWithError } from "@/libs/hyperformula";
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress, SimpleCellRange } from "hyperformula";
+import { getSheetIdWithError } from "./utils";
 
 export const remapCellAddress = (
   hf: HyperFormula,

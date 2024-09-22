@@ -2,7 +2,7 @@ import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
 import { Ast, AstNodeType } from "hyperformula/es/parser";
 
-export const getOperator = (type: AstNodeType) => {
+export const getOperator = (type: AstNodeType): SheetFlow.Operator => {
   switch (type) {
     case AstNodeType.MINUS_UNARY_OP:
     case AstNodeType.MINUS_OP:
@@ -33,7 +33,7 @@ export const getOperator = (type: AstNodeType) => {
     case AstNodeType.POWER_OP:
       return "^";
     default:
-      return "";
+      throw new Error(`Unknown AST node type \`${type}\``);
   }
 };
 
@@ -76,7 +76,9 @@ export const areAstEqual = (
   address: SimpleCellAddress,
   checkChildren: boolean = true
 ): boolean => {
-  switch (hfAst.type) {
+  const { type } = hfAst;
+
+  switch (type) {
     case AstNodeType.EMPTY:
       return (
         sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
@@ -262,6 +264,6 @@ export const areAstEqual = (
       );
 
     default:
-      return false;
+      throw new Error(`Unknown AST node type \`${type}\``);
   }
 };

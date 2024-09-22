@@ -13,8 +13,9 @@ export const remapAst = (
 ): SheetFlow.Ast => {
   // @ts-expect-error we're using protected property here
   const rawContent = hf._unparser.unparse(ast, address).slice(1);
+  const { type } = ast;
 
-  switch (ast.type) {
+  switch (type) {
     case AstNodeType.EMPTY:
       return SheetFlow.buildEmptyAst({
         value: null,
@@ -202,11 +203,6 @@ export const remapAst = (
       });
 
     default:
-      return SheetFlow.buildErrorAst({
-        error: "AST node type doesn't match any of the case clauses",
-        rawContent,
-        id: rootUUID,
-        isArrayFormula,
-      });
+      throw new Error(`Unknown AST node type \`${type}\``);
   }
 };

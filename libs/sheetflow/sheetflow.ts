@@ -4,12 +4,8 @@
 import TypedEmitter from "typed-emitter";
 import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
 import { CellContent } from "./cell";
-import {
-  buildCellAddress,
-  buildCellRange,
-  CellAddress,
-  CellRange,
-} from "./cellAddress";
+import { buildCellAddress, CellAddress } from "./cellAddress";
+import { buildCellRange, CellRange } from "./cellRange";
 import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
