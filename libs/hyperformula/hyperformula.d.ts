@@ -2,12 +2,18 @@ declare module "hyperformula/es/parser" {
   import {
     Ast,
     AstNodeType,
+    buildLexerConfig,
     CellAddress,
     Unparser,
-    buildLexerConfig,
   } from "hyperformula/typings/parser";
 
   export { Ast, AstNodeType, CellAddress, Unparser, buildLexerConfig };
+}
+
+declare module "hyperformula/es/DependencyGraph/FormulaCellVertex" {
+  import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
+
+  export { FormulaVertex };
 }
 
 declare module "hyperformula/es/Config" {

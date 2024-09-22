@@ -25,8 +25,8 @@ import {
   NoRelativeAddressesAllowedError,
   SerializedNamedExpression,
 } from "hyperformula";
+import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
 import * as Languages from "hyperformula/es/i18n/languages";
-import { FormulaVertex } from "hyperformula/typings/DependencyGraph/FormulaCellVertex";
 import { Listeners } from "hyperformula/typings/Emitter";
 import {
   remapCellAddress,
@@ -329,7 +329,7 @@ export class HyperFormulaEngine extends SheetFlow {
     const addr = unmapCellAddress(this.hf, address);
 
     const formulaVertex = this.hf.graph.getNodes().find((node) => {
-      if ("formula" in node && "cellAddress" in node) {
+      if (node instanceof FormulaVertex) {
         // @ts-expect-error we're using protected property here
         const cellAddress = node.cellAddress;
         return areHfAddressesEqual(cellAddress, addr);

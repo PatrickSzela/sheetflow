@@ -1,4 +1,9 @@
-import { Ast, printCellValue, Value } from "@/libs/sheetflow";
+import {
+  Ast,
+  isAstWithChildren,
+  printCellValue,
+  Value,
+} from "@/libs/sheetflow";
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 
@@ -18,7 +23,7 @@ const ARG_HEIGHT = 22;
 const FOOTER_HEIGHT = 23;
 
 export const getPossibleChildrenCount = (ast: Ast) =>
-  "children" in ast
+  isAstWithChildren(ast)
     ? Math.max(ast.children.length, ast.requirements.maxChildCount)
     : 0;
 
