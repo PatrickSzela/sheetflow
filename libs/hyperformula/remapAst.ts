@@ -1,6 +1,7 @@
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
 import { Ast, AstNodeType } from "hyperformula/es/parser";
+import { RangeSheetReferenceType } from "hyperformula/es/parser/Ast";
 import { remapCellAddress } from "./remapCellAddress";
 import { getOperator } from "./utils";
 
@@ -269,6 +270,7 @@ export const ensureReferencesInAstHaveSheetNames = (
         ast.start = ast.start.withSheet(address.sheet);
       if (ast.end.sheet === undefined)
         ast.end = ast.end.withSheet(address.sheet);
+      ast.sheetReferenceType = RangeSheetReferenceType.BOTH_ABSOLUTE;
       return ast;
 
     case AstNodeType.ARRAY:
