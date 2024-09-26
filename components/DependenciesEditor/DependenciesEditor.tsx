@@ -1,18 +1,18 @@
-import { CellContent, CellList, NamedExpressions } from "@/libs/sheetflow";
+import { CellContent, GroupedCells, NamedExpressions } from "@/libs/sheetflow";
+import React from "react";
 
 export interface DependenciesEditorProps {
-  cells?: CellList;
+  cells?: GroupedCells;
   namedExpressions?: NamedExpressions;
   onCellChange?: (address: string, value: CellContent) => void;
   onNamedExpressionChange?: (name: string, value: CellContent) => void;
 }
 
 // TODO: simplify
-// TODO: group cells by sheet
 
 export const DependenciesEditor = (props: DependenciesEditorProps) => {
   const {
-    cells = [],
+    cells = {},
     namedExpressions = [],
     onCellChange,
     onNamedExpressionChange,
@@ -20,39 +20,50 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
 
   return (
     <div>
-      {Object.entries(cells).map(([address, cell]) => {
-        const key = `${address}`;
-
+      {Object.entries(cells).map(([sheet, cells]) => {
         return (
-          <div key={key} style={{ display: "flex" }}>
-            <label htmlFor={key}>{address}:</label>
+          <React.Fragment key={sheet}>
+            <span>{sheet}:</span>
 
-            <input
-              id={key}
-              defaultValue={
-                typeof cell === "number" || typeof cell === "string"
-                  ? cell
-                  : undefined
-              }
-              onChange={(e) => {
-                const v = e.currentTarget.value;
-                let newVal: CellContent;
+            {cells.map(({ stringAddress, address, content }) => {
+              const [colRow] = stringAddress.split("!").reverse();
 
-                if (v === "") {
-                  newVal = null;
-                } else if (!Number.isNaN(Number(v))) {
-                  newVal = Number(v);
-                } else {
-                  newVal = v;
-                }
+              return (
+                <div key={stringAddress} style={{ display: "flex" }}>
+                  <label htmlFor={stringAddress}>{colRow}:</label>
 
-                onCellChange?.(address, newVal);
-              }}
-            />
-          </div>
+                  <input
+                    id={stringAddress}
+                    defaultValue={
+                      typeof content === "number" || typeof content === "string"
+                        ? content
+                        : undefined
+                    }
+                    onChange={(e) => {
+                      const v = e.currentTarget.value;
+                      let newVal: CellContent;
+
+                      if (v === "") {
+                        newVal = null;
+                      } else if (!Number.isNaN(Number(v))) {
+                        newVal = Number(v);
+                      } else {
+                        newVal = v;
+                      }
+
+                      onCellChange?.(stringAddress, newVal);
+                    }}
+                  />
+                </div>
+              );
+            })}
+
+            <hr />
+          </React.Fragment>
         );
       })}
 
+      {namedExpressions.length ? <span>Named expressions:</span> : null}
       {namedExpressions.map(({ name, expression, scope }, idx) => {
         const key = `${name}_${scope}_${idx}`;
 

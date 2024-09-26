@@ -9,14 +9,14 @@ import { buildCellRange, CellRange } from "./cellRange";
 import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
-import { CellList, Sheet, Sheets } from "./sheet";
+import { Sheet, Sheets } from "./sheet";
 import { SpecialSheets } from "./utils";
 
 export type CellChange = { address: CellAddress; value: Value };
 export type NamedExpressionChange = { name: string; value: Value };
 export type Change = CellChange | NamedExpressionChange;
-export type Precedent = CellAddress | CellRange | string;
-export type Precedents = Precedent[];
+
+export type Reference = CellAddress | CellRange | string;
 
 export type Events = {
   valuesChanged: (changes: Change[]) => void;
@@ -67,8 +67,8 @@ export abstract class SheetFlow {
   abstract setCell(address: CellAddress, content: CellContent): void;
 
   // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
-  getPrecedents(flatAst: Ast[]): Precedents {
-    const precedents: Record<string, Precedent> = {};
+  getPrecedents(flatAst: Ast[]): Reference[] {
+    const precedents: Record<string, Reference> = {};
 
     for (const ast of flatAst) {
       if (ast.type !== AstNodeType.REFERENCE) continue;
@@ -253,36 +253,34 @@ export abstract class SheetFlow {
     });
   }
 
-  getCellList(sheetName: string) {
-    const list: CellList = {};
+  getCellList(sheetName: string): Reference[] {
+    const list: Reference[] = [];
     const sheet = this.getSheet(sheetName);
 
     for (let row = 0; row < sheet.length; row++) {
       for (let col = 0; col < sheet[row].length; col++) {
-        const value = sheet[row][col];
+        const content = sheet[row][col];
 
         // skip empty cells
-        if (value === undefined || value === null) {
+        if (content === undefined || content === null) {
           continue;
         }
 
         const address = buildCellAddress(col, row, sheetName);
-        const stringAddress = this.cellAddressToString(address);
-
-        list[stringAddress] = value;
+        list.push(address);
       }
     }
 
     return list;
   }
 
-  getCellLists() {
-    let obj: CellList = {};
+  getCellLists(): Reference[] {
+    let list: Reference[] = [];
 
     for (const sheetName of this.getAllSheetNames()) {
-      obj = { ...obj, ...this.getCellList(sheetName) };
+      list = [...list, ...this.getCellList(sheetName)];
     }
 
-    return obj;
+    return list;
   }
 }

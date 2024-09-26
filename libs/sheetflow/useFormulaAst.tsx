@@ -1,7 +1,7 @@
 import { Reducer, useEffect, useReducer } from "react";
 import { Ast } from "./ast";
 import { Value } from "./cellValue";
-import { Events, Precedents } from "./sheetflow";
+import { Events, Reference } from "./sheetflow";
 import { useSheetFlow } from "./SheetFlowProvider";
 
 type Data = {
@@ -9,7 +9,7 @@ type Data = {
   ast?: Ast;
   flatAst?: Ast[];
   values?: Record<string, Value>;
-  precedents?: Precedents;
+  precedents?: Reference[];
   error?: string;
 };
 

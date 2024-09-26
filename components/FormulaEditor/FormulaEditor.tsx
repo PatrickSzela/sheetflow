@@ -1,11 +1,7 @@
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import {
-  buildCellAddress,
-  CellList,
-  isCellAddress,
-  isCellRange,
-  NamedExpressions,
+  groupReferencesBySheet,
   useFormulaAst,
   useSheetFlow,
 } from "@/libs/sheetflow";
@@ -26,52 +22,18 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
   const { flatAst, values, precedents = [], error } = useFormulaAst(formula);
 
-  const filteredPrecedents = useMemo<{
-    cells: CellList;
-    namedExpressions: NamedExpressions;
-  }>(() => {
-    const cells: CellList = {};
-    const namedExpressions: NamedExpressions = [];
-
-    for (const precedent of precedents) {
-      // TODO: support row/column ranges
-      if (typeof precedent === "string") {
-        // TODO: add info about missing named expression
-        if (!sf.doesNamedExpressionExists(precedent)) continue;
-
-        namedExpressions.push(sf.getNamedExpression(precedent));
-      } else if (typeof precedent === "object") {
-        if (isCellAddress(precedent)) {
-          // TODO: add info about missing sheet
-          if (!sf.doesSheetExists(precedent.sheet)) continue;
-
-          const stringAddress = sf.cellAddressToString(precedent);
-          cells[stringAddress] = sf.getCell(precedent);
-        } else if (isCellRange(precedent)) {
-          if (!sf.doesSheetExists(precedent.start.sheet)) continue;
-
-          const { start, end } = precedent;
-
-          for (let row = start.row; row <= end.row; row++) {
-            for (let col = start.column; col <= end.column; col++) {
-              const address = buildCellAddress(col, row, precedent.start.sheet);
-              const stringAddress = sf.cellAddressToString(address);
-              cells[stringAddress] = sf.getCell(address);
-            }
-          }
-        }
-      }
-    }
-
-    return { cells, namedExpressions };
-  }, [sf, precedents]);
+  // TODO: add info about missing sheets/named expressions
+  const { cells, namedExpressions } = useMemo(
+    () => groupReferencesBySheet(sf, precedents),
+    [sf, precedents]
+  );
 
   return (
     <div style={{ display: "flex", height: "100%" }}>
       <aside style={{ width: 300 }}>
         <DependenciesEditor
-          cells={filteredPrecedents.cells}
-          namedExpressions={filteredPrecedents.namedExpressions}
+          cells={cells}
+          namedExpressions={namedExpressions}
           onCellChange={(address, value) => {
             sf.setCell(sf.stringToCellAddress(address), value);
           }}

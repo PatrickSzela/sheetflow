@@ -1,5 +1,6 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
+  groupReferencesBySheet,
   SheetFlowProvider,
   Sheets,
   useSheetFlow,
@@ -34,12 +35,12 @@ interface DependenciesEditorFromStringProps
 const DependenciesEditorFromString =
   ({}: DependenciesEditorFromStringProps) => {
     const sf = useSheetFlow();
-    const sheets = sf.getCellLists();
+    const { cells } = groupReferencesBySheet(sf, sf.getCellLists());
 
     return (
       <div style={{ height: "100vh" }}>
         <DependenciesEditor
-          cells={sheets}
+          cells={cells}
           onCellChange={(address, value) => {
             sf.setCell(sf.stringToCellAddress(address), value);
           }}
