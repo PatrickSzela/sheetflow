@@ -206,3 +206,78 @@ export const remapAst = (
       throw new Error(`Unknown AST node type \`${type}\``);
   }
 };
+
+export const ensureReferencesInAstHaveSheetNames = (
+  ast: Ast,
+  address: SimpleCellAddress
+) => {
+  const { type } = ast;
+
+  switch (type) {
+    case AstNodeType.EMPTY:
+    case AstNodeType.NUMBER:
+    case AstNodeType.STRING:
+    case AstNodeType.NAMED_EXPRESSION:
+    case AstNodeType.ERROR:
+    case AstNodeType.ERROR_WITH_RAW_INPUT:
+      return ast;
+
+    case AstNodeType.MINUS_UNARY_OP:
+    case AstNodeType.PLUS_UNARY_OP:
+    case AstNodeType.PERCENT_OP:
+      ast.value = ensureReferencesInAstHaveSheetNames(ast.value, address);
+      return ast;
+
+    case AstNodeType.CONCATENATE_OP:
+    case AstNodeType.EQUALS_OP:
+    case AstNodeType.NOT_EQUAL_OP:
+    case AstNodeType.GREATER_THAN_OP:
+    case AstNodeType.LESS_THAN_OP:
+    case AstNodeType.GREATER_THAN_OR_EQUAL_OP:
+    case AstNodeType.LESS_THAN_OR_EQUAL_OP:
+    case AstNodeType.PLUS_OP:
+    case AstNodeType.MINUS_OP:
+    case AstNodeType.TIMES_OP:
+    case AstNodeType.DIV_OP:
+    case AstNodeType.POWER_OP:
+      ast.left = ensureReferencesInAstHaveSheetNames(ast.left, address);
+      ast.right = ensureReferencesInAstHaveSheetNames(ast.right, address);
+      return ast;
+
+    case AstNodeType.FUNCTION_CALL:
+      ast.args = ast.args.map((ast) =>
+        ensureReferencesInAstHaveSheetNames(ast, address)
+      );
+      return ast;
+
+    case AstNodeType.PARENTHESIS:
+      ast.expression = ensureReferencesInAstHaveSheetNames(
+        ast.expression,
+        address
+      );
+      return ast;
+
+    case AstNodeType.CELL_REFERENCE:
+      if (ast.reference.sheet === undefined)
+        ast.reference = ast.reference.withSheet(address.sheet);
+      return ast;
+
+    case AstNodeType.CELL_RANGE:
+    case AstNodeType.COLUMN_RANGE:
+    case AstNodeType.ROW_RANGE:
+      if (ast.start.sheet === undefined)
+        ast.start = ast.start.withSheet(address.sheet);
+      if (ast.end.sheet === undefined)
+        ast.end = ast.end.withSheet(address.sheet);
+      return ast;
+
+    case AstNodeType.ARRAY:
+      ast.args = ast.args.map((row) =>
+        row.map((col) => ensureReferencesInAstHaveSheetNames(col, address))
+      );
+      return ast;
+
+    default:
+      throw new Error(`Unknown AST node type \`${type}\``);
+  }
+};

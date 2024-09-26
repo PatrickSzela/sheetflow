@@ -68,7 +68,7 @@ const defaultState: State = {
   validFormula: undefined,
 };
 
-export const useFormulaAst = (formula: string): Data => {
+export const useFormulaAst = (formula: string, scope: string): Data => {
   const sf = useSheetFlow();
 
   const [state, dispatch] = useReducer(reducer, defaultState);
@@ -87,10 +87,10 @@ export const useFormulaAst = (formula: string): Data => {
   useEffect(() => {
     if (!validFormula) return;
 
-    //retrieve AST & place it in sheets
+    // retrieve AST & place it in sheets
     sf.pauseEvaluation();
 
-    const { ast, flatAst, uuid } = sf.getFormulaAst(validFormula, true);
+    const { ast, flatAst, uuid } = sf.getFormulaAst(validFormula, scope, true);
     const precedents = sf.getPrecedents(flatAst);
 
     sf.resumeEvaluation();
@@ -128,7 +128,7 @@ export const useFormulaAst = (formula: string): Data => {
       sf.removeFormulaAst(uuid);
       sf.resumeEvaluation();
     };
-  }, [validFormula, sf]);
+  }, [validFormula, sf, scope]);
 
   return data;
 };

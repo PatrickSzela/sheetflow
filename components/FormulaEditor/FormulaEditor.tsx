@@ -7,20 +7,24 @@ import {
 } from "@/libs/sheetflow";
 import { useMemo, useState } from "react";
 
-// TODO: support references without sheet name in address
-
 export interface FormulaEditorProps {
+  scope: string;
   defaultFormula?: string;
   flowProps?: Omit<FormulaFlowProps, "ast" | "flatAst" | "values">;
 }
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
-  const { defaultFormula, flowProps } = props;
+  const { defaultFormula, flowProps, scope } = props;
 
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { flatAst, values, precedents = [], error } = useFormulaAst(formula);
+  const {
+    flatAst,
+    values,
+    precedents = [],
+    error,
+  } = useFormulaAst(formula, scope);
 
   // TODO: add info about missing sheets/named expressions
   const { cells, namedExpressions } = useMemo(

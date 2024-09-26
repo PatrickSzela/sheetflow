@@ -19,7 +19,7 @@ const sheets: Sheets = {
 };
 
 interface FormulaEditorFromStringProps
-  extends Omit<FormulaEditorProps, "flowProps">,
+  extends Omit<FormulaEditorProps, "flowProps" | "scope">,
     Omit<SheetFlowProviderProps, "engine"> {
   language: string;
   skipParenthesis: boolean;
@@ -36,7 +36,11 @@ const FormulaEditorFromString = ({
 
   return (
     <div style={{ height: "100vh" }}>
-      <FormulaEditor defaultFormula={defaultFormula} flowProps={flowProps} />
+      <FormulaEditor
+        scope="Sheet1"
+        defaultFormula={defaultFormula}
+        flowProps={flowProps}
+      />
     </div>
   );
 };

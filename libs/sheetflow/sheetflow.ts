@@ -138,7 +138,12 @@ export abstract class SheetFlow {
   abstract isFormulaValid(formula: string): boolean;
   abstract normalizeFormula(formula: string): string;
 
-  abstract getAst(address: CellAddress, uuid?: string): Ast;
+  abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
+  abstract getAstFromFormula(
+    formula: string,
+    scope: string,
+    uuid?: string
+  ): Ast;
   abstract astToFormula(ast: Ast): string;
   abstract calculateFormula(formula: string, sheet: string): Value;
 
@@ -160,7 +165,7 @@ export abstract class SheetFlow {
     return empty - 1;
   }
 
-  getFormulaAst(formula: string, place: boolean = false) {
+  getFormulaAst(formula: string, scope: string, place: boolean = false) {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
@@ -170,15 +175,13 @@ export abstract class SheetFlow {
 
     const address = buildCellAddress(0, row, SpecialSheets.FORMULAS);
 
-    this.clearRow(address.sheet, row);
-    this.setCell(address, normalizedFormula);
-
-    const ast = this.getAst(address, uuid);
+    const ast = this.getAstFromFormula(normalizedFormula, scope, uuid);
     const flatAst = flattenAst(ast);
 
     if (place) {
+      this.clearRow(address.sheet, row);
       this.astSheets[uuid] = { row, ast, flatAst, address };
-      this.placeFormulaAst(flatAst, uuid, 1);
+      this.placeFormulaAst(flatAst, uuid);
     } else {
       this.removeFormulaAst(uuid);
     }
@@ -186,19 +189,14 @@ export abstract class SheetFlow {
     return { uuid, ast, flatAst, address };
   }
 
-  placeFormulaAst(flatAst: Ast[], uuid: string, startingIndex: number = 0) {
+  placeFormulaAst(flatAst: Ast[], uuid: string) {
     const row =
       uuid in this.astSheets
         ? this.astSheets[uuid].row
         : this.getFirstAvailableRow();
 
-    flatAst.slice(startingIndex).forEach((ast, idx) => {
-      const address = buildCellAddress(
-        idx + startingIndex,
-        row,
-        SpecialSheets.FORMULAS
-      );
-
+    flatAst.forEach((ast, idx) => {
+      const address = buildCellAddress(idx, row, SpecialSheets.FORMULAS);
       this.setCell(address, this.astToFormula(ast));
     });
   }

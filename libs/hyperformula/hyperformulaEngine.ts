@@ -1,8 +1,14 @@
 // go home ESLint, you're drunk
 /* eslint-disable react/no-is-mounted */
-import { remapAst, remapSheet, remapSheets } from "@/libs/hyperformula";
+import {
+  ensureReferencesInAstHaveSheetNames,
+  remapAst,
+  remapSheet,
+  remapSheets,
+} from "@/libs/hyperformula";
 import {
   Ast,
+  buildCellAddress,
   CellAddress,
   CellContent,
   CellRange,
@@ -28,6 +34,7 @@ import {
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
 import * as Languages from "hyperformula/es/i18n/languages";
 import { Listeners } from "hyperformula/typings/Emitter";
+import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
 import {
   remapCellAddress,
   remapCellRange,
@@ -325,7 +332,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return this.hf.normalizeFormula(formula);
   }
 
-  getAst(address: CellAddress, uuid: string = crypto.randomUUID()) {
+  getAstFromAddress(address: CellAddress, uuid: string = crypto.randomUUID()) {
     const addr = unmapCellAddress(this.hf, address);
 
     const formulaVertex = this.hf.graph.getNodes().find((node) => {
@@ -348,6 +355,21 @@ export class HyperFormulaEngine extends SheetFlow {
     }
 
     return remapAst(this.hf, hfAst, addr, uuid);
+  }
+
+  getAstFromFormula(
+    formula: string,
+    scope: string,
+    uuid: string = crypto.randomUUID()
+  ): Ast {
+    const address = buildCellAddress(-1, -1, scope);
+    const hfAddress = unmapCellAddress(this.hf, address);
+
+    // @ts-expect-error we're using private property here
+    const { ast } = this.hf._parser.parse(formula, hfAddress) as ParsingResult;
+    const astWithSheetNames = ensureReferencesInAstHaveSheetNames(ast, hfAddress);
+
+    return remapAst(this.hf, astWithSheetNames, hfAddress, uuid);
   }
 
   astToFormula(ast: Ast): string {
