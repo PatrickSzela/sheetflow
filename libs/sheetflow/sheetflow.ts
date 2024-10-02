@@ -45,6 +45,10 @@ export abstract class SheetFlow {
 
   constructor() {
     this.astSheets = {};
+
+    // TODO: remove
+    // @ts-expect-error make HF instance available in browser's console
+    window.engine = this;
   }
 
   static build(
