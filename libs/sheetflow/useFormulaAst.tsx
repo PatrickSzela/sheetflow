@@ -17,6 +17,7 @@ type State = {
   data: Data;
   prevFormula?: string;
   validFormula?: string;
+  render: number;
 };
 
 type Action =
@@ -26,7 +27,8 @@ type Action =
   | {
       type: "setInvalidFormula";
       payload: { formula: string; error: Required<Data["error"]> };
-    };
+    }
+  | { type: "forceRefresh" };
 
 const reducer: Reducer<State, Action> = (prevState, action) => {
   const newState = { ...prevState, data: { ...prevState.data } };
@@ -50,6 +52,10 @@ const reducer: Reducer<State, Action> = (prevState, action) => {
       newState.prevFormula = action.payload.formula;
       newState.data.error = action.payload.error;
       break;
+
+    case "forceRefresh":
+      newState.render++;
+      break;
   }
 
   return newState;
@@ -66,13 +72,14 @@ const defaultState: State = {
   },
   prevFormula: undefined,
   validFormula: undefined,
+  render: 0,
 };
 
 export const useFormulaAst = (formula: string, scope: string): Data => {
   const sf = useSheetFlow();
 
   const [state, dispatch] = useReducer(reducer, defaultState);
-  const { prevFormula, validFormula, data } = state;
+  const { prevFormula, validFormula, data, render } = state;
 
   if (prevFormula !== formula) {
     if (!sf.isFormulaValid(formula)) {
@@ -115,20 +122,34 @@ export const useFormulaAst = (formula: string, scope: string): Data => {
       }
     };
 
+    const onSheetAdded: Events["sheetAdded"] = (sheet) => {
+      dispatch({ type: "forceRefresh" });
+    };
+
+    const onNamedExpressionAdded: Events["namedExpressionAdded"] = (sheet) => {
+      dispatch({ type: "forceRefresh" });
+    };
+
     sf.on("valuesChanged", onValuesChanged);
+    sf.on("sheetAdded", onSheetAdded);
+    sf.on("namedExpressionAdded", onNamedExpressionAdded);
+
+    // TODO: very dirty workaround for retrigerring AST generation
+    render;
 
     const data = { ast, flatAst, uuid, precedents, values: calculateAst() };
     dispatch({ type: "setData", payload: data });
 
     return () => {
       sf.off("valuesChanged", onValuesChanged);
+      sf.off("sheetAdded", onSheetAdded);
 
       // remove sheets on component unmount
       sf.pauseEvaluation();
       sf.removeFormulaAst(uuid);
       sf.resumeEvaluation();
     };
-  }, [validFormula, sf, scope]);
+  }, [validFormula, sf, scope, render]);
 
   return data;
 };

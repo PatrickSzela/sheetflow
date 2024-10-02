@@ -19,6 +19,9 @@ export type Change = CellChange | NamedExpressionChange;
 export type Reference = CellAddress | CellRange | string;
 
 export type Events = {
+  // TODO: removed sheet & named expression
+  sheetAdded: (sheet: string) => void;
+  namedExpressionAdded: (sheet: string) => void;
   valuesChanged: (changes: Change[]) => void;
 };
 export type EngineEventEmitter = TypedEmitter<Events>;

@@ -66,13 +66,17 @@ registerAllLanguages();
 
 export type HyperFormulaConfig = Partial<ConfigParams>;
 
-type RemapEvents<T extends keyof Events> = T extends "valuesChanged"
+type RemapEvents<T extends keyof Events> = "valuesChanged" extends T
   ? "valuesUpdated"
+  : "sheetAdded" extends T
+  ? "sheetAdded"
+  : "namedExpressionAdded" extends T
+  ? "namedExpressionAdded"
   : never;
-type EventListeners<T extends keyof Events = keyof Events> = Record<
-  T,
-  Map<Events[T], Listeners[RemapEvents<T>]>
->;
+
+type EventListeners = {
+  [key in keyof Events]: Map<Events[key], Listeners[RemapEvents<key>]>;
+};
 
 export class HyperFormulaEngine extends SheetFlow {
   protected hf: HyperFormula;
@@ -109,7 +113,11 @@ export class HyperFormulaEngine extends SheetFlow {
     }
 
     this.eventEmitter = new EventEmitter() as EngineEventEmitter;
-    this.eventListeners = { valuesChanged: new Map() };
+    this.eventListeners = {
+      valuesChanged: new Map(),
+      namedExpressionAdded: new Map(),
+      sheetAdded: new Map(),
+    };
 
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
@@ -367,7 +375,10 @@ export class HyperFormulaEngine extends SheetFlow {
 
     // @ts-expect-error we're using private property here
     const { ast } = this.hf._parser.parse(formula, hfAddress) as ParsingResult;
-    const astWithSheetNames = ensureReferencesInAstHaveSheetNames(ast, hfAddress);
+    const astWithSheetNames = ensureReferencesInAstHaveSheetNames(
+      ast,
+      hfAddress
+    );
 
     return remapAst(this.hf, astWithSheetNames, hfAddress, uuid);
   }
@@ -393,27 +404,65 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   on = <T extends keyof Events>(event: T, listener: Events[T]) => {
-    if (event === "valuesChanged") {
-      const wrappedListener: Listeners["valuesUpdated"] = (changes) => {
-        const list: Change[] = [];
+    let hfListener: Listeners[keyof Listeners] | undefined = undefined;
+    let hfEvent: keyof Listeners | undefined = undefined;
 
-        listener(this.remapChanges(changes));
-      };
+    switch (event) {
+      case "valuesChanged":
+        hfEvent = "valuesUpdated";
+        hfListener = ((changes) => {
+          (listener as Events["valuesChanged"])(this.remapChanges(changes));
+        }) as Listeners["valuesUpdated"];
+        break;
 
-      this.eventListeners[event].set(listener, wrappedListener);
+      case "sheetAdded":
+        hfEvent = "sheetAdded";
+        hfListener = ((sheet) => {
+          (listener as Events["sheetAdded"])(sheet);
+        }) as Listeners["sheetAdded"];
+        break;
 
-      this.hf.on("valuesUpdated", wrappedListener);
+      case "namedExpressionAdded":
+        hfEvent = "namedExpressionAdded";
+        hfListener = ((sheet) => {
+          (listener as Events["namedExpressionAdded"])(sheet);
+        }) as Listeners["namedExpressionAdded"];
+        break;
+    }
+
+    if (hfListener && hfEvent) {
+      this.eventListeners[event].set(listener, hfListener as any);
+      this.hf.on(hfEvent, hfListener as any);
+    } else {
+      throw new Error();
     }
 
     return this.eventEmitter;
   };
 
   off = <T extends keyof Events>(event: T, listener: Events[T]) => {
-    if (event === "valuesChanged") {
-      const wrappedListener = this.eventListeners[event].get(listener);
-      if (!wrappedListener) throw new Error();
+    let hfEvent: keyof Listeners | undefined = undefined;
+    const hfListener = this.eventListeners[event].get(listener);
 
-      this.hf.off("valuesUpdated", wrappedListener);
+    switch (event) {
+      case "valuesChanged":
+        hfEvent = "valuesUpdated";
+        break;
+
+      case "sheetAdded":
+        hfEvent = "sheetAdded";
+        break;
+
+      case "namedExpressionAdded":
+        hfEvent = "namedExpressionAdded";
+        break;
+    }
+
+    if (hfListener && hfEvent) {
+      this.hf.off(hfEvent, hfListener);
+      this.eventListeners[event].delete(listener);
+    } else {
+      throw new Error();
     }
 
     return this.eventEmitter;

@@ -14,14 +14,15 @@ export type GroupedCells = Record<
   { address: CellAddress; stringAddress: string; content: CellContent }[]
 >;
 
+// TODO: hyperformula has no easy way of extracting missing sheets directly from a formula
 export const groupReferencesBySheet = (
   sf: SheetFlow,
   references: Reference[]
 ): {
   cells: GroupedCells;
   namedExpressions: NamedExpressions;
-  missingSheets: string[];
-  missingNamedExpressions: string[];
+  // missingSheets: string[];
+  // missingNamedExpressions: string[];
 } => {
   const cells: Record<
     string,
@@ -91,7 +92,7 @@ export const groupReferencesBySheet = (
   return {
     cells: finalCells,
     namedExpressions: Object.values(namedExpressions),
-    missingSheets: Array.from(missingSheets),
-    missingNamedExpressions: Array.from(missingNamedExpressions),
+    // missingSheets: Array.from(missingSheets),
+    // missingNamedExpressions: Array.from(missingNamedExpressions),
   };
 };

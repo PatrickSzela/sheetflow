@@ -26,7 +26,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     error,
   } = useFormulaAst(formula, scope);
 
-  // TODO: add info about missing sheets/named expressions
+  // TODO: somehow extract missing sheets & named expressions from formula
   const { cells, namedExpressions } = useMemo(
     () => groupReferencesBySheet(sf, precedents),
     [sf, precedents]
@@ -43,6 +43,12 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
           }}
           onNamedExpressionChange={(name, value) => {
             sf.setNamedExpression(name, value);
+          }}
+          onSheetAdd={(name) => {
+            sf.addSheet(name);
+          }}
+          onNamedExpressionAdd={(name) => {
+            sf.setNamedExpression(name, "");
           }}
         />
       </aside>
