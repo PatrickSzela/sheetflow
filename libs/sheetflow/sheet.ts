@@ -32,16 +32,16 @@ export const groupReferencesBySheet = (
   const missingSheets: Set<string> = new Set();
   const missingNamedExpressions: Set<string> = new Set();
 
-  for (const precedent of references) {
-    if (typeof precedent === "string") {
-      if (!sf.doesNamedExpressionExists(precedent)) {
-        missingNamedExpressions.add(precedent);
+  for (const ref of references) {
+    if (typeof ref === "string") {
+      if (!sf.doesNamedExpressionExists(ref)) {
+        missingNamedExpressions.add(ref);
         continue;
       }
 
-      namedExpressions[precedent] = sf.getNamedExpression(precedent);
-    } else if (isCellAddress(precedent)) {
-      const { sheet } = precedent;
+      namedExpressions[ref] = sf.getNamedExpression(ref);
+    } else if (isCellAddress(ref)) {
+      const { sheet } = ref;
 
       if (!sf.doesSheetExists(sheet)) {
         missingSheets.add(sheet);
@@ -50,15 +50,15 @@ export const groupReferencesBySheet = (
 
       if (cells[sheet] === undefined) cells[sheet] = {};
 
-      const stringAddress = sf.cellAddressToString(precedent);
+      const stringAddress = sf.cellAddressToString(ref);
 
       cells[sheet][stringAddress] = {
-        address: precedent,
+        address: ref,
         stringAddress,
-        content: sf.getCell(precedent),
+        content: sf.getCell(ref),
       };
-    } else if (isCellRange(precedent)) {
-      const { start, end } = precedent;
+    } else if (isCellRange(ref)) {
+      const { start, end } = ref;
       const { sheet } = start;
 
       if (!sf.doesSheetExists(sheet)) {
@@ -72,6 +72,7 @@ export const groupReferencesBySheet = (
         for (let col = start.column; col <= end.column; col++) {
           const address = buildCellAddress(col, row, sheet);
           const stringAddress = sf.cellAddressToString(address);
+
           cells[sheet][stringAddress] = {
             address,
             stringAddress,
