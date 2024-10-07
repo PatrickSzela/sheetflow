@@ -123,10 +123,14 @@ export const useFormulaAst = (formula: string, scope: string): Data => {
     };
 
     const onSheetAdded: Events["sheetAdded"] = (sheet) => {
+      // TODO: check if added sheet is used in the formula
       dispatch({ type: "forceRefresh" });
     };
 
-    const onNamedExpressionAdded: Events["namedExpressionAdded"] = (sheet) => {
+    const onNamedExpressionAdded: Events["namedExpressionAdded"] = (
+      namedExpression
+    ) => {
+      // TODO: check if added named expression is used in the formula
       dispatch({ type: "forceRefresh" });
     };
 
@@ -143,8 +147,9 @@ export const useFormulaAst = (formula: string, scope: string): Data => {
     return () => {
       sf.off("valuesChanged", onValuesChanged);
       sf.off("sheetAdded", onSheetAdded);
+      sf.off("namedExpressionAdded", onNamedExpressionAdded);
 
-      // remove sheets on component unmount
+      // remove row on component unmount
       sf.pauseEvaluation();
       sf.removeFormulaAst(uuid);
       sf.resumeEvaluation();
