@@ -15,6 +15,7 @@ import {
   Change,
   EngineEventEmitter,
   Events,
+  extractDataFromStringAddress,
   NamedExpressions,
   SheetFlow,
   Sheets,
@@ -125,20 +126,21 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   stringToCellAddress(address: string, sheetName?: string) {
-    const [colRow, sheet] = address.split("!").reverse();
+    const { position, sheet } = extractDataFromStringAddress(address);
     const sheetId = getSheetIdWithError(this.hf, sheet ?? sheetName);
 
-    const hfAddress = this.hf.simpleCellAddressFromString(colRow, sheetId);
+    const hfAddress = this.hf.simpleCellAddressFromString(position, sheetId);
     if (!hfAddress) throw new Error();
 
     return remapCellAddress(this.hf, hfAddress);
   }
 
   stringToCellRange(range: string, sheetName?: string) {
-    const [relRange, sheet] = range.split("!").reverse();
+    // TODO: replace with splitStringRange
+    const { position, sheet } = extractDataFromStringAddress(range);
     const sheetId = getSheetIdWithError(this.hf, sheet ?? sheetName);
 
-    const hfRange = this.hf.simpleCellRangeFromString(relRange, sheetId);
+    const hfRange = this.hf.simpleCellRangeFromString(position, sheetId);
     if (!hfRange) throw new Error();
 
     return remapCellRange(this.hf, hfRange);

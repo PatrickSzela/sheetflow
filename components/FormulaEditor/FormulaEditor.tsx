@@ -26,10 +26,14 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     error,
   } = useFormulaAst(formula, scope);
 
-  // TODO: somehow extract missing sheets & named expressions from formula
   const { cells, namedExpressions } = useMemo(
     () => groupReferencesBySheet(sf, precedents),
     [sf, precedents]
+  );
+
+  const missing = useMemo(
+    () => sf.getMissingSheetsAndNamedExpressions(flatAst ?? []),
+    [flatAst, sf]
   );
 
   return (
@@ -38,6 +42,8 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
         <DependenciesEditor
           cells={cells}
           namedExpressions={namedExpressions}
+          missingSheets={missing.sheets}
+          missingNamedExpressions={missing.namedExpressions}
           onCellChange={(address, value) => {
             sf.setCell(sf.stringToCellAddress(address), value);
           }}

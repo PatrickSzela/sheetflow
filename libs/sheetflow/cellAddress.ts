@@ -37,3 +37,10 @@ export const areCellAddressesEqual = (
     address1.sheet === address2.sheet
   );
 };
+
+export const extractDataFromStringAddress = (
+  address: string
+): { position: string; sheet: string } => {
+  const [position, sheet] = address.split("!").reverse();
+  return { position, sheet: (sheet ?? "").replaceAll("'", "") };
+};

@@ -1,9 +1,16 @@
-import { CellContent, GroupedCells, NamedExpressions } from "@/libs/sheetflow";
+import {
+  CellContent,
+  GroupedCells,
+  NamedExpressions,
+  extractDataFromStringAddress,
+} from "@/libs/sheetflow";
 import React, { useRef, useState } from "react";
 
 export interface DependenciesEditorProps {
   cells?: GroupedCells;
   namedExpressions?: NamedExpressions;
+  missingSheets?: string[];
+  missingNamedExpressions?: string[];
   onCellChange?: (address: string, value: CellContent) => void;
   onNamedExpressionChange?: (name: string, value: CellContent) => void;
   onSheetAdd?: (name: string) => void;
@@ -16,6 +23,8 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
   const {
     cells = {},
     namedExpressions = [],
+    missingSheets,
+    missingNamedExpressions,
     onCellChange,
     onNamedExpressionChange,
     onSheetAdd,
@@ -24,6 +33,8 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
 
   const addSheetInput = useRef<HTMLInputElement>(null);
   const addNamedExpressionInput = useRef<HTMLInputElement>(null);
+  const addMissingSheetSelect = useRef<HTMLSelectElement>(null);
+  const addMissingNamedExpressionSelect = useRef<HTMLSelectElement>(null);
   const [addSheet, setAddSheet] = useState("");
   const [addNamedExpression, setAddNamedExpression] = useState("");
 
@@ -36,11 +47,12 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
               <span>{sheet}:</span>
 
               {cells.map(({ stringAddress, address, content }) => {
-                const [colRow] = stringAddress.split("!").reverse();
+                const { position } =
+                  extractDataFromStringAddress(stringAddress);
 
                 return (
                   <div key={stringAddress} style={{ display: "flex" }}>
-                    <label htmlFor={stringAddress}>{colRow}:</label>
+                    <label htmlFor={stringAddress}>{position}:</label>
 
                     <input
                       id={stringAddress}
@@ -108,6 +120,62 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
             </div>
           );
         })}
+      </div>
+
+      <div>
+        {missingSheets?.length && onSheetAdd ? (
+          <div>
+            <label htmlFor="addMissingSheet">Add missing sheet:</label>
+
+            <select ref={addMissingSheetSelect}>
+              {missingSheets.map((sheet) => (
+                <option id="addMissingSheet" key={sheet} value={sheet}>
+                  {sheet}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                const value = addMissingSheetSelect.current?.value;
+                if (value) onSheetAdd(value);
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ) : null}
+      </div>
+
+      <div>
+        {missingNamedExpressions?.length && onNamedExpressionAdd ? (
+          <div>
+            <label htmlFor="addMissingNamedExpression">
+              Add missing named expression:
+            </label>
+
+            <select ref={addMissingNamedExpressionSelect}>
+              {missingNamedExpressions.map((namedExpression) => (
+                <option
+                  id="addMissingNamedExpression"
+                  key={namedExpression}
+                  value={namedExpression}
+                >
+                  {namedExpression}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                const value = addMissingNamedExpressionSelect.current?.value;
+                if (value) onNamedExpressionAdd(value);
+              }}
+            >
+              Add
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div>

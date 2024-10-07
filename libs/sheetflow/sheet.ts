@@ -14,15 +14,12 @@ export type GroupedCells = Record<
   { address: CellAddress; stringAddress: string; content: CellContent }[]
 >;
 
-// TODO: hyperformula has no easy way of extracting missing sheets directly from a formula
 export const groupReferencesBySheet = (
   sf: SheetFlow,
   references: Reference[]
 ): {
   cells: GroupedCells;
   namedExpressions: NamedExpressions;
-  // missingSheets: string[];
-  // missingNamedExpressions: string[];
 } => {
   const cells: Record<
     string,
@@ -30,13 +27,10 @@ export const groupReferencesBySheet = (
   > = {};
   const namedExpressions: Record<string, NamedExpression> = {};
 
-  const missingSheets: Set<string> = new Set();
-  const missingNamedExpressions: Set<string> = new Set();
-
   for (const ref of references) {
     if (typeof ref === "string") {
       if (!sf.doesNamedExpressionExists(ref)) {
-        missingNamedExpressions.add(ref);
+        console.warn(`Named expression \`${ref}\` doesn't exists`);
         continue;
       }
 
@@ -45,7 +39,7 @@ export const groupReferencesBySheet = (
       const { sheet } = ref;
 
       if (!sf.doesSheetExists(sheet)) {
-        missingSheets.add(sheet);
+        console.warn(`Sheet \`${sheet}\` doesn't exists`);
         continue;
       }
 
@@ -63,7 +57,7 @@ export const groupReferencesBySheet = (
       const { sheet } = start;
 
       if (!sf.doesSheetExists(sheet)) {
-        missingSheets.add(sheet);
+        console.warn(`Sheet \`${sheet}\` doesn't exists`);
         continue;
       }
 
@@ -92,7 +86,5 @@ export const groupReferencesBySheet = (
   return {
     cells: finalCells,
     namedExpressions: Object.values(namedExpressions),
-    // missingSheets: Array.from(missingSheets),
-    // missingNamedExpressions: Array.from(missingNamedExpressions),
   };
 };

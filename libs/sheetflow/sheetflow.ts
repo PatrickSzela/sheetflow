@@ -2,9 +2,19 @@
 /* eslint-disable react/no-is-mounted */
 
 import TypedEmitter from "typed-emitter";
-import { Ast, AstNodeSubtype, AstNodeType } from "./ast";
+import {
+  Ast,
+  AstNodeSubtype,
+  AstNodeType,
+  isErrorAst,
+  isNamedExpressionReferenceAst,
+} from "./ast";
 import { CellContent } from "./cell";
-import { buildCellAddress, CellAddress } from "./cellAddress";
+import {
+  buildCellAddress,
+  CellAddress,
+  extractDataFromStringAddress,
+} from "./cellAddress";
 import { buildCellRange, CellRange } from "./cellRange";
 import { CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
@@ -287,5 +297,33 @@ export abstract class SheetFlow {
     }
 
     return list;
+  }
+
+  getMissingSheetsAndNamedExpressions(flatAst: Ast[]): {
+    namedExpressions: string[];
+    sheets: string[];
+  } {
+    const namedExpressions: Set<string> = new Set();
+    const sheets: Set<string> = new Set();
+
+    for (const ast of flatAst) {
+      if (isErrorAst(ast) && ast.error === "REF") {
+        const { sheet } = extractDataFromStringAddress(ast.rawContent);
+
+        if (sheet && !this.doesSheetExists(sheet)) {
+          sheets.add(sheet);
+        }
+      } else if (
+        isNamedExpressionReferenceAst(ast) &&
+        !this.doesNamedExpressionExists(ast.expressionName)
+      ) {
+        namedExpressions.add(ast.expressionName);
+      }
+    }
+
+    return {
+      namedExpressions: Array.from(namedExpressions),
+      sheets: Array.from(sheets),
+    };
   }
 }
