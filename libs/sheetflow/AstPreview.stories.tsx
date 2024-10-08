@@ -11,7 +11,7 @@ interface AstPreviewProps {
 const AstPreview = (props: AstPreviewProps) => {
   const { formula = "" } = props;
 
-  const data = useFormulaAst(formula);
+  const data = useFormulaAst(formula, 'Sheet1');
 
   return <ObjectInspector expandLevel={10} data={data} />;
 };
