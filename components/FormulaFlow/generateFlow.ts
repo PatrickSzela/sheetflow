@@ -1,4 +1,4 @@
-import { BaseNode, calculateNodeSize } from "@/components/nodes";
+import { BaseNodeProps, calculateNodeSize } from "@/components/nodes";
 import {
   Ast,
   AstNodeType,
@@ -11,12 +11,12 @@ import { Edge } from "@xyflow/react";
 export const generateNodes = (
   flatAst: Ast[],
   skipParenthesis: Boolean = false
-): BaseNode[] => {
+): BaseNodeProps[] => {
   const flat = skipParenthesis
     ? flatAst.filter((i) => i.type !== AstNodeType.PARENTHESIS)
     : flatAst;
 
-  const nodes: BaseNode[] = flat.map((ast, idx) => {
+  const nodes: BaseNodeProps[] = flat.map((ast, idx) => {
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
@@ -72,10 +72,10 @@ export const generateEdges = (
 };
 
 export const injectValuesToFlow = (
-  nodes: BaseNode[],
+  nodes: BaseNodeProps[],
   edges: Edge[],
   values: Record<string, Value>
-): [BaseNode[], Edge[]] => {
+): [BaseNodeProps[], Edge[]] => {
   console.log("Modifying edges & nodes with values", values);
 
   const copyEdges = structuredClone(edges);

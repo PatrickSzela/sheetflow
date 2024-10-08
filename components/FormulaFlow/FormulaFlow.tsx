@@ -1,4 +1,4 @@
-import { BaseNode, nodeTypes } from "@/components/nodes";
+import { BaseNodeProps, nodeTypes } from "@/components/nodes";
 import { Ast, flattenAst, Value } from "@/libs/sheetflow";
 import {
   Background,
@@ -27,7 +27,7 @@ import "@xyflow/react/dist/style.css";
 // TODO: cleanup
 
 export interface FormulaFlowProps<
-  TNode extends BaseNode = BaseNode,
+  TNode extends BaseNodeProps = BaseNodeProps,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   flatAst: Ast[] | undefined;
@@ -46,11 +46,13 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { flatAst, values, skipParenthesis, ...otherProps } = props;
 
-  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<BaseNode>([]);
+  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<BaseNodeProps>(
+    []
+  );
   const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
-  const { updateNodeData } = useReactFlow<BaseNode>();
+  const { updateNodeData } = useReactFlow<BaseNodeProps>();
 
-  const [nodes, setNodes] = useState<BaseNode[]>([]);
+  const [nodes, setNodes] = useState<BaseNodeProps[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
@@ -102,7 +104,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {
       // `OnSelectionChangeFunc` isn't a generic type
-      const nodes = _nodes as BaseNode[];
+      const nodes = _nodes as BaseNodeProps[];
       let arr = prevHighlightedAst;
 
       for (const ast of arr) {

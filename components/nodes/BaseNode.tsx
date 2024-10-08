@@ -7,7 +7,7 @@ import {
 import { Handle, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
 
-export type BaseNode = Node<
+export type BaseNodeProps = Node<
   {
     ast: Ast;
     value?: Value;
@@ -40,7 +40,7 @@ export const calculateNodeSize = (ast: Ast) => {
 
 // TODO: hella ugly
 
-export const BaseNode = (props: NodeProps<BaseNode>) => {
+export const BaseNode = (props: NodeProps<BaseNodeProps>) => {
   const { data, targetPosition, sourcePosition, isConnectable, selected } =
     props;
   const {
