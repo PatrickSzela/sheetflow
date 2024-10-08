@@ -24,7 +24,7 @@ const FormulaFlowFromString = ({
   formula,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { flatAst, values, error } = useFormulaAst(formula);
+  const { flatAst, values, error } = useFormulaAst(formula, "Sheet1");
 
   return (
     <div style={{ height: "100vh" }}>
