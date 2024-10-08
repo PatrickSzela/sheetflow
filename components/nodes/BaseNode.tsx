@@ -57,6 +57,7 @@ export const BaseNode = (props: NodeProps<BaseNodeProps>) => {
     <div
       style={{
         background: "white",
+        color: "black",
         minWidth: 150,
         border: "1px solid red",
         boxShadow: `0 0 15px rgba(255,0,0,${
