@@ -1,4 +1,4 @@
-import { BaseNode, nodeTypes } from "@/components/nodes";
+import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
 import { Ast, flattenAst, Value } from "@/libs/sheetflow";
 import {
   Background,
@@ -27,7 +27,7 @@ import "@xyflow/react/dist/style.css";
 // TODO: cleanup
 
 export interface FormulaFlowProps<
-  TNode extends BaseNode = BaseNode,
+  TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   flatAst: Ast[] | undefined;
@@ -46,11 +46,11 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { flatAst, values, skipParenthesis, ...otherProps } = props;
 
-  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<BaseNode>([]);
+  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<AstNode>([]);
   const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
-  const { updateNodeData } = useReactFlow<BaseNode>();
+  const { updateNodeData } = useReactFlow<AstNode>();
 
-  const [nodes, setNodes] = useState<BaseNode[]>([]);
+  const [nodes, setNodes] = useState<AstNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
@@ -65,7 +65,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
     let ignoreLayout = false;
 
-    const nodes = generateNodes(flatAst, skipParenthesis);
+    const nodes = generateNodes(flatAst, skipParenthesis, NODE_SETTINGS);
     const edges = generateEdges(flatAst, skipParenthesis);
 
     const generateLayout = async () => {
@@ -102,7 +102,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {
       // `OnSelectionChangeFunc` isn't a generic type
-      const nodes = _nodes as BaseNode[];
+      const nodes = _nodes as AstNode[];
       let arr = prevHighlightedAst;
 
       for (const ast of arr) {

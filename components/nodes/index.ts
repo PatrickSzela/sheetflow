@@ -1,7 +1,8 @@
-import { BaseNode } from "./BaseNode";
+import { AstNode } from "./AstNode";
 
 export const nodeTypes = {
-  baseNode: BaseNode,
+  ast: AstNode,
 };
 
-export * from "./BaseNode";
+export * from "./AstNode";
+export * from "./utils";

@@ -22,7 +22,8 @@
     "next": "^14.2.14",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-inspector": "^6.0.2"
+    "react-inspector": "^6.0.2",
+    "type-fest": "^4.26.1"
   },
   "devDependencies": {
     "@storybook/addon-essentials": "^8.3.5",

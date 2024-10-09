@@ -1,131 +1,188 @@
-import {
-  Ast,
-  isAstWithChildren,
-  printCellValue,
-  Value,
-} from "@/libs/sheetflow";
-import { Handle, Node, NodeProps, Position } from "@xyflow/react";
+import { colorizeBoxShadowWithCssVar, PaletteColors } from "@/libs/mui/utils";
+import { Box, Divider, styled, Typography } from "@mui/material";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader, {
+  cardHeaderClasses,
+  CardHeaderProps,
+} from "@mui/material/CardHeader";
+import { Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
+import { MuiHandle } from "./Handle";
+import {
+  CommonNodeData,
+  NodeSettings,
+  nodeSettingToCss,
+  NodeValue,
+} from "./utils";
 
-export type BaseNode = Node<
-  {
-    ast: Ast;
-    value?: Value;
-    childrenValues?: Value[];
-    hasOutput?: boolean;
-    highlighted?: boolean;
-  },
-  "baseNode"
->;
+export type BaseNodeData = CommonNodeData & {
+  title: string;
+  icon?: React.ReactNode;
+  inputs?: NodeValue[];
+  output?: NodeValue;
+  color?: PaletteColors;
+};
+export type BaseNode = Node<BaseNodeData, "base">;
 export type BaseNodeProps = NodeProps<BaseNode>;
 
-const HEADER_HEIGHT = 23;
-const ARG_HEIGHT = 22;
-const FOOTER_HEIGHT = 23;
+interface NodeRootProps extends Omit<CardHeaderProps, "color"> {
+  color?: BaseNodeData["color"];
+}
 
-export const getPossibleChildrenCount = (ast: Ast) =>
-  isAstWithChildren(ast)
-    ? Math.max(ast.children.length, ast.requirements.maxChildCount)
-    : 0;
+interface NodeHeaderProps extends CardHeaderProps {}
 
-export const calculateNodeSize = (ast: Ast) => {
-  return {
-    height:
-      HEADER_HEIGHT +
-      getPossibleChildrenCount(ast) * ARG_HEIGHT +
-      ARG_HEIGHT +
-      FOOTER_HEIGHT,
-    width: 150,
-  };
+export const NODE_SETTINGS: NodeSettings = {
+  header: {
+    height: 20,
+    spacing: {
+      vertical: 4,
+      horizontal: 8,
+    },
+  },
+  main: {
+    height: 0,
+    spacing: {
+      vertical: 4,
+      horizontal: 0,
+    },
+  },
+  footer: {
+    height: 16,
+    spacing: {
+      vertical: 4,
+      horizontal: 0,
+    },
+  },
+  value: {
+    height: 24,
+    spacing: {
+      vertical: 0,
+      horizontal: 8,
+    },
+  },
 };
 
-// TODO: hella ugly
+const NodeRoot = styled(Card, {
+  shouldForwardProp: (prop) => prop !== "color",
+})<NodeRootProps>(({ theme, elevation, variant, color }) => ({
+  minWidth: 150,
+  overflow: "visible",
+
+  ...(color && {
+    "--node-color": theme.palette[color].main,
+    "--node-color-contrast-text": theme.palette[color].contrastText,
+
+    backgroundColor: "var(--node-color)",
+
+    ...(variant === "outlined" && {
+      borderColor: "var(--node-color)",
+    }),
+  }),
+  ...(elevation &&
+    color && {
+      boxShadow: colorizeBoxShadowWithCssVar(
+        theme.shadows[elevation],
+        "--node-color"
+      ),
+    }),
+}));
+
+const NodeHeader = styled(CardHeader, {
+  shouldForwardProp: (prop) => prop !== "color",
+})<NodeHeaderProps>(({ theme, color }) => ({
+  ...nodeSettingToCss(NODE_SETTINGS.header),
+  backgroundColor: "var(--node-color)",
+  color: "var(--node-color-contrast-text)",
+
+  [`& .${cardHeaderClasses.avatar}`]: {
+    marginRight: NODE_SETTINGS.header.spacing.vertical,
+
+    [`& svg`]: {
+      fontSize: "1.15rem",
+    },
+  },
+}));
+
+const NodeContent = styled(CardContent)(({ theme }) => ({
+  backgroundColor: "var(--mui-palette-background-paper)",
+  ...nodeSettingToCss(NODE_SETTINGS.main),
+
+  "&:last-child": {
+    paddingBottom: NODE_SETTINGS.main.spacing.vertical,
+    borderBottomLeftRadius: "inherit",
+    borderBottomRightRadius: "inherit",
+  },
+}));
+
+const NodeListValuePrimitive = styled(Box)(() => ({
+  position: "relative",
+  ...nodeSettingToCss(NODE_SETTINGS.value),
+}));
+
+const NodeDivider = styled(Divider)(() => ({
+  borderColor: "var(--node-color)",
+  borderBottomWidth: 1,
+}));
 
 export const BaseNode = (props: BaseNodeProps) => {
-  const { data, targetPosition, sourcePosition, isConnectable, selected } =
-    props;
   const {
-    ast,
-    value,
-    childrenValues,
-    hasOutput = true,
-    highlighted = false,
-  } = data;
+    data,
+    targetPosition,
+    sourcePosition,
+    isConnectable,
+    selected,
+    dragging,
+  } = props;
 
-  const childCount = getPossibleChildrenCount(ast);
+  const { highlighted, title, color, icon, inputs, output } = data;
+  const elevation = dragging ? 18 : selected ? 16 : highlighted ? 6 : 0;
 
   return (
-    <div
-      style={{
-        background: "white",
-        color: "black",
-        minWidth: 150,
-        border: "1px solid red",
-        boxShadow: `0 0 15px rgba(255,0,0,${
-          selected ? 1 : highlighted ? 0.5 : 0
-        })`,
-        overflow: "hidden",
-        boxSizing: "border-box",
-      }}
-    >
-      <header
-        style={{ borderBottom: "1px solid red", height: HEADER_HEIGHT - 1 }}
-      >
-        {ast.type}
-      </header>
+    <NodeRoot variant="outlined" color={color} elevation={elevation}>
+      <NodeHeader avatar={icon} title={title} />
 
-      <main>
-        {Array(childCount)
-          .fill(0)
-          .map((_, idx) => {
+      {inputs?.length ? (
+        <NodeContent>
+          {inputs.map(({ value, handleId }, idx) => {
             // TODO: figure out a way to extract names for args
-            const childId = `${idx}`;
-
             return (
-              <React.Fragment key={childId}>
-                <div style={{ height: ARG_HEIGHT, padding: "0 3px" }}>
-                  {childrenValues ? printCellValue(childrenValues[idx]) : ""}
-                </div>
+              <React.Fragment key={idx}>
+                <NodeListValuePrimitive>
+                  <Typography>{value}</Typography>
 
-                <Handle
-                  type="target"
-                  position={targetPosition ?? Position.Left}
-                  id={childId}
-                  isConnectable={isConnectable}
-                  style={{
-                    top: HEADER_HEIGHT + ARG_HEIGHT * idx + ARG_HEIGHT / 2,
-                  }}
-                />
+                  {handleId ? (
+                    <MuiHandle
+                      type="target"
+                      position={targetPosition ?? Position.Left}
+                      id={handleId}
+                      isConnectable={isConnectable}
+                    />
+                  ) : null}
+                </NodeListValuePrimitive>
               </React.Fragment>
             );
           })}
+        </NodeContent>
+      ) : null}
 
-        <div
-          style={{
-            height: ARG_HEIGHT,
-            textAlign: "right",
-            borderTop: "solid 1px red",
-            padding: "0 3px",
-          }}
-        >
-          {value ? printCellValue(value) : ""}
-        </div>
+      {inputs?.length && output !== undefined ? <NodeDivider /> : null}
 
-        {hasOutput ? (
-          <Handle
-            type="source"
-            position={sourcePosition ?? Position.Right}
-            isConnectable={isConnectable}
-            style={{
-              top: HEADER_HEIGHT + ARG_HEIGHT * childCount + ARG_HEIGHT / 2,
-            }}
-          />
-        ) : null}
-      </main>
+      {output !== undefined ? (
+        <NodeContent>
+          <NodeListValuePrimitive>
+            <Typography textAlign="end">{output.value}</Typography>
 
-      <footer style={{ borderTop: "1px solid red", height: FOOTER_HEIGHT - 1 }}>
-        <small style={{ textWrap: "nowrap" }}>{ast.rawContent}</small>
-      </footer>
-    </div>
+            {output.handleId !== undefined ? (
+              <MuiHandle
+                type="source"
+                position={sourcePosition ?? Position.Right}
+                isConnectable={isConnectable}
+              />
+            ) : null}
+          </NodeListValuePrimitive>
+        </NodeContent>
+      ) : null}
+    </NodeRoot>
   );
 };

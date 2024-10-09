@@ -1,4 +1,4 @@
-import { BaseNode, calculateNodeSize } from "@/components/nodes";
+import { AstNode, calculateNodeSize, NodeSettings } from "@/components/nodes";
 import {
   Ast,
   AstNodeType,
@@ -10,19 +10,20 @@ import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],
-  skipParenthesis: Boolean = false
-): BaseNode[] => {
+  skipParenthesis: Boolean = false,
+  nodeSettings: NodeSettings
+): AstNode[] => {
   const flat = skipParenthesis
     ? flatAst.filter((i) => i.type !== AstNodeType.PARENTHESIS)
     : flatAst;
 
-  const nodes: BaseNode[] = flat.map((ast, idx) => {
+  const nodes: AstNode[] = flat.map((ast, idx) => {
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
-      data: { ast, hasOutput: idx !== 0 },
-      type: "baseNode",
-      ...calculateNodeSize(ast),
+      data: { ast },
+      type: "ast",
+      ...calculateNodeSize(ast, nodeSettings),
     };
   });
 
@@ -72,10 +73,10 @@ export const generateEdges = (
 };
 
 export const injectValuesToFlow = (
-  nodes: BaseNode[],
+  nodes: AstNode[],
   edges: Edge[],
   values: Record<string, Value>
-): [BaseNode[], Edge[]] => {
+): [AstNode[], Edge[]] => {
   console.log("Modifying edges & nodes with values", values);
 
   const copyEdges = structuredClone(edges);
@@ -86,10 +87,13 @@ export const injectValuesToFlow = (
   }
 
   for (const node of copyNodes) {
-    node.data.value = values[node.data.ast.id];
+    node.data.output = { value: values[node.data.ast.id], handleId: "" };
 
-    node.data.childrenValues = isAstWithChildren(node.data.ast)
-      ? node.data.ast.children.map((ast) => values[ast.id])
+    node.data.inputs = isAstWithChildren(node.data.ast)
+      ? node.data.ast.children.map((ast, idx) => ({
+          value: values[ast.id],
+          handleId: `${idx}`,
+        }))
       : [];
   }
 
