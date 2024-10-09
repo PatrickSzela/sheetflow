@@ -7,7 +7,7 @@ import {
 } from "./ast";
 
 export interface NumberAst
-  extends AstWithValue<AstNodeSubtype.NUMBER, Number> {}
+  extends AstWithValue<AstNodeSubtype.NUMBER, number> {}
 
 export const buildNumberAst: BuildFn<NumberAst> = ({ id, ...args }) => ({
   type: AstNodeType.VALUE,
