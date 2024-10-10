@@ -140,7 +140,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       elevateNodesOnSelect
       elevateEdgesOnSelect
       fitView
-      onlyRenderVisibleElements
+      // onlyRenderVisibleElements
       {...otherProps}
     >
       <MiniMap />
