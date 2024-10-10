@@ -1,8 +1,9 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import { Sheets, useFormulaAst } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
-import { ObjectInspector } from "react-inspector";
+import { ObjectInspector, chromeLight, chromeDark } from "react-inspector";
 import { SheetFlowProvider } from "./SheetFlowProvider";
+import { useColorScheme } from "@mui/material";
 
 interface AstPreviewProps {
   formula?: string;
@@ -11,9 +12,24 @@ interface AstPreviewProps {
 const AstPreview = (props: AstPreviewProps) => {
   const { formula = "" } = props;
 
-  const data = useFormulaAst(formula, 'Sheet1');
+  const data = useFormulaAst(formula, "Sheet1");
+  const { mode, systemMode } = useColorScheme();
 
-  return <ObjectInspector expandLevel={10} data={data} />;
+  const isDarkMode =
+    (mode === "system" && systemMode === "dark") || mode === "dark";
+
+  const theme: typeof chromeDark = {
+    ...(isDarkMode ? chromeDark : chromeLight),
+    BASE_BACKGROUND_COLOR: "transparent",
+  };
+
+  return (
+    <ObjectInspector
+      expandLevel={10}
+      data={data}
+      theme={theme as any} // workaround for broken types
+    />
+  );
 };
 
 const options: HyperFormulaConfig = {
