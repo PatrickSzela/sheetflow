@@ -1,3 +1,4 @@
+import { useColorScheme } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Background,
@@ -19,6 +20,8 @@ const generateNodesFromNodeData = (data: BaseNodeData): BaseNode[] => [
 ];
 
 const BaseNodeWrapper = (props: BaseNodeData) => {
+  const { mode, systemMode } = useColorScheme();
+
   const initialNodes = useMemo<BaseNode[]>(
     () => generateNodesFromNodeData(props),
     [props]
@@ -37,7 +40,7 @@ const BaseNodeWrapper = (props: BaseNodeData) => {
       nodes={nodes}
       onNodesChange={onNodesChange}
       nodeTypes={nodeTypes}
-      colorMode="system"
+      colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}
       elevateNodesOnSelect
       elevateEdgesOnSelect

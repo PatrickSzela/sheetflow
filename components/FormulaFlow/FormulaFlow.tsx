@@ -1,5 +1,6 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
 import { Ast, flattenAst, Value } from "@/libs/sheetflow";
+import { useColorScheme } from "@mui/material";
 import {
   Background,
   Controls,
@@ -45,6 +46,8 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { flatAst, values, skipParenthesis, ...otherProps } = props;
+
+  const { mode, systemMode } = useColorScheme();
 
   const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<AstNode>([]);
   const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
@@ -135,7 +138,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       onNodesChange={onRFNodesChange}
       onEdgesChange={onRFEdgesChange}
       nodeTypes={nodeTypes}
-      colorMode="system"
+      colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}
       elevateNodesOnSelect
       elevateEdgesOnSelect

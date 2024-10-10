@@ -1,5 +1,4 @@
 import {
-  buildArrayAst,
   buildCellAddress,
   buildCellReferenceAst,
   buildCellValueFromCellContent,
@@ -9,6 +8,7 @@ import {
   buildNumberAst,
   buildStringAst,
 } from "@/libs/sheetflow";
+import { useColorScheme } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
   Background,
@@ -16,16 +16,19 @@ import {
   ReactFlowProvider,
   useNodesState,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { useMemo, useRef } from "react";
 import { AstNode, AstNodeData } from "./AstNode";
 import { nodeTypes } from "./index";
+
+import "@xyflow/react/dist/style.css";
 
 const generateNodesFromNodeData = (data: AstNodeData): AstNode[] => [
   { data, id: "", position: { x: 0, y: 0 }, type: "ast" },
 ];
 
 const AstNodeWrapper = (props: AstNodeData) => {
+  const { mode, systemMode } = useColorScheme();
+
   const initialNodes = useMemo<AstNode[]>(
     () => generateNodesFromNodeData(props),
     [props]
@@ -44,7 +47,7 @@ const AstNodeWrapper = (props: AstNodeData) => {
       nodes={nodes}
       onNodesChange={onNodesChange}
       nodeTypes={nodeTypes}
-      colorMode="system"
+      colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}
       elevateNodesOnSelect
       elevateEdgesOnSelect
