@@ -73,28 +73,39 @@ export const generateEdges = (
 };
 
 export const injectValuesToFlow = (
-  nodes: AstNode[],
-  edges: Edge[],
-  values: Record<string, Value>
-): [AstNode[], Edge[]] => {
-  console.log("Modifying edges & nodes with values", values);
+  values: Record<string, Value>,
+  nodes?: AstNode[],
+  edges?: Edge[]
+): [AstNode[] | undefined, Edge[] | undefined] => {
+  console.log("Injecting values to flow", values);
 
-  const copyEdges = structuredClone(edges);
-  const copyNodes = structuredClone(nodes);
+  let copyNodes: typeof nodes;
+  let copyEdges: typeof edges;
 
-  for (const edge of copyEdges) {
-    edge.label = printCellValue(values[edge.source]);
+  if (nodes) {
+    copyNodes = structuredClone(nodes);
+
+    copyNodes.forEach((node, idx) => {
+      node.data.output = {
+        value: values[node.data.ast.id],
+        handleId: idx ? "0" : undefined,
+      };
+
+      node.data.inputs = isAstWithChildren(node.data.ast)
+        ? node.data.ast.children.map((ast, idx) => ({
+            value: values[ast.id],
+            handleId: `${idx}`,
+          }))
+        : [];
+    });
   }
 
-  for (const node of copyNodes) {
-    node.data.output = { value: values[node.data.ast.id], handleId: "" };
+  if (edges) {
+    copyEdges = structuredClone(edges);
 
-    node.data.inputs = isAstWithChildren(node.data.ast)
-      ? node.data.ast.children.map((ast, idx) => ({
-          value: values[ast.id],
-          handleId: `${idx}`,
-        }))
-      : [];
+    for (const edge of copyEdges) {
+      edge.label = printCellValue(values[edge.source]);
+    }
   }
 
   return [copyNodes, copyEdges];

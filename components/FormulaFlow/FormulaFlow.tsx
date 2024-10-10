@@ -93,10 +93,10 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   useEffect(() => {
     if (!values || generatingLayout.current) return;
 
-    const [newNodes, newEdges] = injectValuesToFlow(nodes, edges, values);
+    const [newNodes, newEdges] = injectValuesToFlow(values, nodes);
 
-    setRFNodes(newNodes);
-    setRFEdges(newEdges);
+    setRFNodes(newNodes ?? nodes);
+    setRFEdges(newEdges ?? edges);
   }, [edges, nodes, setRFEdges, setRFNodes, values]);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
