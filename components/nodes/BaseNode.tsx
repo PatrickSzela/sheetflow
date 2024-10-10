@@ -70,8 +70,9 @@ const NodeRoot = styled(Card, {
   overflow: "visible",
 
   ...(color && {
-    "--node-color": theme.palette[color].main,
-    "--node-color-contrast-text": theme.palette[color].contrastText,
+    "--node-color": (theme.vars || theme).palette[color].main,
+    "--node-color-contrast-text": (theme.vars || theme).palette[color]
+      .contrastText,
 
     backgroundColor: "var(--node-color)",
 
