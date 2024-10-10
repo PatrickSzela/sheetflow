@@ -1,4 +1,5 @@
 import {
+  buildArrayAst,
   buildCellAddress,
   buildCellReferenceAst,
   buildCellValueFromCellContent,
@@ -6,6 +7,7 @@ import {
   buildErrorAst,
   buildFunctionAst,
   buildNumberAst,
+  buildStringAst,
 } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import {
@@ -91,6 +93,21 @@ export const NumberNodeStory: Story = {
     ast: numberNodeStoryAst,
     output: {
       value: buildCellValueFromCellContent(numberNodeStoryAst.value),
+      handleId: "0",
+    },
+  },
+};
+
+const stringNodeStoryAst = buildStringAst({
+  value: "Text",
+  rawContent: "Text",
+});
+export const StringNodeStory: Story = {
+  name: "String AST",
+  args: {
+    ast: stringNodeStoryAst,
+    output: {
+      value: buildCellValueFromCellContent(stringNodeStoryAst.value),
       handleId: "0",
     },
   },

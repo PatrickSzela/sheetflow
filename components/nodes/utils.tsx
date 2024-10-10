@@ -1,20 +1,18 @@
-import { PaletteColors } from "@/libs/mui";
+import { BaseNodeData } from "@/components/nodes/BaseNode";
 import {
   Ast,
   AstNodeType,
   isAstWithChildren,
-  isCellReferenceAst,
   printCellValue,
   Value,
 } from "@/libs/sheetflow";
-import { SvgIconComponent } from "@mui/icons-material";
 import Add from "@mui/icons-material/Add";
 import DataArray from "@mui/icons-material/DataArray";
-import ErrorOutline from "@mui/icons-material/ErrorOutline";
 import FormatShapes from "@mui/icons-material/FormatShapes";
 import Functions from "@mui/icons-material/Functions";
 import PlusOne from "@mui/icons-material/PlusOne";
 import SixtyFps from "@mui/icons-material/SixtyFps";
+import Tag from "@mui/icons-material/Tag";
 import { CSSProperties } from "react";
 
 export type NodeValue = {
@@ -47,72 +45,89 @@ export type NodeSettings = {
   footer: NodeSettingsSection;
   value: NodeSettingsSection;
 };
-
-export const astToIcon = (ast: Ast): SvgIconComponent => {
-  switch (ast.type) {
-    case AstNodeType.VALUE:
-      return SixtyFps;
-    case AstNodeType.REFERENCE:
-      return FormatShapes;
-    case AstNodeType.FUNCTION:
-      return Functions;
-    case AstNodeType.UNARY_EXPRESSION:
-      return PlusOne;
-    case AstNodeType.BINARY_EXPRESSION:
-      return Add;
-    case AstNodeType.PARENTHESIS:
-      return DataArray;
-    case AstNodeType.ERROR:
-      return ErrorOutline;
-  }
-};
-
-export const astToColor = (ast: Ast): PaletteColors => {
-  switch (ast.type) {
-    case AstNodeType.VALUE:
-      return "primary";
-    case AstNodeType.REFERENCE:
-      return "success";
-    case AstNodeType.FUNCTION:
-      return "info";
-    case AstNodeType.UNARY_EXPRESSION:
-      return "secondary";
-    case AstNodeType.BINARY_EXPRESSION:
-      return "secondary";
-    case AstNodeType.PARENTHESIS:
-      return "warning";
-    case AstNodeType.ERROR:
-      return "error";
-  }
-};
-
 export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
   ...input,
   value: printCellValue(input.value),
 });
 
 export const mergeInputs = (ast: Ast, inputs?: AstNodeValue[]): NodeValue[] => {
-  // ...Array(childCount).fill({ value: null }),
-
-  // if (isAstWithChildren(ast)) {
-  //   // const childCount = Math.max(getPossibleChildrenCount(ast), inputs.length);
-  //   const childCount = getPossibleChildrenCount(ast);
-  // } else if (isAstWithValue(ast)) {
-  // }
-
   let result: NodeValue[] = [];
-
-  // TODO: arrays
-  // TODO: other ranges
-  if (isCellReferenceAst(ast)) {
-    result.push({ value: ast.rawContent });
-  }
 
   if (inputs) {
     result = [...result, ...inputs.map(remapNodeValue)];
   }
 
   return result;
+};
+
+export const getNodeDataFromAst = (
+  ast: Ast,
+  inputs?: AstNodeValue[],
+  output?: AstNodeValue
+): BaseNodeData => {
+  let nodeData: BaseNodeData = {
+    title: "",
+    inputs: mergeInputs(ast, inputs),
+    output: output ? remapNodeValue(output) : undefined,
+  };
+
+  switch (ast.type) {
+    case AstNodeType.VALUE:
+      return {
+        ...nodeData,
+        title: ast.subtype,
+        icon: <SixtyFps />,
+        color: "primary",
+      };
+
+    case AstNodeType.REFERENCE:
+      return {
+        ...nodeData,
+        title: ast.rawContent,
+        icon: <FormatShapes />,
+        color: "success",
+      };
+
+    case AstNodeType.FUNCTION:
+      return {
+        ...nodeData,
+        title: `${ast.functionName}()`,
+        icon: <Functions />,
+        color: "info",
+      };
+
+    case AstNodeType.UNARY_EXPRESSION:
+      return {
+        ...nodeData,
+        title: ast.operatorOnRight ? `A${ast.operator}` : `${ast.operator}A`,
+        icon: <PlusOne />,
+        color: "secondary",
+      };
+
+    case AstNodeType.BINARY_EXPRESSION:
+      return {
+        ...nodeData,
+        title: `A ${ast.operator} B`,
+        icon: <Add />,
+        color: "secondary",
+      };
+
+    case AstNodeType.PARENTHESIS:
+      return {
+        ...nodeData,
+        title: ast.type,
+        icon: <DataArray />,
+        color: "warning",
+      };
+
+    case AstNodeType.ERROR:
+      return {
+        ...nodeData,
+        title: ast.type,
+        icon: <Tag />,
+        color: "error",
+      };
+  }
 };
 
 export const getPossibleChildrenCount = (ast: Ast) =>
@@ -127,7 +142,7 @@ export const nodeSettingToCss = (
 
   return {
     ...(height && {
-      height: calculateNodeSettingSection(setting),
+      height: `${calculateNodeSettingSection(setting)}px`,
     }),
     padding: `${spacing.vertical}px ${spacing.horizontal}px`,
   };

@@ -1,14 +1,7 @@
 import { Ast } from "@/libs/sheetflow";
 import { Node, NodeProps } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
-import {
-  AstNodeValue,
-  astToColor,
-  astToIcon,
-  CommonNodeData,
-  mergeInputs,
-  remapNodeValue,
-} from "./utils";
+import { AstNodeValue, CommonNodeData, getNodeDataFromAst } from "./utils";
 
 export { NODE_SETTINGS } from "./BaseNode";
 
@@ -23,25 +16,9 @@ export type AstNodeProps = NodeProps<AstNode>;
 
 export const AstNode = (props: AstNodeProps) => {
   const { data, ...otherProps } = props;
-  const { ast, inputs: _inputs, output: _output, ...otherData } = data;
+  const { ast, inputs, output, ...otherData } = data;
 
-  const Icon = astToIcon(ast);
-  const color = astToColor(ast);
-  const inputs = mergeInputs(ast, _inputs);
-  const output = _output ? remapNodeValue(_output) : undefined;
+  const _data = { ...otherData, ...getNodeDataFromAst(ast, inputs, output) };
 
-  return (
-    <BaseNode
-      {...otherProps}
-      type="base"
-      data={{
-        title: `${ast.type}`,
-        color,
-        icon: <Icon />,
-        inputs,
-        output,
-        ...otherData,
-      }}
-    />
-  );
+  return <BaseNode {...otherProps} type="base" data={_data} />;
 };
