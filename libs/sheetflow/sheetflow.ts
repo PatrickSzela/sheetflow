@@ -6,6 +6,7 @@ import {
   Ast,
   AstNodeSubtype,
   AstNodeType,
+  isEmptyAst,
   isErrorAst,
   isNamedExpressionReferenceAst,
 } from "./ast";
@@ -16,7 +17,7 @@ import {
   extractDataFromStringAddress,
 } from "./cellAddress";
 import { buildCellRange, CellRange } from "./cellRange";
-import { CellValue, Value } from "./cellValue";
+import { buildEmptyCellValue, CellValue, Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { Sheet, Sheets } from "./sheet";
@@ -228,7 +229,9 @@ export abstract class SheetFlow {
 
   calculateFormulaAst(flatAst: Ast[]): Value[] {
     return flatAst.map((ast) =>
-      this.calculateFormula(this.astToFormula(ast), SpecialSheets.FORMULAS)
+      isEmptyAst(ast)
+        ? buildEmptyCellValue({ value: null })
+        : this.calculateFormula(this.astToFormula(ast), SpecialSheets.FORMULAS)
     );
   }
 
