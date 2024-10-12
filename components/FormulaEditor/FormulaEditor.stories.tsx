@@ -93,7 +93,7 @@ export const FormulaEditorStory: Story = {
     defaultFormula:
       "=(PI()*0.5)+(-FLOOR(Sheet1!A1+Sheet1!A2*Sheet1!A3,1)*(1 + 100%))",
     skipParenthesis: true,
-    skipValues: true,
+    skipValues: false,
     language: "enUS",
   },
   argTypes: {
