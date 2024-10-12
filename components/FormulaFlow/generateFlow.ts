@@ -1,8 +1,16 @@
-import { AstNode, calculateNodeSize, NodeSettings } from "@/components/nodes";
+import {
+  AstNode,
+  AstNodeValue,
+  calculateNodeSize,
+  NodeSettings,
+} from "@/components/nodes";
 import {
   Ast,
   AstNodeType,
+  buildStringCellValue,
   isAstWithChildren,
+  isAstWithValue,
+  isParenthesisAst,
   printCellValue,
   Value,
 } from "@/libs/sheetflow";
@@ -10,18 +18,41 @@ import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],
+  nodeSettings: NodeSettings,
   skipParenthesis: Boolean = false,
-  nodeSettings: NodeSettings
+  skipValues: Boolean = false
 ): AstNode[] => {
-  const flat = skipParenthesis
-    ? flatAst.filter((i) => i.type !== AstNodeType.PARENTHESIS)
-    : flatAst;
+  let flat = flatAst;
+
+  if (skipParenthesis && flat.length > 1) {
+    flat = flat.filter((i) => !isParenthesisAst(i));
+  }
+
+  if (skipValues && flat.length > 1) {
+    flat = flat.filter((i) => !isAstWithValue(i));
+  }
+
+  if (!flat.length) flat = flatAst;
 
   const nodes: AstNode[] = flat.map((ast, idx) => {
+    let inputs: AstNodeValue[] = [];
+
+    if (isAstWithChildren(ast)) {
+      inputs = ast.children.map((child, idx) => ({
+        value: buildStringCellValue({ value: child.rawContent }),
+        handleId: skipValues && isAstWithValue(child) ? undefined : `${idx}`,
+      }));
+    }
+
+    const output: AstNodeValue = {
+      value: buildStringCellValue({ value: ast.rawContent }),
+      handleId: idx ? "0" : undefined,
+    };
+
     return {
       id: ast.id,
       position: { x: 0, y: 0 },
-      data: { ast },
+      data: { ast, inputs, output },
       type: "ast",
       ...calculateNodeSize(ast, nodeSettings),
     };
@@ -39,16 +70,18 @@ const findNearestNonParenthesisChild = (ast: Ast) => {
 
 export const generateEdges = (
   flatAst: Ast[],
-  skipParenthesis: Boolean = false
+  skipParenthesis: Boolean = false,
+  skipValues: Boolean = false
 ): Edge[] => {
   const arr: Edge[] = [];
 
   for (const ast of flatAst) {
     if (!isAstWithChildren(ast)) continue;
-    if (skipParenthesis && ast.type === AstNodeType.PARENTHESIS) continue;
+    if (skipParenthesis && isParenthesisAst(ast)) continue;
 
-    let idx = 0;
-    for (const inner of ast.children) {
+    ast.children.forEach((inner, idx) => {
+      if (skipValues && isAstWithValue(inner)) return;
+
       const child = skipParenthesis
         ? findNearestNonParenthesisChild(inner)
         : inner;
@@ -59,9 +92,7 @@ export const generateEdges = (
         target: ast.id,
         targetHandle: `${idx}`,
       });
-
-      idx++;
-    }
+    });
   }
 
   // reorder edges to be in the same order as nodes in `flatAst` for much easier way of displaying data on them
@@ -85,19 +116,17 @@ export const injectValuesToFlow = (
   if (nodes) {
     copyNodes = structuredClone(nodes);
 
-    copyNodes.forEach((node, idx) => {
-      node.data.output = {
-        value: values[node.data.ast.id],
-        handleId: idx ? "0" : undefined,
-      };
+    for (const { data } of copyNodes) {
+      if (data.output) data.output.value = values[data.ast.id];
 
-      node.data.inputs = isAstWithChildren(node.data.ast)
-        ? node.data.ast.children.map((ast, idx) => ({
-            value: values[ast.id],
-            handleId: `${idx}`,
-          }))
-        : [];
-    });
+      if (data.inputs && isAstWithChildren(data.ast)) {
+        const { children } = data.ast;
+
+        data.inputs.forEach((i, idx) => {
+          i.value = values[children[idx].id];
+        });
+      }
+    }
   }
 
   if (edges) {

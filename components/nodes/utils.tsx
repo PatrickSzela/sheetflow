@@ -45,29 +45,20 @@ export type NodeSettings = {
   footer: NodeSettingsSection;
   value: NodeSettingsSection;
 };
+
 export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
-  ...input,
   value: printCellValue(input.value),
+  handleId: input.handleId,
 });
-
-export const mergeInputs = (ast: Ast, inputs?: AstNodeValue[]): NodeValue[] => {
-  let result: NodeValue[] = [];
-
-  if (inputs) {
-    result = [...result, ...inputs.map(remapNodeValue)];
-  }
-
-  return result;
-};
 
 export const getNodeDataFromAst = (
   ast: Ast,
   inputs?: AstNodeValue[],
   output?: AstNodeValue
 ): BaseNodeData => {
-  let nodeData: BaseNodeData = {
+  const nodeData: BaseNodeData = {
     title: "",
-    inputs: mergeInputs(ast, inputs),
+    inputs: inputs?.map(remapNodeValue),
     output: output ? remapNodeValue(output) : undefined,
   };
 
@@ -130,10 +121,11 @@ export const getNodeDataFromAst = (
   }
 };
 
-export const getPossibleChildrenCount = (ast: Ast) =>
-  isAstWithChildren(ast)
-    ? Math.max(ast.children.length, ast.requirements.maxChildCount)
-    : 0;
+export const getPossibleChildrenCount = (ast: Ast) => {
+  // ignore `maxChildCount` for now, in the future remember to check for Infinity
+  // return isAstWithChildren(ast) ? Math.max(ast.children.length, ast.requirements.maxChildCount) : 0;
+  return isAstWithChildren(ast) ? ast.children.length : 0;
+};
 
 export const nodeSettingToCss = (
   setting: NodeSettingsSection

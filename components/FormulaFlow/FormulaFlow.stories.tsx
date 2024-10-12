@@ -89,6 +89,7 @@ export const FormulaFlowStory: Story = {
   args: {
     formula: "=(PI()*0.5)+(-FLOOR(Sheet1!A1+A2*A3,1)*(1 + 100%))",
     skipParenthesis: true,
+    skipValues: false,
     language: "enUS",
   },
   argTypes: {

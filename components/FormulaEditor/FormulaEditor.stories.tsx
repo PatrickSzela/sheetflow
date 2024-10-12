@@ -23,15 +23,17 @@ interface FormulaEditorFromStringProps
     Omit<SheetFlowProviderProps, "engine"> {
   language: string;
   skipParenthesis: boolean;
+  skipValues: boolean;
 }
 
 const FormulaEditorFromString = ({
   defaultFormula,
   skipParenthesis,
+  skipValues,
 }: FormulaEditorFromStringProps) => {
   const flowProps: FormulaEditorProps["flowProps"] = useMemo(
-    () => ({ skipParenthesis }),
-    [skipParenthesis]
+    () => ({ skipParenthesis, skipValues }),
+    [skipParenthesis, skipValues]
   );
 
   return (
@@ -91,6 +93,7 @@ export const FormulaEditorStory: Story = {
     defaultFormula:
       "=(PI()*0.5)+(-FLOOR(Sheet1!A1+Sheet1!A2*Sheet1!A3,1)*(1 + 100%))",
     skipParenthesis: true,
+    skipValues: true,
     language: "enUS",
   },
   argTypes: {
@@ -119,6 +122,7 @@ export const FormulaEditorStoryMix: Story = {
     defaultFormula:
       "=ARRAYFORMULA({1,2,3;4,5,6;7,8,9}+Sheet1!A1:C3+NamedExp1st+NamedExp2nd*NamedExp3rd)",
     skipParenthesis: true,
+    skipValues: false,
     language: "enUS",
   },
   argTypes: {

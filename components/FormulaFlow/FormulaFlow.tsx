@@ -34,6 +34,7 @@ export interface FormulaFlowProps<
   flatAst: Ast[] | undefined;
   values: Record<string, Value> | undefined;
   skipParenthesis?: Boolean;
+  skipValues?: Boolean;
 }
 
 export const FormulaFlow = (props: FormulaFlowProps) => {
@@ -45,7 +46,7 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { flatAst, values, skipParenthesis, ...otherProps } = props;
+  const { flatAst, values, skipParenthesis, skipValues, ...otherProps } = props;
 
   const { mode, systemMode } = useColorScheme();
 
@@ -68,8 +69,13 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
     let ignoreLayout = false;
 
-    const nodes = generateNodes(flatAst, skipParenthesis, NODE_SETTINGS);
-    const edges = generateEdges(flatAst, skipParenthesis);
+    const nodes = generateNodes(
+      flatAst,
+      NODE_SETTINGS,
+      skipParenthesis,
+      skipValues
+    );
+    const edges = generateEdges(flatAst, skipParenthesis, skipValues);
 
     const generateLayout = async () => {
       const elkNodes = await generateElkLayout(nodes, edges);
@@ -90,7 +96,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     return () => {
       ignoreLayout = true;
     };
-  }, [flatAst, skipParenthesis]);
+  }, [flatAst, skipParenthesis, skipValues]);
 
   // inject calculated values to layout and place it
   useEffect(() => {
