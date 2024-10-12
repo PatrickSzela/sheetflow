@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithValue,
   BuildFn,
+  isAst,
   isAstWithValue,
 } from "./ast";
 
@@ -16,6 +17,8 @@ export const buildEmptyAst: BuildFn<EmptyAst> = ({ id, ...args }) => ({
 });
 
 export const isEmptyAst = (ast: any): ast is EmptyAst => {
+  if (!isAst(ast)) return false;
+
   const { subtype, value } = ast as EmptyAst;
 
   return (

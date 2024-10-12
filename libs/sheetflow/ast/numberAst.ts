@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithValue,
   BuildFn,
+  isAst,
   isAstWithValue,
 } from "./ast";
 
@@ -17,6 +18,8 @@ export const buildNumberAst: BuildFn<NumberAst> = ({ id, ...args }) => ({
 });
 
 export const isNumberAst = (ast: any): ast is NumberAst => {
+  if (!isAst(ast)) return false;
+
   const { subtype, value } = ast as NumberAst;
 
   return (

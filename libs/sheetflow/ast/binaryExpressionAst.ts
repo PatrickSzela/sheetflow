@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithChildren,
   BuildFn,
+  isAst,
   isAstWithChildren,
   Operators,
 } from "./ast";
@@ -22,6 +23,8 @@ export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = ({
 });
 
 export const isBinaryExpressionAst = (ast: any): ast is BinaryExpressionAst => {
+  if (!isAst(ast)) return false;
+
   const { type, operator, children } = ast as BinaryExpressionAst;
 
   return (

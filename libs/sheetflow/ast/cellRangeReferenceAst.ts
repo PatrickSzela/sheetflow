@@ -24,10 +24,11 @@ export const buildCellRangeReferenceAst: BuildFn<CellRangeReferenceAst> = ({
 export const isCellRangeReferenceAst = (
   ast: any
 ): ast is CellRangeReferenceAst => {
+  if (!isAst(ast)) return false;
+
   const { type, subtype, start, end, sheet } = ast as CellRangeReferenceAst;
 
   return (
-    isAst(ast) &&
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.CELL_RANGE &&
     isCellRange({ start, end }) &&

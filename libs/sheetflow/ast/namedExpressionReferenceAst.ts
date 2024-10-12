@@ -26,10 +26,11 @@ export const buildNamedExpressionReferenceAst: BuildFn<
 export const isNamedExpressionReferenceAst = (
   ast: any
 ): ast is NamedExpressionReferenceAst => {
+  if (!isAst(ast)) return false;
+
   const { type, subtype, expressionName } = ast as NamedExpressionReferenceAst;
 
   return (
-    isAst(ast) &&
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.NAMED_EXPRESSION &&
     typeof expressionName === "string" &&

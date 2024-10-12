@@ -18,6 +18,8 @@ export const buildArrayAst: BuildFn<ArrayAst> = ({ id, ...args }) => ({
 });
 
 export const isArrayAst = (ast: any): ast is ArrayAst => {
+  if (!isAst(ast)) return false;
+
   const { subtype, value } = ast as ArrayAst;
 
   return (

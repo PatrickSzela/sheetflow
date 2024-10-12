@@ -21,10 +21,11 @@ export const buildCellReferenceAst: BuildFn<CellReferenceAst> = ({
   ...args,
 });
 export const isCellReferenceAst = (ast: any): ast is CellReferenceAst => {
+  if (!isAst(ast)) return false;
+
   const { type, subtype, reference } = ast as CellReferenceAst;
 
   return (
-    isAst(ast) &&
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.CELL &&
     isCellAddress(reference)

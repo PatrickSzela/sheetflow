@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithChildren,
   BuildFn,
+  isAst,
   isAstWithChildren,
   Operators,
 } from "./ast";
@@ -23,6 +24,8 @@ export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = ({
 });
 
 export const isUnaryExpressionAst = (ast: any): ast is UnaryExpressionAst => {
+  if (!isAst(ast)) return false;
+
   const { type, operator, operatorOnRight, children } =
     ast as UnaryExpressionAst;
 

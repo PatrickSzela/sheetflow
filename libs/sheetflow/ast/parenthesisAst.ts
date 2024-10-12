@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithChildren,
   BuildFn,
+  isAst,
   isAstWithChildren,
 } from "./ast";
 
@@ -19,6 +20,8 @@ export const buildParenthesisAst: BuildFn<ParenthesisAst> = ({
 });
 
 export const isParenthesisAst = (ast: any): ast is ParenthesisAst => {
+  if (!isAst(ast)) return false;
+
   const { type, children } = ast as ParenthesisAst;
 
   return (

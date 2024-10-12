@@ -3,6 +3,7 @@ import {
   AstNodeType,
   AstWithChildren,
   BuildFn,
+  isAst,
   isAstWithChildren,
 } from "./ast";
 
@@ -18,6 +19,8 @@ export const buildFunctionAst: BuildFn<FunctionAst> = ({ id, ...args }) => ({
 });
 
 export const isFunctionAst = (ast: any): ast is FunctionAst => {
+  if (!isAst(ast)) return false;
+
   const { type, functionName } = ast as FunctionAst;
 
   return (

@@ -22,10 +22,11 @@ export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = ({
 export const isRowRangeReferenceAst = (
   ast: any
 ): ast is RowRangeReferenceAst => {
+  if (!isAst(ast)) return false;
+
   const { type, subtype, start, end, sheet } = ast as RowRangeReferenceAst;
 
   return (
-    isAst(ast) &&
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.ROW_RANGE &&
     // TODO: move to isRowRange

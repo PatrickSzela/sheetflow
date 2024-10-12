@@ -87,6 +87,8 @@ export interface AstBase<TType extends AstNodeType = AstNodeType> {
   isArrayFormula?: boolean;
 }
 export const isAst = (ast: any): ast is AstBase => {
+  if (typeof ast !== "object") return false;
+
   const { type, id, rawContent, isArrayFormula } = ast as AstBase;
 
   return (
@@ -118,10 +120,11 @@ export interface AstWithChildren<
 export const isAstWithChildren = (
   ast: any
 ): ast is AstWithChildren<AstNodeType, Ast[]> => {
+  if (!isAst(ast)) return false;
+
   const { children, requirements } = ast as AstWithChildren<AstNodeType, Ast[]>;
 
   return (
-    isAst(ast) &&
     Array.isArray(children) &&
     typeof requirements === "object" &&
     typeof requirements.minChildCount === "number" &&
@@ -139,13 +142,12 @@ export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
 export const isAstWithValue = (
   ast: any
 ): ast is AstWithValue<AstNodeSubtype, any> => {
+  if (!isAst(ast)) return false;
+
   const { type, subtype } = ast as AstWithValue<AstNodeSubtype, any>;
 
   return (
-    isAst(ast) &&
-    type === AstNodeType.VALUE &&
-    subtype in AstNodeSubtype &&
-    "value" in ast
+    type === AstNodeType.VALUE && subtype in AstNodeSubtype && "value" in ast
   );
 };
 

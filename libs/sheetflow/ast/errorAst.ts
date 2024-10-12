@@ -11,6 +11,9 @@ export const buildErrorAst: BuildFn<ErrorAst> = ({ id, ...args }) => ({
 });
 
 export const isErrorAst = (ast: any): ast is ErrorAst => {
+  if (!isAst(ast)) return false;
+
   const { type, error } = ast as ErrorAst;
-  return isAst(ast) && type === AstNodeType.ERROR && typeof error === "string";
+
+  return type === AstNodeType.ERROR && typeof error === "string";
 };
