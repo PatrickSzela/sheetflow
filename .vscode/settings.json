@@ -12,6 +12,7 @@
     "unmap",
     "unparse",
     "unparser",
-    "xyflow"
+    "xyflow",
+    "clsx"
   ]
 }

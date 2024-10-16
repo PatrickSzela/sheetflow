@@ -1,10 +1,13 @@
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
+import { PaperTextField } from "@/components/PaperTextField";
 import {
   groupReferencesBySheet,
   useFormulaAst,
   useSheetFlow,
 } from "@/libs/sheetflow";
+import { ErrorOutline } from "@mui/icons-material";
+import { Box, Drawer, InputAdornment } from "@mui/material";
 import { useMemo, useState } from "react";
 
 export interface FormulaEditorProps {
@@ -37,8 +40,17 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   );
 
   return (
-    <div style={{ display: "flex", height: "100%" }}>
-      <aside style={{ width: 300 }}>
+    <Box display="flex" width="100%" height="100%">
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: 240,
+          "& .MuiDrawer-paper": {
+            width: 240,
+            boxSizing: "border-box",
+          },
+        }}
+      >
         <DependenciesEditor
           cells={cells}
           namedExpressions={namedExpressions}
@@ -57,26 +69,41 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
             sf.setNamedExpression(name, "");
           }}
         />
-      </aside>
+      </Drawer>
 
-      <main style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        <input
+      <Box position="relative" flex="1">
+        <PaperTextField
           defaultValue={defaultFormula}
           onChange={(e) => {
             setFormula(e.target.value);
           }}
-          style={{
+          pill
+          size="small"
+          error={!!error}
+          sx={{
+            position: "absolute",
+            top: 16,
+            left: 16,
+            right: 16,
+            zIndex: 1,
+          }}
+          slotProps={{
             ...(error && {
-              borderColor: "red",
-              backgroundColor: "rgba(255,0,0,0.15)",
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <ErrorOutline color="error" titleAccess={error} />
+                  </InputAdornment>
+                ),
+              },
             }),
           }}
         />
 
-        <div style={{ flex: 1 }}>
+        <Box width="100%" height="100%">
           <FormulaFlow flatAst={flatAst} values={values} {...flowProps} />
-        </div>
-      </main>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 };
