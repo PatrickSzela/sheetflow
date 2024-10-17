@@ -1,4 +1,11 @@
-import { decomposeColor, Palette, PaletteColor } from "@mui/material";
+import {
+  decomposeColor,
+  Interpolation,
+  Palette,
+  PaletteColor,
+  Theme,
+} from "@mui/material";
+import createSimplePaletteValueFilter from "@mui/material/utils/createSimplePaletteValueFilter";
 import { ConditionalPick, Simplify } from "type-fest";
 
 export type PaletteColors = Simplify<
@@ -36,3 +43,16 @@ export const colorizeBoxShadowWithCssVar = (
     boxShadow,
     fallback ? `var(${color}, ${fallback})` : `var(${color})`
   );
+
+export const generatePaletteVariants = <TProps>(
+  theme: Theme,
+  mapper: (color: PaletteColors) => {
+    props: Partial<TProps>;
+    style: Interpolation<{ theme: Theme }>;
+  }[]
+) => {
+  return Object.entries(theme.palette)
+    .filter(createSimplePaletteValueFilter())
+    .map(([color]) => mapper(color as PaletteColors))
+    .flat();
+};

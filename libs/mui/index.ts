@@ -1,4 +1,2 @@
-import type {} from "@mui/material/themeCssVarsAugmentation";
-
-export * from "./utils";
 export * from "./theme";
+export * from "./utils";
