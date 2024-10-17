@@ -1,7 +1,9 @@
 import { decomposeColor, Palette, PaletteColor } from "@mui/material";
-import { ConditionalPick } from "type-fest";
+import { ConditionalPick, Simplify } from "type-fest";
 
-export type PaletteColors = keyof ConditionalPick<Palette, PaletteColor>;
+export type PaletteColors = Simplify<
+  keyof ConditionalPick<Palette, PaletteColor>
+>;
 
 export const colorizeBoxShadow = (boxShadow: string, color: string): string => {
   let shadows = boxShadow.split(/,(?![^\(]*\))/g);
