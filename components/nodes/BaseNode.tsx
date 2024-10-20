@@ -1,4 +1,8 @@
-import { colorizeBoxShadowWithCssVar, PaletteColors } from "@/libs/mui/utils";
+import {
+  colorizeBoxShadowWithCssVar,
+  generatePaletteVariants,
+  PaletteColors,
+} from "@/libs/mui/utils";
 import {
   Box,
   Divider,
@@ -6,14 +10,16 @@ import {
   Typography,
   typographyClasses,
 } from "@mui/material";
-import Card from "@mui/material/Card";
+import Card, { CardProps } from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader, {
   cardHeaderClasses,
   CardHeaderProps,
 } from "@mui/material/CardHeader";
+import { useDefaultProps } from "@mui/material/DefaultPropsProvider";
 import { HandleProps, Node, NodeProps, Position } from "@xyflow/react";
 import React from "react";
+import { SetOptional } from "type-fest";
 import { Handle } from "./Handle";
 import {
   CommonNodeData,
@@ -21,7 +27,6 @@ import {
   nodeSettingToCss,
   NodeValue,
 } from "./utils";
-import { SetOptional } from "type-fest";
 
 export type BaseNodeData = CommonNodeData & {
   title: string;
@@ -33,11 +38,9 @@ export type BaseNodeData = CommonNodeData & {
 export type BaseNode = Node<BaseNodeData, "base">;
 export type BaseNodeProps = NodeProps<BaseNode>;
 
-interface NodeRootProps extends Omit<CardHeaderProps, "color"> {
+interface NodeRootProps extends Omit<CardProps, "color"> {
   color?: BaseNodeData["color"];
 }
-
-interface NodeHeaderProps extends CardHeaderProps {}
 
 export const NODE_SETTINGS: NodeSettings = {
   header: {
@@ -74,43 +77,60 @@ const NodeRoot = styled(Card, {
   shouldForwardProp: (prop) => prop !== "color",
 })<NodeRootProps>(({ theme, elevation, variant, color }) => ({
   minWidth: 150,
-  overflow: "visible",
+  overflow: "visible", // allow handle to overflow outside the node
 
-  ...(variant === "outlined" && {
-    "--node-border-width": "2px",
-    borderWidth: "var(--node-border-width)",
-
-    [`& .${cardHeaderClasses.root}`]: {
-      paddingTop: `calc(${NODE_SETTINGS.header.spacing.vertical}px - var(--node-border-width))`,
-    },
-  }),
-
-  ...(color && {
-    "--node-color": (theme.vars || theme).palette[color].main,
-    "--node-color-contrast-text": (theme.vars || theme).palette[color]
-      .contrastText,
-
-    backgroundColor: "var(--node-color)",
-
-    ...(variant === "outlined" && {
-      borderColor: "var(--node-color)",
-    }),
-  }),
-
-  ...(elevation &&
+  // TODO: move to `style` prop, similar to Paper
+  ...(variant === "outlined" &&
+    elevation &&
     color && {
       boxShadow: colorizeBoxShadowWithCssVar(
         theme.shadows[elevation],
-        "--node-color"
+        "--Node-color"
       ),
     }),
+
+  variants: [
+    ...generatePaletteVariants<NodeRootProps>(theme, (color) => [
+      {
+        props: {
+          color,
+        },
+        style: {
+          "--Node-color": (theme.vars || theme).palette[color].main,
+          "--Node-colorContrastText": (theme.vars || theme).palette[color]
+            .contrastText,
+          "--Node-handleColor": "var(--Node-color)",
+        },
+      },
+    ]),
+    {
+      props: {
+        variant: "outlined",
+      },
+      style: {
+        "--Node-borderWidth": "2px",
+        "--Node-handleColor": (theme.vars || theme).palette.background.paper,
+
+        border: "none",
+
+        "& .NodeContent-root": {
+          border: "solid var(--Node-borderWidth, 2px) var(--Node-color)",
+          borderTopWidth: 1,
+          borderBottomLeftRadius: "inherit",
+          borderBottomRightRadius: "inherit",
+          marginTop: -1,
+        },
+      },
+    },
+  ],
 }));
 
-const NodeHeader = styled(CardHeader, {
-  shouldForwardProp: (prop) => prop !== "color",
-})<NodeHeaderProps>(({ theme, color }) => ({
+const NodeHeader = styled(CardHeader)<CardHeaderProps>(() => ({
   ...nodeSettingToCss(NODE_SETTINGS.header),
-  color: "var(--node-color-contrast-text)",
+  color: "var(--Node-colorContrastText)",
+  backgroundColor: "var(--Node-color)",
+  borderTopLeftRadius: "inherit",
+  borderTopRightRadius: "inherit",
 
   [`& .${cardHeaderClasses.avatar}`]: {
     marginRight: NODE_SETTINGS.header.spacing.vertical,
@@ -127,14 +147,11 @@ const NodeHeader = styled(CardHeader, {
   },
 }));
 
-const NodeContent = styled(CardContent)(({ theme }) => ({
-  backgroundColor: "var(--mui-palette-background-paper)",
+const NodeSection = styled(CardContent)(() => ({
   ...nodeSettingToCss(NODE_SETTINGS.main),
 
   "&:last-child": {
     paddingBottom: `${NODE_SETTINGS.main.spacing.vertical}px`,
-    borderBottomLeftRadius: "inherit",
-    borderBottomRightRadius: "inherit",
   },
 }));
 
@@ -150,8 +167,8 @@ const NodeListValuePrimitive = styled(Box)(() => ({
 }));
 
 const NodeDivider = styled(Divider)(() => ({
-  borderColor: "var(--node-color)",
-  borderBottomWidth: "var(--node-border-width)",
+  borderColor: "var(--Node-color)",
+  borderBottomWidth: "var(--Node-borderWidth, 2px)",
 }));
 
 export const BaseNode = (props: BaseNodeProps) => {
@@ -164,50 +181,65 @@ export const BaseNode = (props: BaseNodeProps) => {
     dragging,
   } = props;
 
-  const { highlighted, title, color, icon, inputs, output } = data;
-  const elevation = dragging ? 18 : selected ? 16 : highlighted ? 6 : 0;
+  const { highlighted, title, color = "primary", icon, inputs, output } = data;
+
+  const { variant, elevation: defaultElevation } = useDefaultProps<CardProps>({
+    props: { color, variant: "outlined" }, // TODO: move to theme
+    name: "MuiCard",
+  });
+
+  const elevation = dragging
+    ? 18
+    : selected
+    ? 16
+    : highlighted
+    ? 6
+    : defaultElevation;
 
   return (
-    <NodeRoot variant="outlined" color={color} elevation={elevation}>
+    <NodeRoot variant={variant} color={color} elevation={elevation}>
       <NodeHeader
         avatar={icon}
         title={title}
         titleTypographyProps={{ title }}
       />
 
-      {inputs?.length ? (
-        <NodeContent>
-          {inputs.map((input, idx) => {
-            // TODO: figure out a way to extract names for args
-            return (
-              <Value
-                key={idx}
-                type="input"
-                HandleProps={{
-                  position: targetPosition ?? Position.Left,
-                  isConnectable,
-                }}
-                {...input}
-              />
-            );
-          })}
-        </NodeContent>
-      ) : null}
+      {/* TODO: generate classes the proper way */}
+      <Box className="NodeContent-root">
+        {inputs?.length ? (
+          <NodeSection>
+            {inputs.map((input, idx) => {
+              // TODO: figure out a way to extract names for args
+              return (
+                <Value
+                  key={idx}
+                  type="input"
+                  HandleProps={{
+                    position: targetPosition ?? Position.Left,
+                    isConnectable,
+                  }}
+                  {...input}
+                />
+              );
+            })}
+          </NodeSection>
+        ) : null}
 
-      {inputs?.length && output !== undefined ? <NodeDivider /> : null}
+        {inputs?.length && output !== undefined ? <NodeDivider /> : null}
 
-      {output !== undefined ? (
-        <NodeContent>
-          <Value
-            type="output"
-            HandleProps={{
-              position: sourcePosition ?? Position.Right,
-              isConnectable,
-            }}
-            {...output}
-          />
-        </NodeContent>
-      ) : null}
+        {output !== undefined ? (
+          <NodeSection>
+            <Value
+              type="output"
+              HandleProps={{
+                position: sourcePosition ?? Position.Right,
+                isConnectable,
+              }}
+              {...output}
+            />
+          </NodeSection>
+        ) : null}
+      </Box>
     </NodeRoot>
   );
 };
@@ -220,7 +252,7 @@ interface ValueProps extends NodeValue {
 const Value = (props: ValueProps) => {
   const { value, handleId, type, HandleProps } = props;
 
-  let prefixedValue = `${type === "output" ? "=" : ""}${value}`;
+  const prefixedValue = `${type === "output" ? "=" : ""}${value}`;
 
   return (
     <NodeListValuePrimitive title={prefixedValue}>
