@@ -45,8 +45,6 @@ const MainRoot = styled(Box, {
     ])
     .flat();
 
-  console.log(variants);
-
   return {
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.sharp,
