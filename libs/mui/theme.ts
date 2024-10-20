@@ -75,6 +75,4 @@ const tokens: Parameters<typeof createTheme>[0] = {
   },
 };
 
-console.log(createTheme(tokens));
-
 export const theme = createTheme(tokens);
