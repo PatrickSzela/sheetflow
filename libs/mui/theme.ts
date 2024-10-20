@@ -1,7 +1,10 @@
 import { PaperProps } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import type {} from "./themeAugmentation.d.ts";
-import { generatePaletteVariants } from "./utils";
+import {
+  generatePaletteVariants,
+  injectColorizedShadowsToColorScheme,
+} from "./utils";
 
 const base = createTheme({
   colorSchemes: {
@@ -11,10 +14,7 @@ const base = createTheme({
 });
 
 const tokens: Parameters<typeof createTheme>[0] = {
-  colorSchemes: {
-    ...base.colorSchemes,
-  },
-
+  colorSchemes: injectColorizedShadowsToColorScheme(base),
   cssVariables: {
     colorSchemeSelector: ".mui-%s",
   },
@@ -74,5 +74,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
     },
   },
 };
+
+console.log(createTheme(tokens));
 
 export const theme = createTheme(tokens);

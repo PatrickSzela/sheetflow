@@ -1,14 +1,11 @@
-import {
-  colorizeBoxShadowWithCssVar,
-  generatePaletteVariants,
-  PaletteColors,
-} from "@/libs/mui/utils";
+import { generatePaletteVariants, PaletteColors } from "@/libs/mui/utils";
 import {
   Box,
   Divider,
   styled,
   Typography,
   typographyClasses,
+  useTheme,
 } from "@mui/material";
 import Card, { CardProps } from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -18,7 +15,7 @@ import CardHeader, {
 } from "@mui/material/CardHeader";
 import { useDefaultProps } from "@mui/material/DefaultPropsProvider";
 import { HandleProps, Node, NodeProps, Position } from "@xyflow/react";
-import React from "react";
+import React, { useMemo } from "react";
 import { SetOptional } from "type-fest";
 import { Handle } from "./Handle";
 import {
@@ -75,19 +72,9 @@ export const NODE_SETTINGS: NodeSettings = {
 
 const NodeRoot = styled(Card, {
   shouldForwardProp: (prop) => prop !== "color",
-})<NodeRootProps>(({ theme, elevation, variant, color }) => ({
+})<NodeRootProps>(({ theme }) => ({
   minWidth: 150,
   overflow: "visible", // allow handle to overflow outside the node
-
-  // TODO: move to `style` prop, similar to Paper
-  ...(variant === "outlined" &&
-    elevation &&
-    color && {
-      boxShadow: colorizeBoxShadowWithCssVar(
-        theme.shadows[elevation],
-        "--Node-color"
-      ),
-    }),
 
   variants: [
     ...generatePaletteVariants<NodeRootProps>(theme, (color) => [
@@ -100,6 +87,15 @@ const NodeRoot = styled(Card, {
           "--Node-colorContrastText": (theme.vars || theme).palette[color]
             .contrastText,
           "--Node-handleColor": "var(--Node-color)",
+        },
+      },
+      {
+        props: {
+          color,
+          variant: "outlined",
+        },
+        style: {
+          boxShadow: "var(--Node-shadow)",
         },
       },
     ]),
@@ -188,16 +184,29 @@ export const BaseNode = (props: BaseNodeProps) => {
     name: "MuiCard",
   });
 
-  const elevation = dragging
-    ? 18
-    : selected
-    ? 16
-    : highlighted
-    ? 6
-    : defaultElevation;
+  const theme = useTheme();
+
+  let elevation = defaultElevation ?? (variant === "elevation" ? 1 : 0);
+  if (dragging) elevation = 18;
+  else if (selected) elevation = 16;
+  else if (highlighted) elevation = 6;
+
+  const style = useMemo<NodeRootProps["style"]>(() => {
+    if (elevation && variant === "outlined") {
+      const shadows = (theme.vars || theme).palette[color].colorizedShadows;
+      return {
+        "--Node-shadow": shadows[elevation],
+      } as NodeRootProps["style"];
+    }
+  }, [color, elevation, theme, variant]);
 
   return (
-    <NodeRoot variant={variant} color={color} elevation={elevation}>
+    <NodeRoot
+      variant={variant}
+      color={color}
+      elevation={elevation}
+      style={style}
+    >
       <NodeHeader
         avatar={icon}
         title={title}
