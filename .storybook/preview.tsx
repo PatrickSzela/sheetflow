@@ -1,50 +1,41 @@
-import { ThemeProvider, useColorScheme } from "@mui/material";
-import CssBaseline from "@mui/material/CssBaseline";
-import { withThemeFromJSXProvider } from "@storybook/addon-themes";
+import { ThemeProvider, useColorScheme, CssBaseline } from "@mui/material";
 import type { Preview } from "@storybook/react";
-import React, { useEffect } from "react";
+import React, { PropsWithChildren, useEffect } from "react";
+import { useDarkMode } from "storybook-dark-mode";
 import { theme } from "../libs/mui";
 
-interface ColorSchemeSwitcherProps {
-  forcedColorScheme: "dark" | "light" | "system";
-}
+// WORKAROUND: `storybook-dark-mode` pinned at version `4.0.1` because of a bug:
+// https://github.com/hipstersmoothie/storybook-dark-mode/issues/282
 
-// WORKAROUND: very hacky workaround to support changing color scheme from Storybook
-const ColorSchemeSwitcher = ({
-  forcedColorScheme,
-}: ColorSchemeSwitcherProps) => {
-  const { mode, setMode } = useColorScheme();
+const ColorSchemeSwitcher = () => {
+  const isStorybookInDarkMode = useDarkMode();
+  const { setMode } = useColorScheme();
 
   useEffect(() => {
-    if (forcedColorScheme && mode && forcedColorScheme !== mode) {
-      setMode(forcedColorScheme);
-    }
-  }, [mode, forcedColorScheme]);
+    setMode(isStorybookInDarkMode ? "dark" : "light");
+  }, [isStorybookInDarkMode]);
 
   return null;
 };
 
+const MuiThemeProvider = ({ children }: PropsWithChildren) => {
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline enableColorScheme />
+      <ColorSchemeSwitcher />
+
+      {children}
+    </ThemeProvider>
+  );
+};
+
 const preview: Preview = {
   decorators: [
-    withThemeFromJSXProvider({
-      themes: {
-        Light: "light" as any,
-        Dark: "dark" as any,
-        System: "system" as any,
-      },
-      defaultTheme: "System",
-      Provider: (p) => {
-        const { theme: forcedColorScheme, children, ...rest } = p;
-
-        return (
-          <ThemeProvider {...rest} theme={theme}>
-            <ColorSchemeSwitcher forcedColorScheme={forcedColorScheme} />
-            {children}
-          </ThemeProvider>
-        );
-      },
-      GlobalStyles: () => <CssBaseline enableColorScheme />,
-    }),
+    (Story) => (
+      <MuiThemeProvider>
+        <Story />
+      </MuiThemeProvider>
+    ),
   ],
   parameters: {
     controls: {
