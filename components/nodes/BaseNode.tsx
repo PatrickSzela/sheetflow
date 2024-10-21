@@ -73,8 +73,11 @@ export const NODE_SETTINGS: NodeSettings = {
 const NodeRoot = styled(Card, {
   shouldForwardProp: (prop) => prop !== "color",
 })<NodeRootProps>(({ theme }) => ({
+  "--Node-borderRadius": (theme.vars || theme).shape.borderRadius,
+
   minWidth: 150,
   overflow: "visible", // allow handle to overflow outside the node
+  borderRadius: "var(--Node-borderRadius)",
 
   variants: [
     ...generatePaletteVariants<NodeRootProps>(theme, (color) => [
@@ -108,13 +111,21 @@ const NodeRoot = styled(Card, {
         "--Node-handleColor": (theme.vars || theme).palette.background.paper,
 
         border: "none",
+        background: "var(--Node-color)",
 
         "& .NodeContent-root": {
+          backgroundColor: (theme.vars || theme).palette.background.paper,
           border: "solid var(--Node-borderWidth, 2px) var(--Node-color)",
-          borderTopWidth: 1,
-          borderBottomLeftRadius: "inherit",
-          borderBottomRightRadius: "inherit",
-          marginTop: -1,
+          borderRadius: "inherit",
+          marginTop:
+            "calc(-1 * (var(--Node-borderRadius) + var(--Node-borderWidth)))",
+        },
+
+        "& .MuiCardHeader-root": {
+          borderLeft: "solid var(--Node-borderWidth, 2px) var(--Node-color)",
+          borderRight: "solid var(--Node-borderWidth, 2px) var(--Node-color)",
+          borderBottom: "solid var(--Node-borderRadius) var(--Node-color)",
+          height: "calc(28px + var(--Node-borderRadius))",
         },
       },
     },
