@@ -75,7 +75,7 @@ export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
     .map(([color]) => color) as UnionToTuple<PaletteColors>;
 };
 
-export const injectColorizedShadowsToColorScheme = (
+export const injectShadowsToColorSchemes = (
   theme: Theme
 ): Theme["colorSchemes"] => {
   const colorNames = extractPaletteColorNames(theme);
@@ -84,7 +84,7 @@ export const injectColorizedShadowsToColorScheme = (
   for (const scheme of Object.keys(colorSchemes) as SupportedColorScheme[]) {
     for (const color of colorNames) {
       const palette = colorSchemes[scheme]!.palette[color];
-      palette.colorizedShadows = theme.shadows.map((shadow) =>
+      palette.shadows = theme.shadows.map((shadow) =>
         colorizeBoxShadow(shadow, palette.main)
       ) as Shadows;
     }

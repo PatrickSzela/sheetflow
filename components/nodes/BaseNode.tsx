@@ -204,7 +204,7 @@ export const BaseNode = (props: BaseNodeProps) => {
 
   const style = useMemo<NodeRootProps["style"]>(() => {
     if (elevation && variant === "outlined") {
-      const shadows = (theme.vars || theme).palette[color].colorizedShadows;
+      const shadows = (theme.vars || theme).palette[color].shadows;
       return {
         "--Node-shadow": shadows[elevation],
       } as NodeRootProps["style"];

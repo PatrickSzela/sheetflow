@@ -10,11 +10,11 @@ declare module "@mui/material/Paper" {
 
 declare module "@mui/material/styles" {
   interface PaletteColor {
-    colorizedShadows: Shadows;
+    shadows: Shadows;
   }
 
   interface SimplePaletteColorOptions {
-    colorizedShadows: Shadows;
+    shadows: Shadows;
   }
 }
 
