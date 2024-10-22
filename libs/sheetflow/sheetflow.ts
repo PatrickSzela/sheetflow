@@ -18,14 +18,11 @@ import {
 } from "./cellAddress";
 import { buildCellRange, CellRange } from "./cellRange";
 import { buildEmptyCellValue, CellValue, Value } from "./cellValue";
+import { Change } from "./change";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { Sheet, Sheets } from "./sheet";
 import { SpecialSheets } from "./utils";
-
-export type CellChange = { address: CellAddress; value: Value };
-export type NamedExpressionChange = { name: string; value: Value };
-export type Change = CellChange | NamedExpressionChange;
 
 export type Reference = CellAddress | CellRange | string;
 

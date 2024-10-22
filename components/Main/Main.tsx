@@ -1,11 +1,16 @@
+import Close from "@mui/icons-material/Close";
 import {
   Box,
   BoxProps,
   capitalize,
   Drawer,
   DrawerProps,
+  IconButton,
   Interpolation,
+  Stack,
   styled,
+  Toolbar,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -69,7 +74,7 @@ const MainRoot = styled(Box, {
 export const Main = (props: MainProps) => {
   const { slotProps, children, ...restProps } = props;
   const { drawer = {} } = slotProps ?? {};
-  const { anchor } = drawer ?? {};
+  const { anchor, children: drawerChildren } = drawer ?? {};
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("sm"));
@@ -93,7 +98,25 @@ export const Main = (props: MainProps) => {
             boxSizing: "border-box",
           },
         }}
-      />
+      >
+        <Toolbar
+          variant="dense"
+          disableGutters
+          sx={{ paddingLeft: 2, paddingRight: 1 }}
+        >
+          <Stack width="100%" alignItems="center" direction="row">
+            <Typography flex={1} variant="h6">
+              Dependencies
+            </Typography>
+
+            <IconButton onClick={() => drawer.onClose?.({}, "backdropClick")}>
+              <Close />
+            </IconButton>
+          </Stack>
+        </Toolbar>
+
+        {drawerChildren}
+      </Drawer>
 
       {anchor === "left" ? child : null}
     </Box>

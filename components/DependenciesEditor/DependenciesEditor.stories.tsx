@@ -1,6 +1,7 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   groupReferencesBySheet,
+  NamedExpressions,
   SheetFlowProvider,
   Sheets,
   useSheetFlow,
@@ -25,7 +26,19 @@ const sheets: Sheets = {
     [1, 2, 3],
     ["=1+2+3", "=A1+A2+A3"],
   ],
+  Sheet2: [[4, 5, 6]],
 };
+
+const namedExpressions: NamedExpressions = [
+  {
+    name: "Number",
+    expression: "123",
+  },
+  {
+    name: "String",
+    expression: "text",
+  },
+];
 
 interface DependenciesEditorFromStringProps
   extends Omit<DependenciesEditorProps, "cells"> {
@@ -39,12 +52,7 @@ const DependenciesEditorFromString =
 
     return (
       <div style={{ height: "100vh" }}>
-        <DependenciesEditor
-          cells={cells}
-          onCellChange={(address, value) => {
-            sf.setCell(sf.stringToCellAddress(address), value);
-          }}
-        />
+        <DependenciesEditor cells={cells} namedExpressions={namedExpressions} />
       </div>
     );
   };
@@ -69,6 +77,7 @@ const meta = {
         <SheetFlowProvider
           engine={HyperFormulaEngine}
           sheets={sheets}
+          namedExpressions={namedExpressions}
           config={config}
         >
           <Story />

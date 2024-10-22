@@ -1,226 +1,131 @@
 import {
-  CellContent,
+  ContentTextField,
+  ContentTextFieldProps,
+} from "@/components/ContentTextField";
+import {
   GroupedCells,
   NamedExpressions,
   extractDataFromStringAddress,
 } from "@/libs/sheetflow";
-import React, { useRef, useState } from "react";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  InputLabel,
+  Typography,
+} from "@mui/material";
+import React from "react";
 
 export interface DependenciesEditorProps {
   cells?: GroupedCells;
   namedExpressions?: NamedExpressions;
-  missingSheets?: string[];
-  missingNamedExpressions?: string[];
-  onCellChange?: (address: string, value: CellContent) => void;
-  onNamedExpressionChange?: (name: string, value: CellContent) => void;
-  onSheetAdd?: (name: string) => void;
-  onNamedExpressionAdd?: (name: string) => void;
+  onClose?: () => void;
 }
 
-// TODO: simplify
+type DependencyData = ({ id: string; label: string } & Omit<
+  ContentTextFieldProps,
+  "id" | "label"
+>)[];
 
-export const DependenciesEditor = (props: DependenciesEditorProps) => {
-  const {
-    cells = {},
-    namedExpressions = [],
-    missingSheets,
-    missingNamedExpressions,
-    onCellChange,
-    onNamedExpressionChange,
-    onSheetAdd,
-    onNamedExpressionAdd,
-  } = props;
+interface DependencyAccordion {
+  title: string;
+  variant: "addresses" | "namedExpressions";
+  data: DependencyData;
+}
 
-  const addSheetInput = useRef<HTMLInputElement>(null);
-  const addNamedExpressionInput = useRef<HTMLInputElement>(null);
-  const addMissingSheetSelect = useRef<HTMLSelectElement>(null);
-  const addMissingNamedExpressionSelect = useRef<HTMLSelectElement>(null);
-  const [addSheet, setAddSheet] = useState("");
-  const [addNamedExpression, setAddNamedExpression] = useState("");
+// TODO: transparent Accordion variant
+
+const DependencyAccordion = (props: DependencyAccordion) => {
+  const { title, data, variant } = props;
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ flex: 1 }}>
-        {Object.entries(cells).map(([sheet, cells]) => {
-          return (
-            <React.Fragment key={sheet}>
-              <span>{sheet}:</span>
+    <Accordion disableGutters square variant="outlined" defaultExpanded>
+      <AccordionSummary
+        expandIcon={<ArrowDropDownIcon />}
+        aria-controls={title}
+        id={title}
+      >
+        <Typography>{title}</Typography>
+      </AccordionSummary>
 
-              {cells.map(({ stringAddress, address, content }) => {
-                const { position } =
-                  extractDataFromStringAddress(stringAddress);
+      <AccordionDetails>
+        <Box
+          display="grid"
+          gridTemplateColumns={variant === "addresses" ? "auto auto" : "auto"}
+          alignItems="center"
+          rowGap={variant === "addresses" ? 1 : 2}
+          columnGap={2}
+        >
+          {data.map(({ id, label, ...rest }) => (
+            <React.Fragment key={id}>
+              {variant === "addresses" ? (
+                <InputLabel htmlFor={id} title={label}>
+                  {label}
+                </InputLabel>
+              ) : null}
 
-                return (
-                  <div key={stringAddress} style={{ display: "flex" }}>
-                    <label htmlFor={stringAddress}>{position}:</label>
-
-                    <input
-                      id={stringAddress}
-                      defaultValue={
-                        typeof content === "number" ||
-                        typeof content === "string"
-                          ? content
-                          : undefined
-                      }
-                      onChange={(e) => {
-                        const v = e.currentTarget.value;
-                        let newVal: CellContent;
-
-                        if (v === "") {
-                          newVal = null;
-                        } else if (!Number.isNaN(Number(v))) {
-                          newVal = Number(v);
-                        } else {
-                          newVal = v;
-                        }
-
-                        onCellChange?.(stringAddress, newVal);
-                      }}
-                    />
-                  </div>
-                );
-              })}
-
-              <hr />
-            </React.Fragment>
-          );
-        })}
-
-        {namedExpressions.length ? <span>Named expressions:</span> : null}
-        {namedExpressions.map(({ name, expression, scope }, idx) => {
-          const key = `${name}_${scope}_${idx}`;
-
-          return (
-            <div key={key} style={{ display: "flex" }}>
-              <label htmlFor={key}>{name}:</label>
-
-              <input
-                id={key}
-                defaultValue={
-                  typeof expression === "number" ||
-                  typeof expression === "string"
-                    ? expression
-                    : undefined
-                }
-                onChange={(e) => {
-                  const v = e.currentTarget.value;
-                  let newVal: CellContent;
-
-                  if (v === "") {
-                    newVal = null;
-                  } else if (!Number.isNaN(Number(v))) {
-                    newVal = Number(v);
-                  } else {
-                    newVal = v;
-                  }
-
-                  onNamedExpressionChange?.(name, newVal);
-                }}
+              <ContentTextField
+                id={id}
+                fullWidth
+                size="small"
+                hiddenLabel={variant === "addresses"}
+                label={variant === "addresses" ? undefined : label}
+                {...rest}
               />
-            </div>
-          );
-        })}
-      </div>
+            </React.Fragment>
+          ))}
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+  );
+};
 
-      <div>
-        {missingSheets?.length && onSheetAdd ? (
-          <div>
-            <label htmlFor="addMissingSheet">Add missing sheet:</label>
+export const DependenciesEditor = (props: DependenciesEditorProps) => {
+  const { cells = {}, namedExpressions = [], onClose } = props;
 
-            <select ref={addMissingSheetSelect}>
-              {missingSheets.map((sheet) => (
-                <option id="addMissingSheet" key={sheet} value={sheet}>
-                  {sheet}
-                </option>
-              ))}
-            </select>
+  const namedExpressionData: DependencyAccordion["data"] = namedExpressions.map(
+    ({ name, scope }) => ({
+      id: `${name}_${scope}`,
+      addressOrNamedExpressionName: name,
+      scope,
+      label: scope ? `${name} (${scope})` : name,
+    })
+  );
 
-            <button
-              onClick={() => {
-                const value = addMissingSheetSelect.current?.value;
-                if (value) onSheetAdd(value);
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ) : null}
-      </div>
+  return (
+    <Box>
+      {Object.entries(cells).map(([sheet, cells]) => {
+        const data: DependencyAccordion["data"] = cells.map(
+          ({ stringAddress, address }) => {
+            const { position } = extractDataFromStringAddress(stringAddress);
 
-      <div>
-        {missingNamedExpressions?.length && onNamedExpressionAdd ? (
-          <div>
-            <label htmlFor="addMissingNamedExpression">
-              Add missing named expression:
-            </label>
+            return {
+              id: stringAddress,
+              addressOrNamedExpressionName: address,
+              label: position,
+            };
+          }
+        );
 
-            <select ref={addMissingNamedExpressionSelect}>
-              {missingNamedExpressions.map((namedExpression) => (
-                <option
-                  id="addMissingNamedExpression"
-                  key={namedExpression}
-                  value={namedExpression}
-                >
-                  {namedExpression}
-                </option>
-              ))}
-            </select>
+        return (
+          <DependencyAccordion
+            key={sheet}
+            title={sheet}
+            data={data}
+            variant="addresses"
+          />
+        );
+      })}
 
-            <button
-              onClick={() => {
-                const value = addMissingNamedExpressionSelect.current?.value;
-                if (value) onNamedExpressionAdd(value);
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ) : null}
-      </div>
-
-      <div>
-        {onSheetAdd ? (
-          <div>
-            <input
-              ref={addSheetInput}
-              onChange={(e) => setAddSheet(e.currentTarget.value)}
-              placeholder="Add sheet"
-            />
-            <button
-              onClick={() => {
-                if (addSheetInput.current) {
-                  onSheetAdd(addSheet);
-                  addSheetInput.current.value = "";
-                  setAddSheet("");
-                }
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ) : null}
-
-        {onNamedExpressionAdd ? (
-          <div>
-            <input
-              ref={addNamedExpressionInput}
-              onChange={(e) => setAddNamedExpression(e.currentTarget.value)}
-              placeholder="Add named expression"
-            />
-            <button
-              onClick={() => {
-                if (addNamedExpressionInput.current) {
-                  onNamedExpressionAdd(addNamedExpression);
-                  addNamedExpressionInput.current.value = "";
-                  setAddNamedExpression("");
-                }
-              }}
-            >
-              Add
-            </button>
-          </div>
-        ) : null}
-      </div>
-    </div>
+      {namedExpressions.length ? (
+        <DependencyAccordion
+          title="Named Expressions"
+          data={namedExpressionData}
+          variant="namedExpressions"
+        />
+      ) : null}
+    </Box>
   );
 };
