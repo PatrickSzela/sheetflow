@@ -180,6 +180,10 @@ export abstract class SheetFlow {
     return empty - 1;
   }
 
+  getExistingAstData(uuid: string): AstSheetData[string] | undefined {
+    return this.astSheets[uuid];
+  }
+
   getFormulaAst(formula: string, scope: string, place: boolean = false) {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);

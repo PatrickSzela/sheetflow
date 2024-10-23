@@ -21,6 +21,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
         root: {
           "&.MuiPaper-pill": {
             borderRadius: "calc(var(--implicit-height, 24) / 2)",
+            minHeight: "var(--implicit-height)",
           },
 
           "&.MuiPaper-forceBorder": {

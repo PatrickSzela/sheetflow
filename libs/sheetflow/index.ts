@@ -12,4 +12,5 @@ export * from "./SheetFlowProvider";
 export * from "./useFormulaAst";
 export * from "./useValue";
 export * from "./useContent";
+export * from "./usePrecedents";
 export * from "./utils";
