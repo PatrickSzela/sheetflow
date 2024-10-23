@@ -1,11 +1,20 @@
-import { Stack, StackProps, styled } from "@mui/material";
+import { Box, BoxProps, styled } from "@mui/material";
 
-const OverlayRoot = styled(Stack)(({ theme }) => ({
+const OverlayRoot = styled(Box)(({ theme }) => ({
   position: "relative",
   height: "100%",
   width: "100%",
   padding: theme.spacing(2),
   pointerEvents: "none",
+  display: "grid",
+  gap: theme.spacing(2),
+  gridTemplateAreas: `
+    'top      top       top'
+    'left     center    right'
+    'bottom   bottom    bottom'
+  `,
+  gridTemplateColumns: "auto 1fr auto",
+  gridTemplateRows: "auto 1fr auto",
 
   // reset pointerEvents for children
   "& > *": {
@@ -13,6 +22,6 @@ const OverlayRoot = styled(Stack)(({ theme }) => ({
   },
 }));
 
-export const Overlay = (props: StackProps) => {
-  return <OverlayRoot direction="column" {...props} />;
+export const Overlay = (props: BoxProps) => {
+  return <OverlayRoot {...props} />;
 };

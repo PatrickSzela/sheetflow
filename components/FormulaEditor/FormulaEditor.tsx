@@ -1,7 +1,8 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
+import { Toolbar } from "@/components/Toolbar";
 import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
-import { ErrorOutline } from "@mui/icons-material";
+import { Check, Error, SvgIconComponent, Warning } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -9,11 +10,12 @@ import {
   Button,
   InputAdornment,
   InputBase,
-  Paper,
-  Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
+type State = "success" | "warning" | "error";
 
 export interface FormulaEditorProps {
   scope: string;
@@ -49,27 +51,60 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     sf.resumeEvaluation();
   }, [missing.namedExpressions, missing.sheets, sf]);
 
+  let state: State = "success";
+  let title: string | undefined;
+  let description: string | undefined;
+  let action: React.ReactNode;
+  let Icon: SvgIconComponent;
+
+  if (error) {
+    state = "error";
+  } else if (missing.namedExpressions.length || missing.sheets.length) {
+    state = "warning";
+  }
+
+  switch (state) {
+    case "success":
+      Icon = Check;
+      title = "Formula is valid";
+      break;
+
+    case "warning":
+      Icon = Warning;
+      title = "Missing references";
+      description =
+        "Your formula refers to sheets or named expressions that are currently missing. Would you like to add them?";
+      action = (
+        <Button color="inherit" size="small" onClick={addMissing}>
+          Add
+        </Button>
+      );
+      break;
+
+    case "error":
+      Icon = Error;
+      title = "Error";
+      description = error;
+      break;
+  }
+
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
   useEffect(() => {
     uuid && onFocus?.(uuid);
   }, [onFocus, uuid]);
 
   return (
-    <Box position="relative" flex="1" width="100%" height="100%">
+    <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
         <FormulaFlow flatAst={flatAst} values={values} {...flowProps} />
       </Box>
 
       <Overlay>
-        <Paper
-          component={Stack}
-          className="MuiPaper-pill MuiPaper-forceBorder"
-          sx={{
-            "--implicit-height": "40px",
-          }}
-          spacing={1}
-          direction="row"
-          color={error ? "error" : undefined}
+        <Toolbar
+          shape="pill"
+          interactive
+          color={state}
+          sx={{ gridArea: "top" }}
         >
           <InputBase
             defaultValue={defaultFormula}
@@ -80,30 +115,30 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
             error={!!error}
             sx={{ flex: 1, paddingRight: 1, paddingLeft: 2 }}
             endAdornment={
-              error && (
-                <InputAdornment position="end">
-                  <ErrorOutline color="error" titleAccess={error} />
-                </InputAdornment>
-              )
+              <InputAdornment position="end">
+                <Tooltip title={title}>
+                  <Icon color={state} titleAccess={error} />
+                </Tooltip>
+              </InputAdornment>
             }
           />
-        </Paper>
+        </Toolbar>
 
-        {missing.sheets?.length || missing.namedExpressions?.length ? (
+        {title && description ? (
           <Alert
-            severity="warning"
-            action={
-              <Button color="inherit" size="small" onClick={addMissing}>
-                Add
-              </Button>
-            }
+            severity={state}
+            icon={false}
+            sx={{
+              gridArea: "right",
+              alignSelf: "start",
+              flexDirection: "column",
+              width: 300,
+            }}
+            action={action}
           >
-            <AlertTitle>Missing sheets and/or named expressions</AlertTitle>
+            <AlertTitle>{title}</AlertTitle>
 
-            <Typography variant="inherit">
-              Your formula refers to sheets or named expressions that are
-              currently missing. Would you like to add them?
-            </Typography>
+            <Typography variant="inherit">{description}</Typography>
           </Alert>
         ) : null}
       </Overlay>

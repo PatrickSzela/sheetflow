@@ -96,3 +96,8 @@ export const injectShadowsToColorSchemes = (
 
   return colorSchemes;
 };
+
+export const generateColorOverlay = (color: string, opacity: number) => {
+  const overlay = changeColorOpacity(color, opacity);
+  return `linear-gradient(${overlay}, ${overlay})`;
+};
