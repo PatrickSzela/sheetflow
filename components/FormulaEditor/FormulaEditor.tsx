@@ -1,4 +1,5 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
+import { Overlay } from "@/components/Overlay";
 import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
 import { ErrorOutline } from "@mui/icons-material";
 import {
@@ -55,11 +56,11 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   return (
     <Box position="relative" flex="1" width="100%" height="100%">
-      <Box width="100%" height="100%">
+      <Box position="absolute" sx={{ inset: 0 }}>
         <FormulaFlow flatAst={flatAst} values={values} {...flowProps} />
       </Box>
 
-      <Box position="absolute" padding={0.5} top={16} left={16} right={16}>
+      <Overlay>
         <Paper
           component={Stack}
           className="MuiPaper-pill MuiPaper-forceBorder"
@@ -105,7 +106,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
             </Typography>
           </Alert>
         ) : null}
-      </Box>
+      </Overlay>
     </Box>
   );
 };
