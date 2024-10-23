@@ -88,7 +88,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
   const namedExpressionData: DependencyAccordion["data"] = namedExpressions.map(
     ({ name, scope }) => ({
       id: `${name}_${scope}`,
-      addressOrNamedExpressionName: name,
+      reference: name,
       scope,
       label: scope ? `${name} (${scope})` : name,
     })
@@ -103,7 +103,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
 
             return {
               id: stringAddress,
-              addressOrNamedExpressionName: address,
+              reference: address,
               label: position,
             };
           }

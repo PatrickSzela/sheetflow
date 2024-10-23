@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSheetFlow } from "./SheetFlowProvider";
 import { CellContent } from "./cell";
-import { CellAddress, isCellAddress } from "./cellAddress";
+import { isCellAddress } from "./cellAddress";
+import { isCellRange } from "./cellRange";
+import { Reference } from "./sheetflow";
 
 export const useContent = (
-  addressOrNamedExpressionName: CellAddress | string,
+  reference: Reference,
   scope?: string
 ): {
   content: CellContent | undefined;
@@ -13,30 +15,35 @@ export const useContent = (
   const sf = useSheetFlow();
 
   const [content, setContent] = useState<CellContent>();
-  const isAddress = isCellAddress(addressOrNamedExpressionName);
 
   const setSfContent = useCallback(
     (content: CellContent) => {
       setContent(content);
 
-      if (isAddress) {
-        sf.setCell(addressOrNamedExpressionName, content);
+      if (isCellAddress(reference)) {
+        sf.setCell(reference, content);
+      } else if (isCellRange(reference)) {
+        // TODO: implement cell range
+        throw new Error("Cell range not yet implemented");
       } else {
-        sf.setNamedExpression(addressOrNamedExpressionName, content, scope);
+        sf.setNamedExpression(reference, content, scope);
       }
     },
-    [addressOrNamedExpressionName, isAddress, scope, sf]
+    [reference, scope, sf]
   );
 
   useEffect(() => {
     // TODO: create `ContentChanged` event in SheetFlow
 
-    setContent(
-      isAddress
-        ? sf.getCell(addressOrNamedExpressionName)
-        : sf.getNamedExpression(addressOrNamedExpressionName, scope).expression
-    );
-  }, [addressOrNamedExpressionName, isAddress, scope, sf]);
+    if (isCellAddress(reference)) {
+      setContent(sf.getCell(reference));
+    } else if (isCellRange(reference)) {
+      // TODO: implement cell range
+      throw new Error("Cell range not yet implemented");
+    } else {
+      setContent(sf.getNamedExpression(reference, scope).expression);
+    }
+  }, [reference, scope, sf]);
 
   return {
     content,

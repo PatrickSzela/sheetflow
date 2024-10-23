@@ -1,34 +1,38 @@
 import { useEffect, useState } from "react";
 import { useSheetFlow } from "./SheetFlowProvider";
-import { CellAddress, isCellAddress } from "./cellAddress";
+import { isCellAddress } from "./cellAddress";
+import { isCellRange } from "./cellRange";
 import { Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
-import { Events } from "./sheetflow";
+import { Events, Reference } from "./sheetflow";
 
-export const useValue = (
-  addressOrNamedExpressionName: CellAddress | string
-): Value | undefined => {
+export const useValue = (reference: Reference): Value | undefined => {
   const sf = useSheetFlow();
 
   const [value, setValue] = useState<Value>();
 
   useEffect(() => {
-    const isAddress = isCellAddress(addressOrNamedExpressionName);
+    // TODO: implement cell range
+    if (isCellRange(reference))
+      throw new Error("Cell range not yet implemented");
 
     const onValuesChanged: Events["valuesChanged"] = (changes) => {
       changes.some((change) => {
-        if (isAddress && isCellChange(change)) {
-          setValue(sf.getCellValue(addressOrNamedExpressionName));
-        } else if (!isAddress && isNamedExpressionChange(change)) {
-          setValue(sf.getNamedExpressionValue(addressOrNamedExpressionName));
+        if (isCellAddress(reference) && isCellChange(change)) {
+          setValue(sf.getCellValue(reference));
+        } else if (
+          typeof reference === "string" &&
+          isNamedExpressionChange(change)
+        ) {
+          setValue(sf.getNamedExpressionValue(reference));
         }
       });
     };
 
     setValue(
-      isAddress
-        ? sf.getCellValue(addressOrNamedExpressionName)
-        : sf.getNamedExpressionValue(addressOrNamedExpressionName)
+      isCellAddress(reference)
+        ? sf.getCellValue(reference)
+        : sf.getNamedExpressionValue(reference)
     );
 
     sf.on("valuesChanged", onValuesChanged);
@@ -36,7 +40,7 @@ export const useValue = (
     return () => {
       sf.off("valuesChanged", onValuesChanged);
     };
-  }, [addressOrNamedExpressionName, sf]);
+  }, [reference, sf]);
 
   return value;
 };
