@@ -16,6 +16,10 @@ export type PaletteColors = Simplify<
 >;
 export type PaletteColorNames = Simplify<UnionToTuple<PaletteColors>>;
 
+export const changeColorOpacity = (color: string, opacity: number) => {
+  return `rgb(from ${color} r g b / ${opacity})`;
+};
+
 export const changeBoxShadowColor = (
   boxShadow: string,
   colorCallback: (decomposedColor: ColorObject) => string
@@ -40,8 +44,8 @@ export const changeBoxShadowColor = (
 
 export const colorizeBoxShadow = (boxShadow: string, color: string): string => {
   return changeBoxShadowColor(boxShadow, ({ values }) => {
-    const alpha = (values[3] ?? 1) * 100;
-    return `color-mix(in srgb, ${color} ${alpha}%, transparent)`;
+    const alpha = values[3] ?? 1;
+    return changeColorOpacity(color, alpha);
   });
 };
 
