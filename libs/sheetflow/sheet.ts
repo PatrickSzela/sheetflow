@@ -30,7 +30,6 @@ export const groupReferencesBySheet = (
   for (const ref of references) {
     if (typeof ref === "string") {
       if (!sf.doesNamedExpressionExists(ref)) {
-        console.warn(`Named expression \`${ref}\` doesn't exists`);
         continue;
       }
 
@@ -39,7 +38,6 @@ export const groupReferencesBySheet = (
       const { sheet } = ref;
 
       if (!sf.doesSheetExists(sheet)) {
-        console.warn(`Sheet \`${sheet}\` doesn't exists`);
         continue;
       }
 
@@ -57,7 +55,6 @@ export const groupReferencesBySheet = (
       const { sheet } = start;
 
       if (!sf.doesSheetExists(sheet)) {
-        console.warn(`Sheet \`${sheet}\` doesn't exists`);
         continue;
       }
 
