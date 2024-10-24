@@ -45,7 +45,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     }
 
     for (const namedExpression of missing.namedExpressions ?? []) {
-      sf.setNamedExpression(namedExpression, "");
+      sf.addNamedExpression(namedExpression);
     }
 
     sf.resumeEvaluation();

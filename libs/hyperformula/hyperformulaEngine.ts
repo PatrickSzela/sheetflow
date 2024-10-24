@@ -287,16 +287,19 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapNamedExpression(this.hf, serialized);
   }
 
+  addNamedExpression(name: string, content?: CellContent, scope?: string) {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    this.hf.addNamedExpression(name, content, sheetId);
+  }
+
   setNamedExpression(name: string, content: CellContent, scope?: string) {
     const sheetId =
       scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
     try {
-      if (!this.hf.listNamedExpressions().includes(name)) {
-        this.hf.addNamedExpression(name, content, sheetId);
-      } else {
-        this.hf.changeNamedExpression(name, content, sheetId);
-      }
+      this.hf.changeNamedExpression(name, content, sheetId);
     } catch (e) {
       if (e instanceof NoRelativeAddressesAllowedError) {
         // TODO: add info about absolute addresses not supported

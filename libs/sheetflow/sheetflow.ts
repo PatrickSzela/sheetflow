@@ -141,6 +141,11 @@ export abstract class SheetFlow {
 
   abstract getNamedExpressions(): NamedExpressions;
   abstract getNamedExpression(name: string, scope?: string): NamedExpression;
+  abstract addNamedExpression(
+    name: string,
+    content?: CellContent,
+    scope?: string
+  ): void;
   abstract setNamedExpression(
     name: string,
     content: CellContent,
