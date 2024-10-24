@@ -1,10 +1,10 @@
 import { Shadows } from "@mui/material";
 import type {} from "@mui/material/themeCssVarsAugmentation";
-import { PaletteColors } from "./utils";
+import { PaletteColorName } from "./utils";
 
 declare module "@mui/material/Paper" {
   interface PaperOwnProps {
-    color?: PaletteColors;
+    color?: PaletteColorName;
   }
 }
 

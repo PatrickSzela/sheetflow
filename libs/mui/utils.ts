@@ -11,10 +11,10 @@ import {
 import createSimplePaletteValueFilter from "@mui/material/utils/createSimplePaletteValueFilter";
 import { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
 
-export type PaletteColors = Simplify<
+export type PaletteColorName = Simplify<
   keyof ConditionalPick<Palette, PaletteColor>
 >;
-export type PaletteColorNames = Simplify<UnionToTuple<PaletteColors>>;
+export type PaletteColorNames = Simplify<UnionToTuple<PaletteColorName>>;
 
 export const changeColorOpacity = (color: string, opacity: number) => {
   return `rgb(from ${color} r g b / ${opacity})`;
@@ -62,21 +62,21 @@ export const colorizeBoxShadowWithCssVar = (
 
 export const generatePaletteVariants = <TProps>(
   theme: Theme,
-  mapper: (color: PaletteColors) => {
+  mapper: (color: PaletteColorName) => {
     props: Partial<TProps>;
     style: Interpolation<{ theme: Theme }>;
   }[]
 ) => {
   return Object.entries(theme.palette)
     .filter(createSimplePaletteValueFilter())
-    .map(([color]) => mapper(color as PaletteColors))
+    .map(([color]) => mapper(color as PaletteColorName))
     .flat();
 };
 
 export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
   return Object.entries(theme.palette)
     .filter(createSimplePaletteValueFilter())
-    .map(([color]) => color) as UnionToTuple<PaletteColors>;
+    .map(([color]) => color) as UnionToTuple<PaletteColorName>;
 };
 
 export const injectShadowsToColorSchemes = (

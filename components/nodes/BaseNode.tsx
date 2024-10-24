@@ -1,4 +1,4 @@
-import { generatePaletteVariants, PaletteColors } from "@/libs/mui/utils";
+import { generatePaletteVariants, PaletteColorName } from "@/libs/mui/utils";
 import {
   Box,
   Divider,
@@ -30,7 +30,7 @@ export type BaseNodeData = CommonNodeData & {
   icon?: React.ReactNode;
   inputs?: NodeValue[];
   output?: NodeValue;
-  color?: PaletteColors;
+  color?: PaletteColorName;
 };
 export type BaseNode = Node<BaseNodeData, "base">;
 export type BaseNodeProps = NodeProps<BaseNode>;
