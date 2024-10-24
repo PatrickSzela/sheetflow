@@ -5,7 +5,7 @@ import {
   Background,
   Controls,
   Edge,
-  MiniMap,
+  FitViewOptions,
   OnSelectionChangeFunc,
   ReactFlow,
   ReactFlowProps,
@@ -26,6 +26,10 @@ import {
 import "@xyflow/react/dist/style.css";
 
 // TODO: cleanup
+
+const fitViewOptions: FitViewOptions = {
+  padding: 0.2,
+};
 
 export interface FormulaFlowProps<
   TNode extends AstNode = AstNode,
@@ -149,11 +153,13 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       elevateNodesOnSelect
       elevateEdgesOnSelect
       fitView
+      minZoom={0.5}
+      maxZoom={1.5}
+      fitViewOptions={fitViewOptions}
       // onlyRenderVisibleElements
       {...otherProps}
     >
-      <MiniMap />
-      <Controls />
+      <Controls fitViewOptions={fitViewOptions} />
       <Background />
     </ReactFlow>
   );
