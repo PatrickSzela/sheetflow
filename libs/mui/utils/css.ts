@@ -48,3 +48,13 @@ export const generateColorOverlay = (color: string, opacity: number) => {
   const overlay = changeColorOpacity(color, opacity);
   return `linear-gradient(${overlay}, ${overlay})`;
 };
+
+export const mixColors = (
+  color1: string,
+  color2: string,
+  percentage: number
+) => {
+  const p1 = `calc(100% - ${percentage} * 100%)`;
+  const p2 = `calc(${percentage} * 100%)`;
+  return `color-mix(in srgb, ${color1} ${p1}, ${color2} ${p2})`;
+};

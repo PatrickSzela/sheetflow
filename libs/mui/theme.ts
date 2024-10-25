@@ -2,10 +2,11 @@ import {
   outlinedInputClasses,
   OutlinedInputProps,
   PaperProps,
+  svgIconClasses,
 } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import type {} from "./themeAugmentation.d.ts";
-import { enhanceTheme, generatePaletteVariants } from "./utils";
+import { enhanceTheme, generatePaletteVariants, mixColors } from "./utils";
 
 const base = createTheme({
   colorSchemes: {
@@ -17,19 +18,30 @@ const base = createTheme({
 const { colorSchemes } = enhanceTheme(base);
 
 const tokens: Parameters<typeof createTheme>[0] = {
-  colorSchemes: colorSchemes,
+  colorSchemes,
   cssVariables: {
     colorSchemeSelector: ".mui-%s",
   },
   components: {
+    // TODO: move to a custom component
     MuiOutlinedInput: {
       styleOverrides: {
+        root: ({ theme }) => ({
+          transition: theme.transitions.create(["background-color"], {
+            duration: theme.transitions.duration.shortest,
+          }),
+        }),
         adornedEnd: ({ theme }) => ({
+          // TODO: icons are being remounted, use JS instead
           paddingRight: theme.spacing(1),
         }),
-        notchedOutline: {
+        notchedOutline: ({ theme }) => ({
           borderWidth: 2,
-        },
+
+          transition: theme.transitions.create(["border-color"], {
+            duration: theme.transitions.duration.shortest,
+          }),
+        }),
       },
       variants: [
         ...generatePaletteVariants<OutlinedInputProps>(base, (color) => [
@@ -39,6 +51,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
             },
             style: ({ theme }) => {
               const palette = (theme.vars || theme).palette[color];
+              const action = (theme.vars || theme).palette.action;
 
               return {
                 [`& .${outlinedInputClasses.notchedOutline}`]: {
@@ -46,7 +59,11 @@ const tokens: Parameters<typeof createTheme>[0] = {
                 },
 
                 "&:hover": {
-                  backgroundImage: palette.overlays.hover,
+                  backgroundColor: mixColors(
+                    "transparent",
+                    palette.main,
+                    action.hoverOpacity
+                  ),
 
                   [`& .${outlinedInputClasses.notchedOutline}`]: {
                     borderColor: palette.main,
@@ -54,7 +71,11 @@ const tokens: Parameters<typeof createTheme>[0] = {
                 },
 
                 [`&.${outlinedInputClasses.focused}`]: {
-                  backgroundImage: palette.overlays.focus,
+                  backgroundColor: mixColors(
+                    "transparent",
+                    palette.main,
+                    action.focusOpacity
+                  ),
 
                   [`& .${outlinedInputClasses.notchedOutline}`]: {
                     borderColor: palette.main,
