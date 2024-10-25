@@ -1,4 +1,4 @@
-import { generateColorOverlay, generatePaletteVariants } from "@/libs/mui";
+import { generatePaletteVariants } from "@/libs/mui";
 import { AppBar, AppBarProps, styled } from "@mui/material";
 
 export interface ToolbarProps extends Omit<AppBarProps, "enableColorOnDark"> {
@@ -38,11 +38,7 @@ const ToolbarRoot = styled((props) => <AppBar enableColorOnDark {...props} />, {
         },
         style: {
           borderColor: (theme.vars || theme).palette[color].main,
-          // TODO: move to palette
-          backgroundImage: generateColorOverlay(
-            (theme.vars || theme).palette[color].main,
-            0.08
-          ),
+          backgroundImage: (theme.vars || theme).palette[color].overlays.hover,
         },
       },
     ]),

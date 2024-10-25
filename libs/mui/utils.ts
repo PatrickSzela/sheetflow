@@ -16,6 +16,13 @@ export type PaletteColorName = Simplify<
 >;
 export type PaletteColorNames = Simplify<UnionToTuple<PaletteColorName>>;
 
+export type PaletteOverlays = {
+  active: string;
+  focus: string;
+  hover: string;
+  selected: string;
+};
+
 export const changeColorOpacity = (color: string, opacity: number) => {
   return `rgb(from ${color} r g b / ${opacity})`;
 };
@@ -79,9 +86,7 @@ export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
     .map(([color]) => color) as UnionToTuple<PaletteColorName>;
 };
 
-export const injectShadowsToColorSchemes = (
-  theme: Theme
-): Theme["colorSchemes"] => {
+export const injectShadowsToColorSchemes = (theme: Theme): Theme => {
   const colorNames = extractPaletteColorNames(theme);
   const colorSchemes = theme.colorSchemes;
 
@@ -94,7 +99,33 @@ export const injectShadowsToColorSchemes = (
     }
   }
 
-  return colorSchemes;
+  return theme;
+};
+
+export const injectOverlaysToColorSchemes = (theme: Theme): Theme => {
+  const colorNames = extractPaletteColorNames(theme);
+  const colorSchemes = theme.colorSchemes;
+
+  for (const scheme of Object.keys(colorSchemes) as SupportedColorScheme[]) {
+    for (const color of colorNames) {
+      const palette = colorSchemes[scheme]!.palette;
+      const action = palette.action;
+      const actualColor = palette[color].main;
+
+      palette[color].overlays = {
+        active: generateColorOverlay(actualColor, action.activatedOpacity),
+        focus: generateColorOverlay(actualColor, action.focusOpacity),
+        hover: generateColorOverlay(actualColor, action.hoverOpacity),
+        selected: generateColorOverlay(actualColor, action.selectedOpacity),
+      };
+    }
+  }
+
+  return theme;
+};
+
+export const enhanceTheme = (theme: Theme): Theme => {
+  return injectOverlaysToColorSchemes(injectShadowsToColorSchemes(theme));
 };
 
 export const generateColorOverlay = (color: string, opacity: number) => {

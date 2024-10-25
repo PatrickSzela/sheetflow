@@ -1,7 +1,11 @@
-import { PaperProps } from "@mui/material";
+import {
+  outlinedInputClasses,
+  OutlinedInputProps,
+  PaperProps,
+} from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import type {} from "./themeAugmentation.d.ts";
-import { generatePaletteVariants, injectShadowsToColorSchemes } from "./utils";
+import { enhanceTheme, generatePaletteVariants } from "./utils";
 
 const base = createTheme({
   colorSchemes: {
@@ -10,12 +14,59 @@ const base = createTheme({
   },
 });
 
+const { colorSchemes } = enhanceTheme(base);
+
 const tokens: Parameters<typeof createTheme>[0] = {
-  colorSchemes: injectShadowsToColorSchemes(base),
+  colorSchemes: colorSchemes,
   cssVariables: {
     colorSchemeSelector: ".mui-%s",
   },
   components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        adornedEnd: ({ theme }) => ({
+          paddingRight: theme.spacing(1),
+        }),
+        notchedOutline: {
+          borderWidth: 2,
+        },
+      },
+      variants: [
+        ...generatePaletteVariants<OutlinedInputProps>(base, (color) => [
+          {
+            props: {
+              color,
+            },
+            style: ({ theme }) => {
+              const palette = (theme.vars || theme).palette[color];
+
+              return {
+                [`& .${outlinedInputClasses.notchedOutline}`]: {
+                  borderColor: palette.main,
+                },
+
+                "&:hover": {
+                  backgroundImage: palette.overlays.hover,
+
+                  [`& .${outlinedInputClasses.notchedOutline}`]: {
+                    borderColor: palette.main,
+                  },
+                },
+
+                [`&.${outlinedInputClasses.focused}`]: {
+                  backgroundImage: palette.overlays.focus,
+
+                  [`& .${outlinedInputClasses.notchedOutline}`]: {
+                    borderColor: palette.main,
+                  },
+                },
+              };
+            },
+          },
+        ]),
+      ],
+    },
+
     MuiPaper: {
       styleOverrides: {
         root: {
@@ -33,6 +84,8 @@ const tokens: Parameters<typeof createTheme>[0] = {
           },
         },
         elevation: {
+          backgroundImage: "none",
+
           "&.MuiPaper-forceBorder:before": {
             content: '""',
             position: "absolute",

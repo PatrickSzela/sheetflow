@@ -1,6 +1,5 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
-import { Toolbar } from "@/components/Toolbar";
 import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
 import { Check, Error, SvgIconComponent, Warning } from "@mui/icons-material";
 import {
@@ -9,7 +8,8 @@ import {
   Box,
   Button,
   InputAdornment,
-  InputBase,
+  OutlinedInput,
+  Paper,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -100,20 +100,17 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       </Box>
 
       <Overlay>
-        <Toolbar
-          shape="pill"
-          interactive
-          color={state}
-          sx={{ gridArea: "top" }}
-        >
-          <InputBase
+        <Paper elevation={4} sx={{ gridArea: "top", borderRadius: 40 }}>
+          <OutlinedInput
             defaultValue={defaultFormula}
             onChange={(e) => {
               setFormula(e.target.value);
             }}
+            size="small"
             placeholder="Enter your Formula here..."
-            error={!!error}
-            sx={{ flex: 1, paddingRight: 1, paddingLeft: 2 }}
+            color={state}
+            fullWidth
+            sx={{ borderRadius: "inherit" }}
             endAdornment={
               <InputAdornment position="end">
                 <Tooltip title={title}>
@@ -122,7 +119,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
               </InputAdornment>
             }
           />
-        </Toolbar>
+        </Paper>
 
         {title && description ? (
           <Alert
