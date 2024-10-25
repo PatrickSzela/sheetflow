@@ -1,6 +1,4 @@
 import {
-  ColorObject,
-  decomposeColor,
   Interpolation,
   Palette,
   PaletteColor,
@@ -10,6 +8,7 @@ import {
 } from "@mui/material";
 import createSimplePaletteValueFilter from "@mui/material/utils/createSimplePaletteValueFilter";
 import { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
+import { colorizeBoxShadow, generateColorOverlay } from "./css";
 
 export type PaletteColorName = Simplify<
   keyof ConditionalPick<Palette, PaletteColor>
@@ -23,48 +22,10 @@ export type PaletteOverlays = {
   selected: string;
 };
 
-export const changeColorOpacity = (color: string, opacity: number) => {
-  return `rgb(from ${color} r g b / ${opacity})`;
-};
-
-export const changeBoxShadowColor = (
-  boxShadow: string,
-  colorCallback: (decomposedColor: ColorObject) => string
-): string => {
-  let shadows = boxShadow.split(/,(?![^\(]*\))/g);
-
-  shadows = shadows.map((shadow) => {
-    const items = shadow.split(/ (?![^(]*\))/g);
-
-    return items
-      .map((item) => {
-        if (item.startsWith("rgb") || item.startsWith("#")) {
-          return colorCallback(decomposeColor(item));
-        }
-        return item; // unknown color
-      })
-      .join(" ");
-  });
-
-  return shadows.join(", ");
-};
-
-export const colorizeBoxShadow = (boxShadow: string, color: string): string => {
-  return changeBoxShadowColor(boxShadow, ({ values }) => {
-    const alpha = values[3] ?? 1;
-    return changeColorOpacity(color, alpha);
-  });
-};
-
-export const colorizeBoxShadowWithCssVar = (
-  boxShadow: string,
-  color: string,
-  fallback?: string
-): string => {
-  return colorizeBoxShadow(
-    boxShadow,
-    fallback ? `var(${color}, ${fallback})` : `var(${color})`
-  );
+export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
+  return Object.entries(theme.palette)
+    .filter(createSimplePaletteValueFilter())
+    .map(([color]) => color) as UnionToTuple<PaletteColorName>;
 };
 
 export const generatePaletteVariants = <TProps>(
@@ -78,12 +39,6 @@ export const generatePaletteVariants = <TProps>(
     .filter(createSimplePaletteValueFilter())
     .map(([color]) => mapper(color as PaletteColorName))
     .flat();
-};
-
-export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
-  return Object.entries(theme.palette)
-    .filter(createSimplePaletteValueFilter())
-    .map(([color]) => color) as UnionToTuple<PaletteColorName>;
 };
 
 export const injectShadowsToColorSchemes = (theme: Theme): Theme => {
@@ -126,9 +81,4 @@ export const injectOverlaysToColorSchemes = (theme: Theme): Theme => {
 
 export const enhanceTheme = (theme: Theme): Theme => {
   return injectOverlaysToColorSchemes(injectShadowsToColorSchemes(theme));
-};
-
-export const generateColorOverlay = (color: string, opacity: number) => {
-  const overlay = changeColorOpacity(color, opacity);
-  return `linear-gradient(${overlay}, ${overlay})`;
 };
