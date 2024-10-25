@@ -1,7 +1,7 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
 import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
-import { Check, Error, SvgIconComponent, Warning } from "@mui/icons-material";
+import { CheckCircle, Error, SvgIconComponent, Warning } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -65,12 +65,12 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   switch (state) {
     case "success":
-      Icon = Check;
+      Icon = CheckCircle;
       title = "Formula is valid";
       break;
 
     case "warning":
-      Icon = Warning;
+      Icon = Error;
       title = "Missing references";
       description =
         "Your formula refers to sheets or named expressions that are currently missing. Would you like to add them?";
