@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSheetFlow } from "./SheetFlowProvider";
-import { isCellAddress } from "./cellAddress";
+import { areCellAddressesEqual, isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
 import { Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
@@ -17,16 +17,23 @@ export const useValue = (reference: Reference): Value | undefined => {
       throw new Error("Cell range not yet implemented");
 
     const onValuesChanged: Events["valuesChanged"] = (changes) => {
-      changes.some((change) => {
-        if (isCellAddress(reference) && isCellChange(change)) {
+      for (const change of changes) {
+        if (
+          isCellAddress(reference) &&
+          isCellChange(change) &&
+          areCellAddressesEqual(reference, change.address)
+        ) {
           setValue(sf.getCellValue(reference));
+          return;
         } else if (
           typeof reference === "string" &&
-          isNamedExpressionChange(change)
+          isNamedExpressionChange(change) &&
+          reference === change.name
         ) {
           setValue(sf.getNamedExpressionValue(reference));
+          return;
         }
-      });
+      }
     };
 
     setValue(
