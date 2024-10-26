@@ -326,15 +326,10 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   doesNamedExpressionExists(name: string, scope?: string): boolean {
-    let exists = false;
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
-    try {
-      exists = !!this.getNamedExpression(name, scope);
-    } catch (e) {
-      exists = false;
-    }
-
-    return exists;
+    return this.hf.listNamedExpressions(sheetId).includes(name);
   }
 
   isFormulaValid(formula: string) {

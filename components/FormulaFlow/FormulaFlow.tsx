@@ -1,5 +1,5 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
-import { Ast, flattenAst, Value } from "@/libs/sheetflow";
+import { Ast, flattenAst } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -15,13 +15,10 @@ import {
   useOnSelectionChange,
   useReactFlow,
 } from "@xyflow/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { generateElkLayout } from "./elkLayout";
-import {
-  generateEdges,
-  generateNodes,
-  injectValuesToFlow,
-} from "./generateFlow";
+import { generateEdges, generateNodes } from "./generateFlow";
+import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 import "@xyflow/react/dist/style.css";
 
@@ -35,8 +32,8 @@ export interface FormulaFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
+  uuid: string | undefined;
   flatAst: Ast[] | undefined;
-  values: Record<string, Value> | undefined;
   skipParenthesis?: Boolean;
   skipValues?: Boolean;
 }
@@ -50,7 +47,7 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { flatAst, values, skipParenthesis, skipValues, ...otherProps } = props;
+  const { flatAst, uuid, skipParenthesis, skipValues, ...otherProps } = props;
 
   const { mode, systemMode } = useColorScheme();
 
@@ -58,18 +55,18 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
   const { updateNodeData } = useReactFlow<AstNode>();
 
-  const [nodes, setNodes] = useState<AstNode[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+  const [prevUuid, setPrevUuid] = useState<string>();
+  const [isLayoutReady, setIsLayoutReady] = useState(false);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
-  // useRef to avoid rerendering flow while nodes & edges don't have values injected yet
-  const generatingLayout = useRef(true);
+  if (uuid && prevUuid !== uuid) {
+    setPrevUuid(uuid);
+    setIsLayoutReady(false);
+  }
 
   // generate layout
   useEffect(() => {
-    if (!flatAst) return;
-
-    generatingLayout.current = true;
+    if (!flatAst || !uuid) return;
 
     let ignoreLayout = false;
 
@@ -89,10 +86,10 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
       console.log("Generated nodes", elkNodes);
       console.log("Generated edges", edges);
 
-      setNodes(elkNodes);
-      setEdges(edges);
+      setRFNodes(elkNodes);
+      setRFEdges(edges);
 
-      generatingLayout.current = false;
+      setIsLayoutReady(true);
     };
 
     generateLayout();
@@ -100,17 +97,9 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     return () => {
       ignoreLayout = true;
     };
-  }, [flatAst, skipParenthesis, skipValues]);
+  }, [flatAst, setRFEdges, setRFNodes, skipParenthesis, skipValues, uuid]);
 
-  // inject calculated values to layout and place it
-  useEffect(() => {
-    if (!values || generatingLayout.current) return;
-
-    const [newNodes, newEdges] = injectValuesToFlow(values, nodes);
-
-    setRFNodes(newNodes ?? nodes);
-    setRFEdges(newEdges ?? edges);
-  }, [edges, nodes, setRFEdges, setRFNodes, values]);
+  useInjectValuesToFlow(uuid, flatAst, isLayoutReady);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {

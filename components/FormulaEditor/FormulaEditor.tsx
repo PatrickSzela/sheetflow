@@ -1,7 +1,7 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
 import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
-import { CheckCircle, Error, SvgIconComponent, Warning } from "@mui/icons-material";
+import { CheckCircle, Error, SvgIconComponent } from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -13,14 +13,14 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type State = "success" | "warning" | "error";
 
 export interface FormulaEditorProps {
   scope: string;
   defaultFormula?: string;
-  flowProps?: Omit<FormulaFlowProps, "ast" | "flatAst" | "values">;
+  flowProps?: Omit<FormulaFlowProps, "flatAst" | "uuid">;
   onFocus?: (uuid: string) => void;
 }
 
@@ -30,12 +30,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { flatAst, values, error, uuid } = useFormulaAst(formula, scope);
-
-  const missing = useMemo(
-    () => sf.getMissingSheetsAndNamedExpressions(flatAst ?? []),
-    [flatAst, sf]
-  );
+  const { flatAst, missing, error, uuid } = useFormulaAst(formula, scope);
 
   const addMissing = useCallback(() => {
     sf.pauseEvaluation();
@@ -96,7 +91,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <FormulaFlow flatAst={flatAst} values={values} {...flowProps} />
+        <FormulaFlow uuid={uuid} flatAst={flatAst} {...flowProps} />
       </Box>
 
       <Overlay>

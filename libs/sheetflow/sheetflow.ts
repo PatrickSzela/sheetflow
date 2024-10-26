@@ -185,6 +185,10 @@ export abstract class SheetFlow {
     return empty - 1;
   }
 
+  isAstPlaced(uuid: string): boolean {
+    return uuid in this.astSheets;
+  }
+
   getExistingAstData(uuid: string): AstSheetData[string] | undefined {
     return this.astSheets[uuid];
   }
@@ -241,11 +245,19 @@ export abstract class SheetFlow {
     );
   }
 
-  getFormulaAstValues(uuid: string) {
+  getFormulaAstValues(uuid: string): Record<string, Value> {
     if (!(uuid in this.astSheets))
       throw new Error(`UUID \`${uuid}\` not found`);
 
-    return this.calculateFormulaAst(this.astSheets[uuid].flatAst);
+    const ast = this.astSheets[uuid];
+    const values = this.calculateFormulaAst(ast.flatAst);
+    const groupedValues: Record<string, Value> = {};
+
+    ast.flatAst.forEach((ast, idx) => {
+      groupedValues[ast.id] = values[idx];
+    });
+
+    return groupedValues;
   }
 
   // TODO: remove

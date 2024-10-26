@@ -15,7 +15,7 @@ const sheets: Sheets = {
 };
 
 interface FormulaFlowFromStringProps
-  extends Omit<FormulaFlowProps, "ast" | "flatAst" | "values"> {
+  extends Omit<FormulaFlowProps, "flatAst" | "uuid"> {
   formula: string;
   language: string;
 }
@@ -24,13 +24,13 @@ const FormulaFlowFromString = ({
   formula,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { flatAst, values, error } = useFormulaAst(formula, "Sheet1");
+  const { flatAst, uuid, error } = useFormulaAst(formula, "Sheet1");
 
   return (
     <div style={{ height: "100vh" }}>
       <FormulaFlow
+        uuid={uuid}
         flatAst={flatAst}
-        values={values}
         skipParenthesis={skipParenthesis}
       />
 
