@@ -1,5 +1,3 @@
-// go home ESLint, you're drunk
-/* eslint-disable react/no-is-mounted */
 import {
   ensureReferencesInAstHaveSheetNames,
   remapAst,

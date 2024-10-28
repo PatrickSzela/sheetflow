@@ -1,6 +1,3 @@
-// go home ESLint, you're drunk
-/* eslint-disable react/no-is-mounted */
-
 import TypedEmitter from "typed-emitter";
 import {
   Ast,
