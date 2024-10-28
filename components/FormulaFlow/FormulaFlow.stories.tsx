@@ -1,5 +1,5 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
-import { SheetFlowProvider, Sheets, useFormulaAst } from "@/libs/sheetflow";
+import { SheetFlowProvider, Sheets, usePlacedAst } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import * as Languages from "hyperformula/es/i18n/languages";
 import { useMemo } from "react";
@@ -14,23 +14,25 @@ const sheets: Sheets = {
   Sheet1: [],
 };
 
-interface FormulaFlowFromStringProps
-  extends Omit<FormulaFlowProps, "flatAst" | "uuid"> {
+interface FormulaFlowFromStringProps extends Omit<FormulaFlowProps, "uuid"> {
   formula: string;
   language: string;
 }
 
 const FormulaFlowFromString = ({
   formula,
+  skipValues,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { flatAst, uuid, error } = useFormulaAst(formula, "Sheet1");
+  const { placedAst, error } = usePlacedAst(formula, "Sheet1");
+
+  if (!placedAst?.uuid) return;
 
   return (
     <div style={{ height: "100vh" }}>
       <FormulaFlow
-        uuid={uuid}
-        flatAst={flatAst}
+        uuid={placedAst.uuid}
+        skipValues={skipValues}
         skipParenthesis={skipParenthesis}
       />
 

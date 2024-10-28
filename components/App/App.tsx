@@ -37,7 +37,7 @@ const AppInner = () => {
 
   const [selectedEditor, setSelectedEditor] = useState<string>();
 
-  const precedents = usePrecedents(selectedEditor ?? "");
+  const precedents = usePrecedents(selectedEditor);
 
   const { cells, namedExpressions } = useMemo(
     () => groupReferencesBySheet(sf, precedents),

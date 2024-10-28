@@ -21,6 +21,7 @@ import { buildEmptyCellValue, CellValue, Value } from "./cellValue";
 import { Change } from "./change";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
+import { PlacedAst } from "./placedAst";
 import { Sheet, Sheets } from "./sheet";
 import { SpecialSheets } from "./utils";
 
@@ -34,10 +35,7 @@ export type Events = {
 };
 export type EngineEventEmitter = TypedEmitter<Events>;
 
-export type AstSheetData = Record<
-  string,
-  { row: number; ast: Ast; flatAst: Ast[]; address: CellAddress }
->;
+export type PlacedAsts = Record<string, PlacedAst>;
 
 // TODO: move rest of the helpers in here
 // TODO: row/column range to string and from string
@@ -52,14 +50,28 @@ export type AstSheetData = Record<
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
 export abstract class SheetFlow {
-  protected astSheets: AstSheetData;
+  protected placedAsts: PlacedAsts;
 
   constructor() {
-    this.astSheets = {};
+    this.placedAsts = {};
 
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
     window.engine = this;
+  }
+
+  registerEvents() {
+    const astValuesChangedListener: Events["valuesChanged"] = (changes) => {
+      for (const uuid of Object.keys(this.placedAsts)) {
+        if (this.isPlacedAstPartOfChanges(uuid, changes)) {
+          this.placedAsts[uuid].updateValues(
+            this.calculatePlacedAstAsRecord(uuid)
+          );
+        }
+      }
+    };
+
+    this.on("valuesChanged", astValuesChangedListener);
   }
 
   static build(
@@ -159,11 +171,7 @@ export abstract class SheetFlow {
   abstract normalizeFormula(formula: string): string;
 
   abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
-  abstract getAstFromFormula(
-    formula: string,
-    scope: string,
-    uuid?: string
-  ): Ast;
+  abstract getAstFromFormula(uuid: string, formula: string, scope: string): Ast;
   abstract astToFormula(ast: Ast): string;
   abstract calculateFormula(formula: string, sheet: string): Value;
 
@@ -173,12 +181,12 @@ export abstract class SheetFlow {
   abstract on: EngineEventEmitter["on"];
   abstract off: EngineEventEmitter["off"];
 
-  protected getFirstAvailableRow() {
-    let values = Object.values(this.astSheets);
+  protected getFirstAvailableRowForPlaceableAst() {
+    const values = Object.values(this.placedAsts);
     if (!values.length) return 0;
 
     // while this will break if there are duplicates in the array or if the number isn't an integer, but this should never happen
-    const items = values.map((i) => i.row).sort((a, b) => a - b);
+    const items = values.map((i) => i.address.row).sort((a, b) => a - b);
     const empty = items.find((row, idx) => row !== idx);
 
     if (empty === undefined) return items.length + 1;
@@ -186,102 +194,111 @@ export abstract class SheetFlow {
   }
 
   isAstPlaced(uuid: string): boolean {
-    return uuid in this.astSheets;
+    return uuid in this.placedAsts;
   }
 
-  getExistingAstData(uuid: string): AstSheetData[string] | undefined {
-    return this.astSheets[uuid];
+  getPlacedAst(uuid: string): PlacedAsts[string] {
+    if (!(uuid in this.placedAsts))
+      throw new Error(`UUID \`${uuid}\` not found`);
+
+    return this.placedAsts[uuid];
   }
 
-  getFormulaAst(formula: string, scope: string, place: boolean = false) {
+  createPlacedAst(): PlacedAst {
+    const uuid = crypto.randomUUID();
+    const row = this.getFirstAvailableRowForPlaceableAst();
+    const address = buildCellAddress(0, row, SpecialSheets.PLACED_ASTS);
+
+    const placedAst = new PlacedAst(uuid, address);
+    this.placedAsts[uuid] = placedAst;
+
+    return placedAst;
+  }
+
+  getAstFromFormulaAndPlaceIt(
+    uuid: string,
+    formula: string,
+    scope: string
+  ): PlacedAst {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
+    this.pauseEvaluation();
+
+    const placedAst = this.getPlacedAst(uuid);
     const normalizedFormula = this.normalizeFormula(formula);
-    const uuid = crypto.randomUUID();
-    const row = this.getFirstAvailableRow();
+    const { address } = placedAst;
 
-    const address = buildCellAddress(0, row, SpecialSheets.FORMULAS);
-
-    const ast = this.getAstFromFormula(normalizedFormula, scope, uuid);
+    const ast = this.getAstFromFormula(
+      crypto.randomUUID(),
+      normalizedFormula,
+      scope
+    );
     const flatAst = flattenAst(ast);
+    const missing = this.getMissingSheetsAndNamedExpressions(flatAst);
+    const precedents = this.getPrecedents(flatAst);
 
-    if (place) {
-      this.clearRow(address.sheet, row);
-      this.astSheets[uuid] = { row, ast, flatAst, address };
-      this.placeFormulaAst(flatAst, uuid);
-    } else {
-      this.removeFormulaAst(uuid);
-    }
+    placedAst.updateAst(formula, ast, flatAst, precedents, missing);
 
-    return { uuid, ast, flatAst, address };
+    this.clearRow(address.sheet, address.row);
+    this.placeAst(uuid);
+
+    this.resumeEvaluation();
+
+    placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
+
+    return placedAst;
   }
 
-  placeFormulaAst(flatAst: Ast[], uuid: string) {
-    const row =
-      uuid in this.astSheets
-        ? this.astSheets[uuid].row
-        : this.getFirstAvailableRow();
+  placeAst(uuid: string) {
+    const { address, flatAst } = this.getPlacedAst(uuid);
+    const { row } = address;
 
     flatAst.forEach((ast, idx) => {
-      const address = buildCellAddress(idx, row, SpecialSheets.FORMULAS);
+      const address = buildCellAddress(idx, row, SpecialSheets.PLACED_ASTS);
       this.setCell(address, this.astToFormula(ast));
     });
   }
 
-  removeFormulaAst(uuid: string) {
-    if (!(uuid in this.astSheets))
-      throw new Error(`UUID \`${uuid}\` not found`);
-
-    this.clearRow(SpecialSheets.FORMULAS, this.astSheets[uuid].row);
-    delete this.astSheets[uuid];
+  removePlacedAst(uuid: string) {
+    const placedAst = this.getPlacedAst(uuid);
+    this.clearRow(SpecialSheets.PLACED_ASTS, placedAst.address.row);
+    delete this.placedAsts[uuid];
   }
 
-  calculateFormulaAst(flatAst: Ast[]): Value[] {
+  calculatePlacedAst(uuid: string): Value[] {
+    const { flatAst } = this.getPlacedAst(uuid);
+
     return flatAst.map((ast) =>
       isEmptyAst(ast)
         ? buildEmptyCellValue({ value: null })
-        : this.calculateFormula(this.astToFormula(ast), SpecialSheets.FORMULAS)
+        : this.calculateFormula(
+            this.astToFormula(ast),
+            SpecialSheets.PLACED_ASTS
+          )
     );
   }
 
-  getFormulaAstValues(uuid: string): Record<string, Value> {
-    if (!(uuid in this.astSheets))
-      throw new Error(`UUID \`${uuid}\` not found`);
-
-    const ast = this.astSheets[uuid];
-    const values = this.calculateFormulaAst(ast.flatAst);
+  calculatePlacedAstAsRecord(uuid: string): Record<string, Value> {
+    const { flatAst } = this.getPlacedAst(uuid);
+    const values = this.calculatePlacedAst(uuid);
     const groupedValues: Record<string, Value> = {};
 
-    ast.flatAst.forEach((ast, idx) => {
+    flatAst.forEach((ast, idx) => {
       groupedValues[ast.id] = values[idx];
     });
 
     return groupedValues;
   }
 
-  // TODO: remove
-  getPlacedFormulaAstValues(uuid: string) {
-    if (!(uuid in this.astSheets))
-      throw new Error(`UUID \`${uuid}\` not found`);
-
-    const { row, flatAst } = this.astSheets[uuid];
-
-    return flatAst.map((_, idx) => {
-      const address = buildCellAddress(idx, row, SpecialSheets.FORMULAS);
-      return this.getArrayCellValue(address);
-    });
-  }
-
-  isFormulaAstPartOfChanges(uuid: string, changes: Change[]): boolean {
-    if (!(uuid in this.astSheets))
-      throw new Error(`UUID \`${uuid}\` not found`);
+  isPlacedAstPartOfChanges(uuid: string, changes: Change[]): boolean {
+    const { address } = this.getPlacedAst(uuid);
 
     return !!changes.find((change) => {
       if ("address" in change) {
         return (
-          change.address.sheet === SpecialSheets.FORMULAS &&
-          change.address.row === this.astSheets[uuid].row
+          change.address.sheet === SpecialSheets.PLACED_ASTS &&
+          change.address.row === address.row
         );
       }
 

@@ -1,5 +1,5 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
-import { Ast, flattenAst } from "@/libs/sheetflow";
+import { Ast, AstEvents, flattenAst, useSheetFlow } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -17,7 +17,11 @@ import {
 } from "@xyflow/react";
 import { useCallback, useEffect, useState } from "react";
 import { generateElkLayout } from "./elkLayout";
-import { generateEdges, generateNodes } from "./generateFlow";
+import {
+  generateEdges,
+  generateNodes,
+  injectValuesToFlow,
+} from "./generateFlow";
 import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 import "@xyflow/react/dist/style.css";
@@ -33,7 +37,6 @@ export interface FormulaFlowProps<
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   uuid: string | undefined;
-  flatAst: Ast[] | undefined;
   skipParenthesis?: Boolean;
   skipValues?: Boolean;
 }
@@ -47,59 +50,65 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { flatAst, uuid, skipParenthesis, skipValues, ...otherProps } = props;
+  const { uuid, skipParenthesis, skipValues, ...otherProps } = props;
 
+  const sf = useSheetFlow();
   const { mode, systemMode } = useColorScheme();
-
-  const [rfNodes, setRFNodes, onRFNodesChange] = useNodesState<AstNode>([]);
-  const [rfEdges, setRFEdges, onRFEdgesChange] = useEdgesState<Edge>([]);
   const { updateNodeData } = useReactFlow<AstNode>();
 
-  const [prevUuid, setPrevUuid] = useState<string>();
-  const [isLayoutReady, setIsLayoutReady] = useState(false);
+  const [nodes, setNodes, onNodesChange] = useNodesState<AstNode>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
-
-  if (uuid && prevUuid !== uuid) {
-    setPrevUuid(uuid);
-    setIsLayoutReady(false);
-  }
 
   // generate layout
   useEffect(() => {
-    if (!flatAst || !uuid) return;
+    if (!uuid || !sf.isAstPlaced(uuid)) return;
 
     let ignoreLayout = false;
+    const placedAst = sf.getPlacedAst(uuid);
 
-    const nodes = generateNodes(
-      flatAst,
-      NODE_SETTINGS,
-      skipParenthesis,
-      skipValues
-    );
-    const edges = generateEdges(flatAst, skipParenthesis, skipValues);
+    const update: AstEvents["updated"] = ({}) => {
+      const { flatAst } = sf.getPlacedAst(uuid);
 
-    const generateLayout = async () => {
-      const elkNodes = await generateElkLayout(nodes, edges);
+      const nodes = generateNodes(
+        flatAst,
+        NODE_SETTINGS,
+        skipParenthesis,
+        skipValues
+      );
+      const edges = generateEdges(flatAst, skipParenthesis, skipValues);
 
-      if (ignoreLayout) return;
+      const generateLayout = async () => {
+        let elkNodes = await generateElkLayout(nodes, edges);
 
-      console.log("Generated nodes", elkNodes);
-      console.log("Generated edges", edges);
+        if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
 
-      setRFNodes(elkNodes);
-      setRFEdges(edges);
+        console.log("Generated nodes", elkNodes);
+        console.log("Generated edges", edges);
 
-      setIsLayoutReady(true);
+        const { values } = sf.getPlacedAst(uuid);
+
+        if (values) {
+          elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
+        }
+
+        setNodes(elkNodes);
+        setEdges(edges);
+      };
+
+      generateLayout();
     };
 
-    generateLayout();
+    placedAst.on("updated", update);
+    update(placedAst);
 
     return () => {
       ignoreLayout = true;
+      placedAst.off("updated", update);
     };
-  }, [flatAst, setRFEdges, setRFNodes, skipParenthesis, skipValues, uuid]);
+  }, [setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
 
-  useInjectValuesToFlow(uuid, flatAst, isLayoutReady);
+  useInjectValuesToFlow(uuid);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {
@@ -132,10 +141,10 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
 
   return (
     <ReactFlow
-      nodes={rfNodes}
-      edges={rfEdges}
-      onNodesChange={onRFNodesChange}
-      onEdgesChange={onRFEdgesChange}
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
       nodeTypes={nodeTypes}
       colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}

@@ -108,8 +108,6 @@ export const injectValuesToFlow = (
   nodes?: AstNode[],
   edges?: Edge[]
 ): [AstNode[] | undefined, Edge[] | undefined] => {
-  console.log("Injecting values to flow", values);
-
   let copyNodes: typeof nodes;
   let copyEdges: typeof edges;
 
@@ -117,18 +115,24 @@ export const injectValuesToFlow = (
     copyNodes = structuredClone(nodes);
 
     for (const { data } of copyNodes) {
-      if (data.output) data.output.value = values[data.ast.id];
+      const { ast, output, inputs } = data;
 
-      if (data.inputs && isAstWithChildren(data.ast)) {
-        const { children } = data.ast;
+      // nodes not synced with values
+      if (!(ast.id in values)) return [undefined, undefined];
 
-        data.inputs.forEach((i, idx) => {
-          i.value = values[children[idx].id];
+      if (output) output.value = values[ast.id];
+
+      if (inputs && isAstWithChildren(ast)) {
+        const { children } = ast;
+
+        inputs.forEach((i, idx) => {
+          if (children[idx].id in values) i.value = values[children[idx].id];
         });
       }
     }
   }
 
+  // TODO: finish edges
   if (edges) {
     copyEdges = structuredClone(edges);
 
@@ -136,6 +140,8 @@ export const injectValuesToFlow = (
       edge.label = printCellValue(values[edge.source]);
     }
   }
+
+  console.log("Injected values to flow", values);
 
   return [copyNodes, copyEdges];
 };

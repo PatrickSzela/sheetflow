@@ -1,6 +1,6 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
-import { useFormulaAst, useSheetFlow } from "@/libs/sheetflow";
+import { usePlacedAst, useSheetFlow } from "@/libs/sheetflow";
 import { CheckCircle, Error, SvgIconComponent } from "@mui/icons-material";
 import {
   Alert,
@@ -30,21 +30,26 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { flatAst, missing, error, uuid } = useFormulaAst(formula, scope);
+  const { placedAst, error } = usePlacedAst(formula, scope);
+  const { missing, uuid } = placedAst ?? {};
 
   const addMissing = useCallback(() => {
+    if (!missing) return;
+
+    const { namedExpressions, sheets } = missing;
+
     sf.pauseEvaluation();
 
-    for (const sheet of missing.sheets ?? []) {
+    for (const sheet of sheets) {
       sf.addSheet(sheet);
     }
 
-    for (const namedExpression of missing.namedExpressions ?? []) {
+    for (const namedExpression of namedExpressions) {
       sf.addNamedExpression(namedExpression);
     }
 
     sf.resumeEvaluation();
-  }, [missing.namedExpressions, missing.sheets, sf]);
+  }, [missing, sf]);
 
   let state: State = "success";
   let title: string | undefined;
@@ -54,7 +59,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   if (error) {
     state = "error";
-  } else if (missing.namedExpressions.length || missing.sheets.length) {
+  } else if (missing?.namedExpressions.length || missing?.sheets.length) {
     state = "warning";
   }
 
@@ -91,7 +96,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <FormulaFlow uuid={uuid} flatAst={flatAst} {...flowProps} />
+        <FormulaFlow uuid={uuid} {...flowProps} />
       </Box>
 
       <Overlay>

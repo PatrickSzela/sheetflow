@@ -89,7 +89,9 @@ export class HyperFormulaEngine extends SheetFlow {
     namedExpressions?: NamedExpressions,
     config?: HyperFormulaConfig
   ) {
-    return new HyperFormulaEngine(sheets, namedExpressions, config);
+    const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
+    engine.registerEvents();
+    return engine;
   }
 
   constructor(
@@ -99,7 +101,7 @@ export class HyperFormulaEngine extends SheetFlow {
   ) {
     super();
 
-    const _sheets = { ...sheets, [SpecialSheets.FORMULAS]: [] };
+    const _sheets = { ...sheets, [SpecialSheets.PLACED_ASTS]: [] };
 
     this.hf = HyperFormula.buildFromSheets(_sheets, config);
 
@@ -365,11 +367,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapAst(this.hf, hfAst, addr, uuid);
   }
 
-  getAstFromFormula(
-    formula: string,
-    scope: string,
-    uuid: string = crypto.randomUUID()
-  ): Ast {
+  getAstFromFormula(uuid: string, formula: string, scope: string): Ast {
     const address = buildCellAddress(-1, -1, scope);
     const hfAddress = unmapCellAddress(this.hf, address);
 
