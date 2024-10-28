@@ -3,7 +3,7 @@ import { useSheetFlow } from "./SheetFlowProvider";
 import { CellContent } from "./cell";
 import { isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
-import { Reference } from "./sheetflow";
+import { Reference } from "./reference";
 
 export const useContent = (
   reference: Reference,

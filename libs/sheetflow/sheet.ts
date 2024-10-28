@@ -2,7 +2,8 @@ import { CellContent } from "./cell";
 import { buildCellAddress, CellAddress, isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
-import { Reference, SheetFlow } from "./sheetflow";
+import { Reference } from "./reference";
+import { SheetFlow } from "./sheetflow";
 
 export type Sheet = CellContent[][];
 export type Sheets = Record<string, Sheet>;

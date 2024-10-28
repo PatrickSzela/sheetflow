@@ -4,7 +4,7 @@ import { Ast, buildEmptyAst } from "./ast";
 import { CellAddress } from "./cellAddress";
 import { Value } from "./cellValue";
 import { flattenAst } from "./flattenAst";
-import { Reference } from "./sheetflow";
+import { Reference } from "./reference";
 
 export type AstEvents = {
   valuesChanged: (values: Record<string, Value>) => void;

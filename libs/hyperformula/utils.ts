@@ -1,6 +1,17 @@
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
+import * as Languages from "hyperformula/es/i18n/languages";
 import { Ast, AstNodeType } from "hyperformula/es/parser";
+
+export const registerAllLanguages = () => {
+  const langs = HyperFormula.getRegisteredLanguagesCodes();
+
+  for (const [lang, pack] of Object.entries(Languages).filter(
+    ([lang]) => !langs.includes(lang)
+  )) {
+    HyperFormula.registerLanguage(lang, pack);
+  }
+};
 
 export const getOperator = (type: AstNodeType): SheetFlow.Operator => {
   switch (type) {

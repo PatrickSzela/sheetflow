@@ -48,7 +48,7 @@ interface DependenciesEditorFromStringProps
 const DependenciesEditorFromString =
   ({}: DependenciesEditorFromStringProps) => {
     const sf = useSheetFlow();
-    const { cells } = groupReferencesBySheet(sf, sf.getCellLists());
+    const { cells } = groupReferencesBySheet(sf, sf.getAllNonEmptyCells());
 
     return (
       <div style={{ height: "100vh" }}>

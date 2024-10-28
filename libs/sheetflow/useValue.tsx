@@ -4,7 +4,8 @@ import { areCellAddressesEqual, isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
 import { Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
-import { Events, Reference } from "./sheetflow";
+import { Reference } from "./reference";
+import { Events } from "./sheetflow";
 
 export const useValue = (reference: Reference): Value | undefined => {
   const sf = useSheetFlow();

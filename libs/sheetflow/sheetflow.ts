@@ -1,28 +1,20 @@
 import TypedEmitter from "typed-emitter";
-import {
-  Ast,
-  AstNodeSubtype,
-  AstNodeType,
-  isEmptyAst,
-  isErrorAst,
-  isNamedExpressionReferenceAst,
-} from "./ast";
+import { Ast, isEmptyAst } from "./ast";
 import { CellContent } from "./cell";
-import {
-  buildCellAddress,
-  CellAddress,
-  extractDataFromStringAddress,
-} from "./cellAddress";
-import { buildCellRange, CellRange } from "./cellRange";
+import { buildCellAddress, CellAddress } from "./cellAddress";
+import { CellRange } from "./cellRange";
 import { buildEmptyCellValue, CellValue, Value } from "./cellValue";
 import { Change } from "./change";
 import { flattenAst } from "./flattenAst";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { PlacedAst } from "./placedAst";
+import { Reference } from "./reference";
 import { Sheet, Sheets } from "./sheet";
-import { SpecialSheets } from "./utils";
-
-export type Reference = CellAddress | CellRange | string;
+import {
+  getMissingSheetsAndNamedExpressions,
+  getPrecedents,
+  SpecialSheets,
+} from "./utils";
 
 export type Events = {
   // TODO: removed sheet & named expression
@@ -31,8 +23,6 @@ export type Events = {
   valuesChanged: (changes: Change[]) => void;
 };
 export type EngineEventEmitter = TypedEmitter<Events>;
-
-export type PlacedAsts = Record<string, PlacedAst>;
 
 // TODO: move rest of the helpers in here
 // TODO: row/column range to string and from string
@@ -47,11 +37,9 @@ export type PlacedAsts = Record<string, PlacedAst>;
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
 export abstract class SheetFlow {
-  protected placedAsts: PlacedAsts;
+  protected placedAsts: Record<string, PlacedAst> = {};
 
   constructor() {
-    this.placedAsts = {};
-
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
     window.engine = this;
@@ -79,106 +67,67 @@ export abstract class SheetFlow {
     throw new Error("Called `build` function on an abstract class");
   }
 
+  // #region abstract methods
+  // conversion
   abstract stringToCellAddress(address: string): CellAddress;
   abstract stringToCellRange(range: string): CellRange;
   abstract cellAddressToString(address: CellAddress): string;
   abstract cellRangeToString(range: CellRange): string;
 
+  // cell
+  abstract getCell(address: CellAddress): CellContent;
+  abstract setCell(address: CellAddress, content: CellContent): void;
   abstract getCellValue(address: CellAddress): CellValue;
   abstract getArrayCellValue(address: CellAddress): Value;
 
-  abstract getCell(address: CellAddress): CellContent;
-  abstract setCell(address: CellAddress, content: CellContent): void;
-
-  // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
-  getPrecedents(flatAst: Ast[]): Reference[] {
-    const precedents: Record<string, Reference> = {};
-
-    for (const ast of flatAst) {
-      if (ast.type !== AstNodeType.REFERENCE) continue;
-
-      switch (ast.subtype) {
-        case AstNodeSubtype.CELL:
-          precedents[this.cellAddressToString(ast.reference)] = {
-            ...ast.reference,
-          };
-          break;
-
-        case AstNodeSubtype.NAMED_EXPRESSION:
-          precedents[ast.expressionName] = ast.expressionName;
-          break;
-
-        case AstNodeSubtype.CELL_RANGE:
-          const cellRange = buildCellRange(ast.start, ast.end);
-          precedents[this.cellRangeToString(cellRange)] = cellRange;
-          break;
-
-        case AstNodeSubtype.COLUMN_RANGE:
-          // // TODO: column range to string
-          // precedents[ast.rawContent] = buildCellRange(
-          //   buildCellAddress(ast.start, 0, ast.sheet),
-          //   buildCellAddress(ast.start, Infinity, ast.sheet)
-          // );
-          // break;
-          throw new Error("Row range not supported");
-
-        case AstNodeSubtype.ROW_RANGE:
-          // // TODO: row range to string
-          // precedents[ast.rawContent] = buildCellRange(
-          //   buildCellAddress(0, ast.start, ast.sheet),
-          //   buildCellAddress(Infinity, ast.start, ast.sheet)
-          // );
-          // break;
-          throw new Error("Row range not supported");
-      }
-    }
-
-    return Object.values(precedents);
-  }
-
-  abstract addSheet(name: string, content?: Sheet): void;
-  abstract removeSheet(name: string): void;
-  abstract renameSheet(name: string, newName: string): void;
+  // sheet
   abstract getSheet(name: string): Sheet;
   abstract setSheet(name: string, content: Sheet): void;
+  abstract addSheet(name: string, content?: Sheet): void;
+  abstract renameSheet(name: string, newName: string): void;
+  abstract removeSheet(name: string): void;
   abstract doesSheetExists(name: string): boolean;
   abstract getAllSheets(): Sheets;
-
   abstract getAllSheetNames(): string[];
-
   abstract clearRow(sheet: string, index: number): void;
 
-  abstract getNamedExpressions(): NamedExpressions;
+  // named expression
   abstract getNamedExpression(name: string, scope?: string): NamedExpression;
-  abstract addNamedExpression(
-    name: string,
-    content?: CellContent,
-    scope?: string
-  ): void;
   abstract setNamedExpression(
     name: string,
     content: CellContent,
     scope?: string
   ): void;
+  abstract addNamedExpression(
+    name: string,
+    content?: CellContent,
+    scope?: string
+  ): void;
   abstract removeNamedExpression(name: string, scope?: string): void;
-  abstract getNamedExpressionValue(name: string, scope?: string): Value;
   abstract doesNamedExpressionExists(name: string, scope?: string): boolean;
+  abstract getNamedExpressionValue(name: string, scope?: string): Value;
+  abstract getAllNamedExpressions(): NamedExpressions;
 
+  // formula
   abstract isFormulaValid(formula: string): boolean;
   abstract normalizeFormula(formula: string): string;
+  abstract calculateFormula(formula: string, sheet: string): Value;
 
+  // formula AST
   abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
   abstract getAstFromFormula(uuid: string, formula: string, scope: string): Ast;
   abstract astToFormula(ast: Ast): string;
-  abstract calculateFormula(formula: string, sheet: string): Value;
 
+  // evaluation
   abstract pauseEvaluation(): void;
   abstract resumeEvaluation(): void;
 
+  // event
   abstract on: EngineEventEmitter["on"];
   abstract off: EngineEventEmitter["off"];
+  // #endregion
 
-  protected getFirstAvailableRowForPlaceableAst() {
+  protected getFirstAvailableRowForPlaceableAst(): number {
     const values = Object.values(this.placedAsts);
     if (!values.length) return 0;
 
@@ -194,7 +143,7 @@ export abstract class SheetFlow {
     return uuid in this.placedAsts;
   }
 
-  getPlacedAst(uuid: string): PlacedAsts[string] {
+  getPlacedAst(uuid: string): PlacedAst {
     if (!(uuid in this.placedAsts))
       throw new Error(`UUID \`${uuid}\` not found`);
 
@@ -212,42 +161,7 @@ export abstract class SheetFlow {
     return placedAst;
   }
 
-  getAstFromFormulaAndPlaceIt(
-    uuid: string,
-    formula: string,
-    scope: string
-  ): PlacedAst {
-    if (!this.isFormulaValid(formula))
-      throw new Error(`Formula \`${formula}\` is not a valid formula`);
-
-    this.pauseEvaluation();
-
-    const placedAst = this.getPlacedAst(uuid);
-    const normalizedFormula = this.normalizeFormula(formula);
-    const { address } = placedAst;
-
-    const ast = this.getAstFromFormula(
-      crypto.randomUUID(),
-      normalizedFormula,
-      scope
-    );
-    const flatAst = flattenAst(ast);
-    const missing = this.getMissingSheetsAndNamedExpressions(flatAst);
-    const precedents = this.getPrecedents(flatAst);
-
-    placedAst.updateAst(formula, ast, flatAst, precedents, missing);
-
-    this.clearRow(address.sheet, address.row);
-    this.placeAst(uuid);
-
-    this.resumeEvaluation();
-
-    placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
-
-    return placedAst;
-  }
-
-  placeAst(uuid: string) {
+  placeAst(uuid: string): void {
     const { address, flatAst } = this.getPlacedAst(uuid);
     const { row } = address;
 
@@ -257,7 +171,7 @@ export abstract class SheetFlow {
     });
   }
 
-  removePlacedAst(uuid: string) {
+  removePlacedAst(uuid: string): void {
     const placedAst = this.getPlacedAst(uuid);
     this.clearRow(SpecialSheets.PLACED_ASTS, placedAst.address.row);
     delete this.placedAsts[uuid];
@@ -288,6 +202,41 @@ export abstract class SheetFlow {
     return groupedValues;
   }
 
+  getAstFromFormulaAndPlaceIt(
+    uuid: string,
+    formula: string,
+    scope: string
+  ): PlacedAst {
+    if (!this.isFormulaValid(formula))
+      throw new Error(`Formula \`${formula}\` is not a valid formula`);
+
+    this.pauseEvaluation();
+
+    const placedAst = this.getPlacedAst(uuid);
+    const normalizedFormula = this.normalizeFormula(formula);
+    const { address } = placedAst;
+
+    const ast = this.getAstFromFormula(
+      crypto.randomUUID(),
+      normalizedFormula,
+      scope
+    );
+    const flatAst = flattenAst(ast);
+    const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
+    const precedents = getPrecedents(this, flatAst);
+
+    placedAst.updateAst(formula, ast, flatAst, precedents, missing);
+
+    this.clearRow(address.sheet, address.row);
+    this.placeAst(uuid);
+
+    this.resumeEvaluation();
+
+    placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
+
+    return placedAst;
+  }
+
   isPlacedAstPartOfChanges(uuid: string, changes: Change[]): boolean {
     const { address } = this.getPlacedAst(uuid);
 
@@ -303,7 +252,7 @@ export abstract class SheetFlow {
     });
   }
 
-  getCellList(sheetName: string): Reference[] {
+  getNonEmptyCellsFromSheet(sheetName: string): Reference[] {
     const list: Reference[] = [];
     const sheet = this.getSheet(sheetName);
 
@@ -324,41 +273,13 @@ export abstract class SheetFlow {
     return list;
   }
 
-  getCellLists(): Reference[] {
+  getAllNonEmptyCells(): Reference[] {
     let list: Reference[] = [];
 
     for (const sheetName of this.getAllSheetNames()) {
-      list = [...list, ...this.getCellList(sheetName)];
+      list = [...list, ...this.getNonEmptyCellsFromSheet(sheetName)];
     }
 
     return list;
-  }
-
-  getMissingSheetsAndNamedExpressions(flatAst: Ast[]): {
-    namedExpressions: string[];
-    sheets: string[];
-  } {
-    const namedExpressions: Set<string> = new Set();
-    const sheets: Set<string> = new Set();
-
-    for (const ast of flatAst) {
-      if (isErrorAst(ast) && ast.error === "REF") {
-        const { sheet } = extractDataFromStringAddress(ast.rawContent);
-
-        if (sheet && !this.doesSheetExists(sheet)) {
-          sheets.add(sheet);
-        }
-      } else if (
-        isNamedExpressionReferenceAst(ast) &&
-        !this.doesNamedExpressionExists(ast.expressionName)
-      ) {
-        namedExpressions.add(ast.expressionName);
-      }
-    }
-
-    return {
-      namedExpressions: Array.from(namedExpressions),
-      sheets: Array.from(sheets),
-    };
   }
 }

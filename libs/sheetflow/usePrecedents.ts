@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AstEvents } from "./placedAst";
-import { Reference } from "./sheetflow";
+import { Reference } from "./reference";
 import { useSheetFlow } from "./SheetFlowProvider";
 
 export const usePrecedents = (uuid: string | undefined): Reference[] => {

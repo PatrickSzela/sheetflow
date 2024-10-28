@@ -1,20 +1,16 @@
 import {
-  ensureReferencesInAstHaveSheetNames,
-  remapAst,
-  remapSheet,
-  remapSheets,
-} from "@/libs/hyperformula";
-import {
   Ast,
   buildCellAddress,
   CellAddress,
   CellContent,
   CellRange,
-  Change,
+  CellValue,
   EngineEventEmitter,
   Events,
   extractDataFromStringAddress,
+  NamedExpression,
   NamedExpressions,
+  Sheet,
   SheetFlow,
   Sheets,
   SpecialSheets,
@@ -22,18 +18,16 @@ import {
 } from "@/libs/sheetflow";
 import EventEmitter from "events";
 import {
-  CellValue,
   ConfigParams,
-  ExportedCellChange,
-  ExportedChange,
+  CellValue as HfCellValue,
   HyperFormula,
   NoRelativeAddressesAllowedError,
   SerializedNamedExpression,
 } from "hyperformula";
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
-import * as Languages from "hyperformula/es/i18n/languages";
 import { Listeners } from "hyperformula/typings/Emitter";
 import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
+import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
   remapCellAddress,
   remapCellRange,
@@ -45,21 +39,17 @@ import {
   remapCellValue,
   remapDetailedCellValue,
 } from "./remapCellValue";
+import { remapChanges } from "./remapChange";
 import {
   remapNamedExpression,
   unmapNamedExpression,
 } from "./remapNamedExpression";
-import { areHfAddressesEqual, getSheetIdWithError } from "./utils";
-
-export const registerAllLanguages = () => {
-  const langs = HyperFormula.getRegisteredLanguagesCodes();
-
-  for (const [lang, pack] of Object.entries(Languages).filter(
-    ([lang]) => !langs.includes(lang)
-  )) {
-    HyperFormula.registerLanguage(lang, pack);
-  }
-};
+import { remapSheet, remapSheets } from "./remapSheet";
+import {
+  areHfAddressesEqual,
+  getSheetIdWithError,
+  registerAllLanguages,
+} from "./utils";
 
 registerAllLanguages();
 
@@ -99,9 +89,10 @@ export class HyperFormulaEngine extends SheetFlow {
   ) {
     super();
 
-    const _sheets = { ...sheets, [SpecialSheets.PLACED_ASTS]: [] };
-
-    this.hf = HyperFormula.buildFromSheets(_sheets, config);
+    this.hf = HyperFormula.buildFromSheets(
+      { ...sheets, [SpecialSheets.PLACED_ASTS]: [] },
+      config
+    );
 
     if (namedExpressions) {
       for (const namedExpression of namedExpressions) {
@@ -125,7 +116,8 @@ export class HyperFormulaEngine extends SheetFlow {
     window.hf = this.hf;
   }
 
-  stringToCellAddress(address: string, sheetName?: string) {
+  // #region conversion
+  stringToCellAddress(address: string, sheetName?: string): CellAddress {
     const { position, sheet } = extractDataFromStringAddress(address);
     const sheetId = getSheetIdWithError(this.hf, sheet ?? sheetName);
 
@@ -135,7 +127,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapCellAddress(this.hf, hfAddress);
   }
 
-  stringToCellRange(range: string, sheetName?: string) {
+  stringToCellRange(range: string, sheetName?: string): CellRange {
     // TODO: replace with splitStringRange
     const { position, sheet } = extractDataFromStringAddress(range);
     const sheetId = getSheetIdWithError(this.hf, sheet ?? sheetName);
@@ -146,7 +138,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapCellRange(this.hf, hfRange);
   }
 
-  cellAddressToString(address: CellAddress) {
+  cellAddressToString(address: CellAddress): string {
     const addr = unmapCellAddress(this.hf, address);
 
     // -1 so string address always contains sheet name
@@ -160,7 +152,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return string;
   }
 
-  cellRangeToString(range: CellRange) {
+  cellRangeToString(range: CellRange): string {
     const hfRange = unmapCellRange(this.hf, range);
 
     // -1 so string address always contains sheet name
@@ -173,14 +165,25 @@ export class HyperFormulaEngine extends SheetFlow {
 
     return string;
   }
+  // #endregion
 
-  getCellValue(address: CellAddress) {
+  // #region cell
+  getCell(address: CellAddress): CellContent {
+    // TODO: remap
+    return this.hf.getCellSerialized(unmapCellAddress(this.hf, address));
+  }
+
+  setCell(address: CellAddress, content: CellContent): void {
+    this.hf.setCellContents(unmapCellAddress(this.hf, address), content);
+  }
+
+  getCellValue(address: CellAddress): CellValue {
     return remapDetailedCellValue(
       getCellValueDetails(this.hf, unmapCellAddress(this.hf, address))
     );
   }
 
-  getArrayCellValue(address: CellAddress) {
+  getArrayCellValue(address: CellAddress): Value {
     // HyperFormula doesn't have an easy way of extracting value of a cell when that cell contains:
     // - a cell range - returns `Cell range not allowed.` error
     // - an inline array - returns only first value in the array, would require manually extracting value from every cell
@@ -188,7 +191,7 @@ export class HyperFormulaEngine extends SheetFlow {
 
     const addr = unmapCellAddress(this.hf, address);
     const contents = this.hf.getCellSerialized(addr);
-    let value: CellValue | CellValue[][];
+    let value: HfCellValue | HfCellValue[][];
 
     // TODO: add safeguards
     if (typeof contents === "string" && this.hf.validateFormula(contents)) {
@@ -199,25 +202,22 @@ export class HyperFormulaEngine extends SheetFlow {
 
     return remapCellValue(value);
   }
+  // #endregion
 
-  getCell(address: CellAddress) {
-    // TODO: remap
-    return this.hf.getCellSerialized(unmapCellAddress(this.hf, address));
-  }
-
-  setCell(address: CellAddress, content: CellContent) {
-    this.hf.setCellContents(unmapCellAddress(this.hf, address), content);
-  }
-
-  addSheet(name: string, content?: CellContent[][]) {
-    this.hf.addSheet(name);
-
-    if (content) this.setSheet(name, content);
-  }
-
-  removeSheet(name: string) {
+  // #region sheet
+  getSheet(name: string): Sheet {
     const sheetId = getSheetIdWithError(this.hf, name);
-    this.hf.removeSheet(sheetId);
+    return remapSheet(this.hf.getSheetSerialized(sheetId));
+  }
+
+  setSheet(name: string, content: CellContent[][]): void {
+    const sheetId = getSheetIdWithError(this.hf, name);
+    this.hf.setSheetContent(sheetId, content);
+  }
+
+  addSheet(name: string, content?: CellContent[][]): void {
+    this.hf.addSheet(name);
+    if (content) this.setSheet(name, content);
   }
 
   renameSheet(name: string, newName: string): void {
@@ -225,25 +225,20 @@ export class HyperFormulaEngine extends SheetFlow {
     this.hf.renameSheet(sheetId, newName);
   }
 
-  getSheet(name: string) {
+  removeSheet(name: string): void {
     const sheetId = getSheetIdWithError(this.hf, name);
-    return remapSheet(this.hf.getSheetSerialized(sheetId));
+    this.hf.removeSheet(sheetId);
   }
 
-  setSheet(name: string, content: CellContent[][]) {
-    const sheetId = getSheetIdWithError(this.hf, name);
-    this.hf.setSheetContent(sheetId, content);
-  }
-
-  doesSheetExists(name: string) {
+  doesSheetExists(name: string): boolean {
     return this.hf.doesSheetExist(name);
   }
 
-  getAllSheets() {
+  getAllSheets(): Sheets {
     return remapSheets(this.hf.getAllSheetsSerialized());
   }
 
-  getAllSheetNames() {
+  getAllSheetNames(): string[] {
     return this.hf.getSheetNames();
   }
 
@@ -252,14 +247,10 @@ export class HyperFormulaEngine extends SheetFlow {
     this.hf.removeRows(sheetId, [index, 1]);
     this.hf.addRows(sheetId, [index, 1]);
   }
+  // #endregion
 
-  getNamedExpressions() {
-    return this.hf
-      .getAllNamedExpressionsSerialized()
-      .map((i) => remapNamedExpression(this.hf, i));
-  }
-
-  getNamedExpression(name: string, scope?: string) {
+  // #region named expression
+  getNamedExpression(name: string, scope?: string): NamedExpression {
     const sheetId =
       scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
@@ -287,14 +278,7 @@ export class HyperFormulaEngine extends SheetFlow {
     return remapNamedExpression(this.hf, serialized);
   }
 
-  addNamedExpression(name: string, content?: CellContent, scope?: string) {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
-
-    this.hf.addNamedExpression(name, content, sheetId);
-  }
-
-  setNamedExpression(name: string, content: CellContent, scope?: string) {
+  setNamedExpression(name: string, content: CellContent, scope?: string): void {
     const sheetId =
       scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
@@ -308,21 +292,22 @@ export class HyperFormulaEngine extends SheetFlow {
     }
   }
 
-  removeNamedExpression(name: string, scope?: string) {
+  addNamedExpression(
+    name: string,
+    content?: CellContent,
+    scope?: string
+  ): void {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    this.hf.addNamedExpression(name, content, sheetId);
+  }
+
+  removeNamedExpression(name: string, scope?: string): void {
     const sheetId =
       scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
 
     this.hf.removeNamedExpression(name, sheetId);
-  }
-
-  getNamedExpressionValue(name: string, scope?: string) {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
-
-    const val = this.hf.getNamedExpressionValue(name, sheetId);
-    if (val === undefined) throw new Error();
-
-    return remapCellValue(val);
   }
 
   doesNamedExpressionExists(name: string, scope?: string): boolean {
@@ -332,15 +317,40 @@ export class HyperFormulaEngine extends SheetFlow {
     return this.hf.listNamedExpressions(sheetId).includes(name);
   }
 
-  isFormulaValid(formula: string) {
+  getNamedExpressionValue(name: string, scope?: string): Value {
+    const sheetId =
+      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+
+    const val = this.hf.getNamedExpressionValue(name, sheetId);
+    if (val === undefined) throw new Error();
+
+    return remapCellValue(val);
+  }
+
+  getAllNamedExpressions(): NamedExpressions {
+    return this.hf
+      .getAllNamedExpressionsSerialized()
+      .map((i) => remapNamedExpression(this.hf, i));
+  }
+  // #endregion
+
+  // #region formula
+  isFormulaValid(formula: string): boolean {
     return this.hf.validateFormula(formula);
   }
 
-  normalizeFormula(formula: string) {
+  normalizeFormula(formula: string): string {
     return this.hf.normalizeFormula(formula);
   }
 
-  getAstFromAddress(address: CellAddress, uuid: string = crypto.randomUUID()) {
+  calculateFormula(formula: string, sheet: string): Value {
+    const sheetId = getSheetIdWithError(this.hf, sheet);
+    return remapCellValue(this.hf.calculateFormula(formula, sheetId));
+  }
+  // #endregion
+
+  // #region formula AST
+  getAstFromAddress(address: CellAddress, uuid: string): Ast {
     const addr = unmapCellAddress(this.hf, address);
 
     const formulaVertex = this.hf.graph.getNodes().find((node) => {
@@ -385,21 +395,23 @@ export class HyperFormulaEngine extends SheetFlow {
       ? `=ARRAYFORMULA(${ast.rawContent})`
       : `=${ast.rawContent}`;
   }
+  // #endregion
 
-  calculateFormula(formula: string, sheet: string): Value {
-    const sheetId = getSheetIdWithError(this.hf, sheet);
-    return remapCellValue(this.hf.calculateFormula(formula, sheetId));
-  }
-
-  pauseEvaluation() {
+  // #region evaluation
+  pauseEvaluation(): void {
     this.hf.suspendEvaluation();
   }
 
-  resumeEvaluation() {
+  resumeEvaluation(): void {
     this.hf.resumeEvaluation();
   }
+  // #endregion
 
-  on = <T extends keyof Events>(event: T, listener: Events[T]) => {
+  // #region event
+  on = <T extends keyof Events>(
+    event: T,
+    listener: Events[T]
+  ): EngineEventEmitter => {
     let hfListener: Listeners[keyof Listeners] | undefined = undefined;
     let hfEvent: keyof Listeners | undefined = undefined;
 
@@ -407,7 +419,9 @@ export class HyperFormulaEngine extends SheetFlow {
       case "valuesChanged":
         hfEvent = "valuesUpdated";
         hfListener = ((changes) => {
-          (listener as Events["valuesChanged"])(this.remapChanges(changes));
+          (listener as Events["valuesChanged"])(
+            remapChanges(this, this.hf, changes)
+          );
         }) as Listeners["valuesUpdated"];
         break;
 
@@ -436,7 +450,10 @@ export class HyperFormulaEngine extends SheetFlow {
     return this.eventEmitter;
   };
 
-  off = <T extends keyof Events>(event: T, listener: Events[T]) => {
+  off = <T extends keyof Events>(
+    event: T,
+    listener: Events[T]
+  ): EngineEventEmitter => {
     let hfEvent: keyof Listeners | undefined = undefined;
     const hfListener = this.eventListeners[event].get(listener);
 
@@ -463,24 +480,5 @@ export class HyperFormulaEngine extends SheetFlow {
 
     return this.eventEmitter;
   };
-
-  protected remapChange(change: ExportedChange): Change {
-    if (change instanceof ExportedCellChange) {
-      const address = remapCellAddress(this.hf, change.address);
-
-      return {
-        address,
-        value: this.getCellValue(address),
-      };
-    } else {
-      return {
-        name: change.name,
-        value: remapCellValue(change.newValue),
-      };
-    }
-  }
-
-  protected remapChanges(changes: ExportedChange[]) {
-    return changes.map((change) => this.remapChange(change));
-  }
+  // #endregion
 }
