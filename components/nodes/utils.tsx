@@ -3,6 +3,7 @@ import {
   Ast,
   AstNodeType,
   isAstWithChildren,
+  isCalculatedValueAnError,
   printCellValue,
   Value,
 } from "@/libs/sheetflow";
@@ -62,6 +63,15 @@ export const getNodeDataFromAst = (
     output: output ? remapNodeValue(output) : undefined,
   };
 
+  let error: Partial<BaseNodeData> = {};
+
+  if (nodeData.output && isCalculatedValueAnError(nodeData.output.value)) {
+    error = {
+      icon: <Tag />,
+      color: "error",
+    };
+  }
+
   switch (ast.type) {
     case AstNodeType.VALUE:
       return {
@@ -69,26 +79,16 @@ export const getNodeDataFromAst = (
         title: ast.subtype,
         icon: <SixtyFps />,
         color: "primary",
+        ...error,
       };
 
     case AstNodeType.REFERENCE:
-      if (
-        typeof nodeData.output?.value === "string" &&
-        nodeData.output.value.match(/^#.*\?$/)
-      ) {
-        return {
-          ...nodeData,
-          title: ast.rawContent,
-          icon: <Tag />,
-          color: "error",
-        };
-      }
-
       return {
         ...nodeData,
         title: ast.rawContent,
         icon: <FormatShapes />,
         color: "success",
+        ...error,
       };
 
     case AstNodeType.FUNCTION:
@@ -97,6 +97,7 @@ export const getNodeDataFromAst = (
         title: `${ast.functionName}()`,
         icon: <Functions />,
         color: "info",
+        ...error,
       };
 
     case AstNodeType.UNARY_EXPRESSION:
@@ -105,6 +106,7 @@ export const getNodeDataFromAst = (
         title: ast.operatorOnRight ? `A${ast.operator}` : `${ast.operator}A`,
         icon: <PlusOne />,
         color: "secondary",
+        ...error,
       };
 
     case AstNodeType.BINARY_EXPRESSION:
@@ -113,6 +115,7 @@ export const getNodeDataFromAst = (
         title: `A ${ast.operator} B`,
         icon: <Add />,
         color: "secondary",
+        ...error,
       };
 
     case AstNodeType.PARENTHESIS:
@@ -121,6 +124,7 @@ export const getNodeDataFromAst = (
         title: ast.type,
         icon: <DataArray />,
         color: "warning",
+        ...error,
       };
 
     case AstNodeType.ERROR:

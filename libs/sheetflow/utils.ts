@@ -1,3 +1,4 @@
+import { Simplify } from "type-fest";
 import {
   Ast,
   AstNodeSubtype,
@@ -7,6 +8,7 @@ import {
 } from "./ast";
 import { extractDataFromStringAddress } from "./cellAddress";
 import { buildCellRange } from "./cellRange";
+import { CellValue } from "./cellValue";
 import { Reference } from "./reference";
 import { SheetFlow } from "./sheetflow";
 
@@ -89,4 +91,20 @@ export const getMissingSheetsAndNamedExpressions = (
     namedExpressions: Array.from(namedExpressions),
     sheets: Array.from(sheets),
   };
+};
+
+export enum ERRORS {
+  "#DIV/0!" = "#DIV/0!",
+  "#N/A" = "#N/A",
+  "#NAME?" = "#NAME?",
+  "#NULL!" = "#NULL!",
+  "#NUM!" = "#NUM!",
+  "#REF!" = "#REF!",
+  "#VALUE!" = "#VALUE!",
+}
+
+export const isCalculatedValueAnError = (
+  value: Simplify<CellValue["value"]>
+): boolean => {
+  return typeof value === "string" && value in ERRORS;
 };
