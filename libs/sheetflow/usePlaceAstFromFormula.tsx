@@ -31,7 +31,7 @@ const reducer: Reducer<State, Action> = (prevState, action) => {
 
 const defaultState: State = {};
 
-export const useGenerateAst = (
+export const usePlaceAstFromFormula = (
   formula: string,
   scope: string
 ): Simplify<Omit<State, "render">> => {
@@ -68,7 +68,7 @@ export const useGenerateAst = (
       return;
     }
 
-    sf.getAstFromFormulaAndPlaceIt(placedAst.uuid, formula, scope);
+    sf.placeAstFromFormula(placedAst.uuid, formula, scope);
   }, [formula, placedAst, scope, sf]);
 
   return { placedAst, error };

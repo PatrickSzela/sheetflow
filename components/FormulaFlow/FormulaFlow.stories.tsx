@@ -1,5 +1,9 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
-import { SheetFlowProvider, Sheets, useGenerateAst } from "@/libs/sheetflow";
+import {
+  SheetFlowProvider,
+  Sheets,
+  usePlaceAstFromFormula,
+} from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import * as Languages from "hyperformula/es/i18n/languages";
 import { useMemo } from "react";
@@ -25,7 +29,7 @@ const FormulaFlowFromString = ({
   skipValues,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { placedAst, error } = useGenerateAst(formula, "Sheet1");
+  const { placedAst, error } = usePlaceAstFromFormula(formula, "Sheet1");
 
   return (
     <div style={{ height: "100vh" }}>

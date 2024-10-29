@@ -6,7 +6,7 @@ import {
   groupReferencesBySheet,
   SheetFlowProvider,
   Sheets,
-  usePrecedents,
+  usePlacedAstPrecedents,
   useSheetFlow,
 } from "@/libs/sheetflow";
 import { useMemo, useState } from "react";
@@ -37,7 +37,7 @@ const AppInner = () => {
 
   const [selectedEditor, setSelectedEditor] = useState<string>();
 
-  const precedents = usePrecedents(selectedEditor);
+  const precedents = usePlacedAstPrecedents(selectedEditor);
 
   const { cells, namedExpressions } = useMemo(
     () => groupReferencesBySheet(sf, precedents),

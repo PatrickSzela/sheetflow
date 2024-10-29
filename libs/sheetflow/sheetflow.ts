@@ -221,11 +221,7 @@ export abstract class SheetFlow {
     return groupedValues;
   }
 
-  getAstFromFormulaAndPlaceIt(
-    uuid: string,
-    formula: string,
-    scope: string
-  ): PlacedAst {
+  placeAstFromFormula(uuid: string, formula: string, scope: string): PlacedAst {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 

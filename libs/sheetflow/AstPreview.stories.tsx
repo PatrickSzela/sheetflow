@@ -1,5 +1,5 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
-import { Sheets, useGenerateAst } from "@/libs/sheetflow";
+import { Sheets, usePlaceAstFromFormula } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/react";
 import { ObjectInspector, chromeDark, chromeLight } from "react-inspector";
@@ -12,7 +12,7 @@ interface AstPreviewProps {
 const AstPreview = (props: AstPreviewProps) => {
   const { formula = "" } = props;
 
-  const data = useGenerateAst(formula, "Sheet1");
+  const data = usePlaceAstFromFormula(formula, "Sheet1");
   const { mode, systemMode } = useColorScheme();
 
   const isDarkMode =

@@ -3,7 +3,9 @@ import { AstEvents } from "./placedAst";
 import { Reference } from "./reference";
 import { useSheetFlow } from "./SheetFlowProvider";
 
-export const usePrecedents = (uuid: string | undefined): Reference[] => {
+export const usePlacedAstPrecedents = (
+  uuid: string | undefined
+): Reference[] => {
   const sf = useSheetFlow();
 
   const [precedents, setPrecedents] = useState<Reference[]>([]);

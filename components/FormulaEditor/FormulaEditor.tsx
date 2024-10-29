@@ -1,6 +1,10 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
-import { PlacedAst, useGenerateAst, useSheetFlow } from "@/libs/sheetflow";
+import {
+  PlacedAst,
+  usePlaceAstFromFormula,
+  useSheetFlow,
+} from "@/libs/sheetflow";
 import { CheckCircle, Error, SvgIconComponent } from "@mui/icons-material";
 import {
   Alert,
@@ -30,7 +34,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { placedAst, error } = useGenerateAst(formula, scope);
+  const { placedAst, error } = usePlaceAstFromFormula(formula, scope);
   const { missing } = placedAst ?? {};
 
   const addMissing = useCallback(() => {
