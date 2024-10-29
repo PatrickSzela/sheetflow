@@ -11,6 +11,7 @@ export * from "./sheet";
 export * from "./sheetflow";
 export * from "./SheetFlowProvider";
 export * from "./useContent";
+export * from "./useGenerateAst";
 export * from "./usePlacedAst";
 export * from "./usePrecedents";
 export * from "./useValue";

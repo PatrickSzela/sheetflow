@@ -111,7 +111,7 @@ export const injectValuesToFlow = (
   let copyNodes: typeof nodes;
   let copyEdges: typeof edges;
 
-  if (nodes) {
+  if (nodes && nodes.length) {
     copyNodes = structuredClone(nodes);
 
     for (const { data } of copyNodes) {
@@ -133,7 +133,7 @@ export const injectValuesToFlow = (
   }
 
   // TODO: finish edges
-  if (edges) {
+  if (edges && edges.length) {
     copyEdges = structuredClone(edges);
 
     for (const edge of copyEdges) {
@@ -141,7 +141,7 @@ export const injectValuesToFlow = (
     }
   }
 
-  console.log("Injected values to flow", values);
+  if (copyNodes || copyEdges) console.log("Injected values to flow", values);
 
   return [copyNodes, copyEdges];
 };

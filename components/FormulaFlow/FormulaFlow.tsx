@@ -1,5 +1,5 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
-import { Ast, AstEvents, flattenAst, useSheetFlow } from "@/libs/sheetflow";
+import { Ast, flattenAst, usePlacedAst, useSheetFlow } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -53,6 +53,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { uuid, skipParenthesis, skipValues, ...otherProps } = props;
 
   const sf = useSheetFlow();
+  const placedAst = usePlacedAst(uuid);
   const { mode, systemMode } = useColorScheme();
   const { updateNodeData } = useReactFlow<AstNode>();
 
@@ -60,53 +61,46 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
+  const { flatAst } = placedAst ?? {};
+
   // generate layout
   useEffect(() => {
-    if (!uuid || !sf.isAstPlaced(uuid)) return;
+    if (!uuid || !flatAst || !sf.isAstPlaced(uuid)) return;
 
     let ignoreLayout = false;
-    const placedAst = sf.getPlacedAst(uuid);
 
-    const update: AstEvents["updated"] = ({}) => {
-      const { flatAst } = sf.getPlacedAst(uuid);
+    const nodes = generateNodes(
+      flatAst,
+      NODE_SETTINGS,
+      skipParenthesis,
+      skipValues
+    );
+    const edges = generateEdges(flatAst, skipParenthesis, skipValues);
 
-      const nodes = generateNodes(
-        flatAst,
-        NODE_SETTINGS,
-        skipParenthesis,
-        skipValues
-      );
-      const edges = generateEdges(flatAst, skipParenthesis, skipValues);
+    const generateLayout = async () => {
+      let elkNodes = await generateElkLayout(nodes, edges);
 
-      const generateLayout = async () => {
-        let elkNodes = await generateElkLayout(nodes, edges);
+      if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
 
-        if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
+      console.log("Generated nodes", elkNodes);
+      console.log("Generated edges", edges);
 
-        console.log("Generated nodes", elkNodes);
-        console.log("Generated edges", edges);
+      const { values } = sf.getPlacedAst(uuid);
 
-        const { values } = sf.getPlacedAst(uuid);
+      if (values) {
+        elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
+      }
 
-        if (values) {
-          elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
-        }
-
-        setNodes(elkNodes);
-        setEdges(edges);
-      };
-
-      generateLayout();
+      setNodes(elkNodes);
+      setEdges(edges);
     };
 
-    placedAst.on("updated", update);
-    update(placedAst);
+    generateLayout();
 
     return () => {
       ignoreLayout = true;
-      placedAst.off("updated", update);
     };
-  }, [setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
+  }, [flatAst, setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
 
   useInjectValuesToFlow(uuid);
 

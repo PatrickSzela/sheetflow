@@ -56,7 +56,26 @@ export abstract class SheetFlow {
       }
     };
 
+    const sheetNamedExpressionAdded: Events["sheetAdded"] = (name) => {
+      for (const uuid of Object.keys(this.placedAsts)) {
+        const placedAst = this.placedAsts[uuid];
+
+        // TODO: that's kinda naive, figure out a better way to check if sheet/named expression is part of the ast
+        if (placedAst.formula.includes(name)) {
+          placedAst.updateAst(
+            placedAst.formula,
+            placedAst.ast,
+            placedAst.flatAst,
+            getPrecedents(this, placedAst.flatAst),
+            getMissingSheetsAndNamedExpressions(this, placedAst.flatAst)
+          );
+        }
+      }
+    };
+
     this.on("valuesChanged", astValuesChangedListener);
+    this.on("sheetAdded", sheetNamedExpressionAdded);
+    this.on("namedExpressionAdded", sheetNamedExpressionAdded);
   }
 
   static build(
@@ -231,8 +250,6 @@ export abstract class SheetFlow {
     this.placeAst(uuid);
 
     this.resumeEvaluation();
-
-    placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
 
     return placedAst;
   }
