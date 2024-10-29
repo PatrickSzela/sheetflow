@@ -1,6 +1,6 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
-import { useGenerateAst, useSheetFlow } from "@/libs/sheetflow";
+import { PlacedAst, useGenerateAst, useSheetFlow } from "@/libs/sheetflow";
 import { CheckCircle, Error, SvgIconComponent } from "@mui/icons-material";
 import {
   Alert,
@@ -20,7 +20,7 @@ type State = "success" | "warning" | "error";
 export interface FormulaEditorProps {
   scope: string;
   defaultFormula?: string;
-  flowProps?: Omit<FormulaFlowProps, "flatAst" | "uuid">;
+  flowProps?: Omit<FormulaFlowProps, "placedAst">;
   onFocus?: (uuid: string) => void;
 }
 
@@ -31,7 +31,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   const [formula, setFormula] = useState<string>(defaultFormula ?? "");
   const { placedAst, error } = useGenerateAst(formula, scope);
-  const { missing, uuid } = placedAst ?? {};
+  const { missing } = placedAst ?? {};
 
   const addMissing = useCallback(() => {
     if (!missing) return;
@@ -90,13 +90,13 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
   useEffect(() => {
-    uuid && onFocus?.(uuid);
-  }, [onFocus, uuid]);
+    placedAst && onFocus?.(placedAst.uuid);
+  }, [onFocus, placedAst]);
 
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <FormulaFlow uuid={uuid} {...flowProps} />
+        <FormulaFlow placedAst={placedAst} {...flowProps} />
       </Box>
 
       <Overlay>

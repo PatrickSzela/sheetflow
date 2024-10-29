@@ -14,7 +14,8 @@ const sheets: Sheets = {
   Sheet1: [],
 };
 
-interface FormulaFlowFromStringProps extends Omit<FormulaFlowProps, "uuid"> {
+interface FormulaFlowFromStringProps
+  extends Omit<FormulaFlowProps, "placedAst"> {
   formula: string;
   language: string;
 }
@@ -26,12 +27,10 @@ const FormulaFlowFromString = ({
 }: FormulaFlowFromStringProps) => {
   const { placedAst, error } = useGenerateAst(formula, "Sheet1");
 
-  if (!placedAst?.uuid) return;
-
   return (
     <div style={{ height: "100vh" }}>
       <FormulaFlow
-        uuid={placedAst.uuid}
+        placedAst={placedAst}
         skipValues={skipValues}
         skipParenthesis={skipParenthesis}
       />

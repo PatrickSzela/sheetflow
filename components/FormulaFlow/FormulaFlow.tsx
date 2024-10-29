@@ -1,5 +1,5 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
-import { Ast, flattenAst, usePlacedAst, useSheetFlow } from "@/libs/sheetflow";
+import { Ast, flattenAst, PlacedAst, useSheetFlow } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -36,7 +36,7 @@ export interface FormulaFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
-  uuid: string | undefined;
+  placedAst?: PlacedAst;
   skipParenthesis?: Boolean;
   skipValues?: Boolean;
 }
@@ -50,10 +50,9 @@ export const FormulaFlow = (props: FormulaFlowProps) => {
 };
 
 const FormulaFlowInner = (props: FormulaFlowProps) => {
-  const { uuid, skipParenthesis, skipValues, ...otherProps } = props;
+  const { placedAst, skipParenthesis, skipValues, ...otherProps } = props;
 
   const sf = useSheetFlow();
-  const placedAst = usePlacedAst(uuid);
   const { mode, systemMode } = useColorScheme();
   const { updateNodeData } = useReactFlow<AstNode>();
 
@@ -61,7 +60,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
-  const { flatAst } = placedAst ?? {};
+  const { uuid, flatAst } = placedAst ?? {};
 
   // generate layout
   useEffect(() => {
