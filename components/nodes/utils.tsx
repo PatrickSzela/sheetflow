@@ -72,6 +72,18 @@ export const getNodeDataFromAst = (
       };
 
     case AstNodeType.REFERENCE:
+      if (
+        typeof nodeData.output?.value === "string" &&
+        nodeData.output.value.match(/^#.*\?$/)
+      ) {
+        return {
+          ...nodeData,
+          title: ast.rawContent,
+          icon: <Tag />,
+          color: "error",
+        };
+      }
+
       return {
         ...nodeData,
         title: ast.rawContent,
@@ -114,7 +126,7 @@ export const getNodeDataFromAst = (
     case AstNodeType.ERROR:
       return {
         ...nodeData,
-        title: ast.type,
+        title: ast.rawContent,
         icon: <Tag />,
         color: "error",
       };
