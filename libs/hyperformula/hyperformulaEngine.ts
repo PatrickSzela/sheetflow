@@ -5,8 +5,6 @@ import {
   CellContent,
   CellRange,
   CellValue,
-  EngineEventEmitter,
-  Events,
   extractDataFromStringAddress,
   NamedExpression,
   NamedExpressions,
@@ -16,7 +14,6 @@ import {
   SpecialSheets,
   Value,
 } from "@/libs/sheetflow";
-import EventEmitter from "events";
 import {
   ConfigParams,
   CellValue as HfCellValue,
@@ -25,7 +22,6 @@ import {
   SerializedNamedExpression,
 } from "hyperformula";
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
-import { Listeners } from "hyperformula/typings/Emitter";
 import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
 import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
@@ -55,22 +51,8 @@ registerAllLanguages();
 
 export type HyperFormulaConfig = Partial<ConfigParams>;
 
-type RemapEvents<T extends keyof Events> = "valuesChanged" extends T
-  ? "valuesUpdated"
-  : "sheetAdded" extends T
-  ? "sheetAdded"
-  : "namedExpressionAdded" extends T
-  ? "namedExpressionAdded"
-  : never;
-
-type EventListeners = {
-  [key in keyof Events]: Map<Events[key], Listeners[RemapEvents<key>]>;
-};
-
 export class HyperFormulaEngine extends SheetFlow {
   protected hf: HyperFormula;
-  protected eventEmitter: EngineEventEmitter;
-  protected eventListeners: EventListeners;
 
   static build(
     sheets?: Sheets,
@@ -80,6 +62,25 @@ export class HyperFormulaEngine extends SheetFlow {
     const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
     engine.registerEvents();
     return engine;
+  }
+
+  registerEvents(): void {
+    super.registerEvents();
+
+    this.hf.on("namedExpressionAdded", (namedExpression) => {
+      this.eventEmitter.emit("namedExpressionAdded", namedExpression);
+    });
+
+    this.hf.on("sheetAdded", (sheet) => {
+      this.eventEmitter.emit("sheetAdded", sheet);
+    });
+
+    this.hf.on("valuesUpdated", (changes) => {
+      this.eventEmitter.emit(
+        "valuesChanged",
+        remapChanges(this, this.hf, changes)
+      );
+    });
   }
 
   constructor(
@@ -103,13 +104,6 @@ export class HyperFormulaEngine extends SheetFlow {
         this.hf.addNamedExpression(name, expression, scope);
       }
     }
-
-    this.eventEmitter = new EventEmitter() as EngineEventEmitter;
-    this.eventListeners = {
-      valuesChanged: new Map(),
-      namedExpressionAdded: new Map(),
-      sheetAdded: new Map(),
-    };
 
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
@@ -405,80 +399,5 @@ export class HyperFormulaEngine extends SheetFlow {
   resumeEvaluation(): void {
     this.hf.resumeEvaluation();
   }
-  // #endregion
-
-  // #region event
-  on = <T extends keyof Events>(
-    event: T,
-    listener: Events[T]
-  ): EngineEventEmitter => {
-    let hfListener: Listeners[keyof Listeners] | undefined = undefined;
-    let hfEvent: keyof Listeners | undefined = undefined;
-
-    switch (event) {
-      case "valuesChanged":
-        hfEvent = "valuesUpdated";
-        hfListener = ((changes) => {
-          (listener as Events["valuesChanged"])(
-            remapChanges(this, this.hf, changes)
-          );
-        }) as Listeners["valuesUpdated"];
-        break;
-
-      case "sheetAdded":
-        hfEvent = "sheetAdded";
-        hfListener = ((sheet) => {
-          (listener as Events["sheetAdded"])(sheet);
-        }) as Listeners["sheetAdded"];
-        break;
-
-      case "namedExpressionAdded":
-        hfEvent = "namedExpressionAdded";
-        hfListener = ((sheet) => {
-          (listener as Events["namedExpressionAdded"])(sheet);
-        }) as Listeners["namedExpressionAdded"];
-        break;
-    }
-
-    if (hfListener && hfEvent) {
-      this.eventListeners[event].set(listener, hfListener as any);
-      this.hf.on(hfEvent, hfListener as any);
-    } else {
-      throw new Error();
-    }
-
-    return this.eventEmitter;
-  };
-
-  off = <T extends keyof Events>(
-    event: T,
-    listener: Events[T]
-  ): EngineEventEmitter => {
-    let hfEvent: keyof Listeners | undefined = undefined;
-    const hfListener = this.eventListeners[event].get(listener);
-
-    switch (event) {
-      case "valuesChanged":
-        hfEvent = "valuesUpdated";
-        break;
-
-      case "sheetAdded":
-        hfEvent = "sheetAdded";
-        break;
-
-      case "namedExpressionAdded":
-        hfEvent = "namedExpressionAdded";
-        break;
-    }
-
-    if (hfListener && hfEvent) {
-      this.hf.off(hfEvent, hfListener);
-      this.eventListeners[event].delete(listener);
-    } else {
-      throw new Error();
-    }
-
-    return this.eventEmitter;
-  };
   // #endregion
 }

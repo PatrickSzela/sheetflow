@@ -1,3 +1,4 @@
+import EventEmitter from "events";
 import TypedEmitter from "typed-emitter";
 import { Ast, isEmptyAst } from "./ast";
 import { CellContent } from "./cell";
@@ -19,10 +20,10 @@ import {
 export type Events = {
   // TODO: removed sheet & named expression
   sheetAdded: (sheet: string) => void;
-  namedExpressionAdded: (sheet: string) => void;
+  namedExpressionAdded: (name: string) => void;
   valuesChanged: (changes: Change[]) => void;
 };
-export type EngineEventEmitter = TypedEmitter<Events>;
+export type SheetFlowEventEmitter = TypedEmitter<Events>;
 
 // TODO: move rest of the helpers in here
 // TODO: row/column range to string and from string
@@ -38,6 +39,8 @@ export type EngineEventEmitter = TypedEmitter<Events>;
 
 export abstract class SheetFlow {
   protected placedAsts: Record<string, PlacedAst> = {};
+  protected eventEmitter: SheetFlowEventEmitter =
+    new EventEmitter() as SheetFlowEventEmitter;
 
   constructor() {
     // TODO: remove
@@ -138,11 +141,13 @@ export abstract class SheetFlow {
   // evaluation
   abstract pauseEvaluation(): void;
   abstract resumeEvaluation(): void;
-
-  // event
-  abstract on: EngineEventEmitter["on"];
-  abstract off: EngineEventEmitter["off"];
   // #endregion
+
+  once: SheetFlowEventEmitter["once"] = (...args) =>
+    this.eventEmitter.once(...args);
+  on: SheetFlowEventEmitter["on"] = (...args) => this.eventEmitter.on(...args);
+  off: SheetFlowEventEmitter["off"] = (...args) =>
+    this.eventEmitter.off(...args);
 
   protected getFirstAvailableRowForPlaceableAst(): number {
     const values = Object.values(this.placedAsts);
