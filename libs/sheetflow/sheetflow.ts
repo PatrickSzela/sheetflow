@@ -62,12 +62,10 @@ export abstract class SheetFlow {
 
         // TODO: that's kinda naive, figure out a better way to check if sheet/named expression is part of the ast
         if (placedAst.formula.includes(name)) {
-          placedAst.updateAst(
+          this.placeAstFromFormula(
+            placedAst.uuid,
             placedAst.formula,
-            placedAst.ast,
-            placedAst.flatAst,
-            getPrecedents(this, placedAst.flatAst),
-            getMissingSheetsAndNamedExpressions(this, placedAst.flatAst)
+            placedAst.scope
           );
         }
       }
@@ -240,7 +238,7 @@ export abstract class SheetFlow {
     const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
     const precedents = getPrecedents(this, flatAst);
 
-    placedAst.updateAst(formula, ast, flatAst, precedents, missing);
+    placedAst.updateAst(formula, scope, ast, flatAst, precedents, missing);
 
     this.clearRow(address.sheet, address.row);
     this.placeAst(uuid);

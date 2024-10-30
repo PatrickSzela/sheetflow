@@ -10,6 +10,7 @@ export type AstEvents = {
   valuesChanged: (values: Record<string, Value>) => void;
   updated: (data: {
     formula: string;
+    scope: string;
     ast: Ast;
     flatAst: Ast[];
     precedents: Reference[];
@@ -26,6 +27,7 @@ export class PlacedAst {
   uuid: string;
   address: CellAddress;
   formula: string;
+  scope: string;
   ast: Ast;
   flatAst: Ast[];
   values: Record<string, Value>;
@@ -39,6 +41,7 @@ export class PlacedAst {
     uuid: string,
     address: CellAddress,
     formula: string = "",
+    scope: string = "",
     ast: Ast = buildEmptyAst({ value: null, rawContent: formula }),
     flatAst: Ast[] = flattenAst(ast),
     values: Record<string, Value> = {},
@@ -48,6 +51,7 @@ export class PlacedAst {
     this.uuid = uuid;
     this.address = address;
     this.formula = formula;
+    this.scope = scope;
     this.ast = ast;
     this.flatAst = flatAst;
     this.values = values;
@@ -57,14 +61,16 @@ export class PlacedAst {
 
   updateAst(
     formula: string,
+    scope: string,
     ast: Ast,
     flatAst: Ast[],
     precedents: Reference[],
     missing: Missing
   ) {
-    const data = { formula, ast, flatAst, precedents, missing };
+    const data = { formula, scope, ast, flatAst, precedents, missing };
 
     this.formula = formula;
+    this.scope = scope;
     this.ast = ast;
     this.flatAst = flatAst;
     this.precedents = precedents;
