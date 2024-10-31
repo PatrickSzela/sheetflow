@@ -1,5 +1,11 @@
 import { AstNode, NODE_SETTINGS, nodeTypes } from "@/components/nodes";
-import { Ast, flattenAst, PlacedAst, useSheetFlow } from "@/libs/sheetflow";
+import {
+  Ast,
+  flattenAst,
+  PlacedAst,
+  usePlacedAstData,
+  useSheetFlow,
+} from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -55,16 +61,15 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const sf = useSheetFlow();
   const { mode, systemMode } = useColorScheme();
   const { updateNodeData } = useReactFlow<AstNode>();
+  const { flatAst } = usePlacedAstData(placedAst);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<AstNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
-  const { uuid, flatAst } = placedAst ?? {};
-
   // generate layout
   useEffect(() => {
-    if (!uuid || !flatAst || !sf.isAstPlaced(uuid)) return;
+    if (!placedAst || !flatAst || !sf.isAstPlaced(placedAst.uuid)) return;
 
     let ignoreLayout = false;
 
@@ -79,16 +84,12 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     const generateLayout = async () => {
       let elkNodes = await generateElkLayout(nodes, edges);
 
-      if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
+      if (ignoreLayout || !sf.isAstPlaced(placedAst.uuid)) return;
 
       console.log("Generated nodes", elkNodes);
       console.log("Generated edges", edges);
 
-      const { values } = sf.getPlacedAst(uuid);
-
-      if (values) {
-        elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
-      }
+      elkNodes = injectValuesToFlow(placedAst.values, elkNodes)[0] ?? elkNodes;
 
       setNodes(elkNodes);
       setEdges(edges);
@@ -99,9 +100,9 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     return () => {
       ignoreLayout = true;
     };
-  }, [flatAst, setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
+  }, [flatAst, placedAst, setEdges, setNodes, sf, skipParenthesis, skipValues]);
 
-  useInjectValuesToFlow(uuid);
+  useInjectValuesToFlow(placedAst);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ edges, nodes: _nodes }) => {

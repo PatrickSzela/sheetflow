@@ -9,6 +9,7 @@ import {
 import { extractDataFromStringAddress } from "./cellAddress";
 import { buildCellRange } from "./cellRange";
 import { CellValue } from "./cellValue";
+import { MissingReferences } from "./placedAst";
 import { Reference } from "./reference";
 import { SheetFlow } from "./sheetflow";
 
@@ -65,10 +66,7 @@ export const getPrecedents = (sf: SheetFlow, flatAst: Ast[]): Reference[] => {
 export const getMissingSheetsAndNamedExpressions = (
   sf: SheetFlow,
   flatAst: Ast[]
-): {
-  namedExpressions: string[];
-  sheets: string[];
-} => {
+): MissingReferences => {
   const namedExpressions: Set<string> = new Set();
   const sheets: Set<string> = new Set();
 

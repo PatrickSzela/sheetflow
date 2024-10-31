@@ -6,7 +6,7 @@ import {
   groupReferencesBySheet,
   SheetFlowProvider,
   Sheets,
-  usePlacedAstPrecedents,
+  usePlacedAstData,
   useSheetFlow,
 } from "@/libs/sheetflow";
 import { useMemo, useState } from "react";
@@ -36,13 +36,11 @@ const AppInner = () => {
   const sf = useSheetFlow();
 
   const [selectedEditor, setSelectedEditor] = useState<string>();
+  const { precedents } = usePlacedAstData(selectedEditor);
 
-  const precedents = usePlacedAstPrecedents(selectedEditor);
-
-  const { cells, namedExpressions } = useMemo(
-    () => groupReferencesBySheet(sf, precedents),
-    [sf, precedents]
-  );
+  const { cells, namedExpressions } = useMemo(() => {
+    return groupReferencesBySheet(sf, precedents ?? []);
+  }, [sf, precedents]);
 
   const drawerChildren = (
     <DependenciesEditor cells={cells} namedExpressions={namedExpressions} />

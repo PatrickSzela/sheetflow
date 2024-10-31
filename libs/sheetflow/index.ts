@@ -13,6 +13,7 @@ export * from "./SheetFlowProvider";
 export * from "./useContent";
 export * from "./usePlaceAstFromFormula";
 export * from "./usePlacedAst";
-export * from "./usePlacedAstPrecedents";
+export * from "./usePlacedAstData";
+export * from "./usePlacedAstValues";
 export * from "./useValue";
 export * from "./utils";

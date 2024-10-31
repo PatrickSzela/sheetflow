@@ -61,15 +61,12 @@ export abstract class SheetFlow {
 
     const sheetNamedExpressionAdded: Events["sheetAdded"] = (name) => {
       for (const uuid of Object.keys(this.placedAsts)) {
-        const placedAst = this.placedAsts[uuid];
+        const { data } = this.placedAsts[uuid];
+        const { formula, scope } = data;
 
         // TODO: that's kinda naive, figure out a better way to check if sheet/named expression is part of the ast
-        if (placedAst.formula.includes(name)) {
-          this.placeAstFromFormula(
-            placedAst.uuid,
-            placedAst.formula,
-            placedAst.scope
-          );
+        if (formula.includes(name)) {
+          this.updatePlacedAstWithFormula(uuid, formula, scope);
         }
       }
     };
@@ -184,10 +181,10 @@ export abstract class SheetFlow {
   }
 
   placeAst(uuid: string): void {
-    const { address, flatAst } = this.getPlacedAst(uuid);
+    const { address, data } = this.getPlacedAst(uuid);
     const { row } = address;
 
-    flatAst.forEach((ast, idx) => {
+    data.flatAst.forEach((ast, idx) => {
       const address = buildCellAddress(idx, row, SpecialSheets.PLACED_ASTS);
       this.setCell(address, this.astToFormula(ast));
     });
@@ -200,9 +197,9 @@ export abstract class SheetFlow {
   }
 
   calculatePlacedAst(uuid: string): Value[] {
-    const { flatAst } = this.getPlacedAst(uuid);
+    const { data } = this.getPlacedAst(uuid);
 
-    return flatAst.map((ast) =>
+    return data.flatAst.map((ast) =>
       isEmptyAst(ast)
         ? buildEmptyCellValue({ value: null })
         : this.calculateFormula(
@@ -213,18 +210,22 @@ export abstract class SheetFlow {
   }
 
   calculatePlacedAstAsRecord(uuid: string): Record<string, Value> {
-    const { flatAst } = this.getPlacedAst(uuid);
+    const { data } = this.getPlacedAst(uuid);
     const values = this.calculatePlacedAst(uuid);
     const groupedValues: Record<string, Value> = {};
 
-    flatAst.forEach((ast, idx) => {
+    data.flatAst.forEach((ast, idx) => {
       groupedValues[ast.id] = values[idx];
     });
 
     return groupedValues;
   }
 
-  placeAstFromFormula(uuid: string, formula: string, scope: string): PlacedAst {
+  updatePlacedAstWithFormula(
+    uuid: string,
+    formula: string,
+    scope: string
+  ): PlacedAst {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
@@ -243,7 +244,7 @@ export abstract class SheetFlow {
     const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
     const precedents = getPrecedents(this, flatAst);
 
-    placedAst.updateAst(formula, scope, ast, flatAst, precedents, missing);
+    placedAst.updateData({ formula, scope, ast, flatAst, precedents, missing });
 
     this.clearRow(address.sheet, address.row);
     this.placeAst(uuid);

@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { PlacedAst } from "./placedAst";
 import { useSheetFlow } from "./SheetFlowProvider";
 
@@ -7,24 +6,9 @@ export const usePlacedAst = (
 ): PlacedAst | undefined => {
   const sf = useSheetFlow();
 
-  const [placedAst, setPlacedAst] = useState<PlacedAst>();
+  if (!uuid || !sf.isAstPlaced(uuid)) {
+    return undefined;
+  }
 
-  useEffect(() => {
-    if (!uuid || !sf.isAstPlaced(uuid)) return;
-
-    const placedAst = sf.getPlacedAst(uuid);
-
-    const onUpdated = () => {
-      setPlacedAst(placedAst);
-    };
-
-    onUpdated();
-    placedAst.on("updated", onUpdated);
-
-    return () => {
-      placedAst.off("updated", onUpdated);
-    };
-  }, [sf, uuid]);
-
-  return placedAst;
+  return sf.getPlacedAst(uuid);
 };

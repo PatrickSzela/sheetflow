@@ -3,90 +3,73 @@ import TypedEventEmitter from "typed-emitter";
 import { Ast, buildEmptyAst } from "./ast";
 import { CellAddress } from "./cellAddress";
 import { Value } from "./cellValue";
-import { flattenAst } from "./flattenAst";
 import { Reference } from "./reference";
 
-export type AstEvents = {
-  valuesChanged: (values: Record<string, Value>) => void;
-  updated: (data: {
-    formula: string;
-    scope: string;
-    ast: Ast;
-    flatAst: Ast[];
-    precedents: Reference[];
-    missing: Missing;
-  }) => void;
+export type MissingReferences = {
+  sheets: string[];
+  namedExpressions: string[];
 };
-export type AstEventEmitter = TypedEventEmitter<AstEvents>;
 
-export type Missing = { sheets: string[]; namedExpressions: string[] };
+export type PlacedAstValues = Record<string, Value>;
+export type PlacedAstData = {
+  formula: string;
+  scope: string;
+  ast: Ast;
+  flatAst: Ast[];
+  precedents: Reference[];
+  missing: MissingReferences;
+};
+
+export type PlacedAstEvents = {
+  valuesChanged: (values: PlacedAstValues) => void;
+  updated: (data: PlacedAstData) => void;
+};
+export type PlacedAstEventEmitter = TypedEventEmitter<PlacedAstEvents>;
 
 // TODO: read-only properties
 
 export class PlacedAst {
   uuid: string;
   address: CellAddress;
-  formula: string;
-  scope: string;
-  ast: Ast;
-  flatAst: Ast[];
-  values: Record<string, Value>;
-  precedents: Reference[];
-  missing: Missing;
+  data: PlacedAstData;
+  values: PlacedAstValues;
 
-  protected eventEmitter: AstEventEmitter =
-    new EventEmitter() as AstEventEmitter;
+  protected eventEmitter: PlacedAstEventEmitter =
+    new EventEmitter() as PlacedAstEventEmitter;
 
   constructor(
     uuid: string,
     address: CellAddress,
-    formula: string = "",
-    scope: string = "",
-    ast: Ast = buildEmptyAst({ value: null, rawContent: formula }),
-    flatAst: Ast[] = flattenAst(ast),
-    values: Record<string, Value> = {},
-    precedents: Reference[] = [],
-    missing: Missing = { namedExpressions: [], sheets: [] }
+    data?: PlacedAstData,
+    values?: PlacedAstValues
   ) {
     this.uuid = uuid;
     this.address = address;
-    this.formula = formula;
-    this.scope = scope;
-    this.ast = ast;
-    this.flatAst = flatAst;
-    this.values = values;
-    this.precedents = precedents;
-    this.missing = missing;
+    this.values = values ?? {};
+    this.data = data ?? {
+      formula: "",
+      scope: "",
+      ast: buildEmptyAst({ value: null, rawContent: "" }),
+      flatAst: [],
+      precedents: [],
+      missing: { namedExpressions: [], sheets: [] },
+    };
   }
 
-  updateAst(
-    formula: string,
-    scope: string,
-    ast: Ast,
-    flatAst: Ast[],
-    precedents: Reference[],
-    missing: Missing
-  ) {
-    const data = { formula, scope, ast, flatAst, precedents, missing };
-
-    this.formula = formula;
-    this.scope = scope;
-    this.ast = ast;
-    this.flatAst = flatAst;
-    this.precedents = precedents;
-    this.missing = missing;
-
-    this.eventEmitter.emit("updated", data);
-
-    return data;
+  updateData(data: PlacedAstData) {
+    this.data = { ...data };
+    this.eventEmitter.emit("updated", this.data);
+    return this.data;
   }
 
-  updateValues(values: Record<string, Value>) {
+  updateValues(values: PlacedAstValues) {
     this.values = values;
     this.eventEmitter.emit("valuesChanged", values);
   }
 
-  once: AstEventEmitter["once"] = (...args) => this.eventEmitter.once(...args);
-  on: AstEventEmitter["on"] = (...args) => this.eventEmitter.on(...args);
-  off: AstEventEmitter["off"] = (...args) => this.eventEmitter.off(...args);
+  once: PlacedAstEventEmitter["once"] = (...args) =>
+    this.eventEmitter.once(...args);
+  on: PlacedAstEventEmitter["on"] = (...args) => this.eventEmitter.on(...args);
+  off: PlacedAstEventEmitter["off"] = (...args) =>
+    this.eventEmitter.off(...args);
 }

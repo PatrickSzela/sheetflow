@@ -1,23 +1,23 @@
 import { AstNode } from "@/components/nodes";
-import { AstEvents, useSheetFlow } from "@/libs/sheetflow";
+import { PlacedAst, PlacedAstEvents, usePlacedAst } from "@/libs/sheetflow";
 import { useReactFlow } from "@xyflow/react";
 import { useEffect } from "react";
 import { injectValuesToFlow } from "./generateFlow";
 
 // TODO: simplify
 
-export const useInjectValuesToFlow = (uuid: string | undefined): void => {
-  const sf = useSheetFlow();
+export const useInjectValuesToFlow = (
+  placedAst: PlacedAst | string | undefined
+): void => {
+  const uuid = typeof placedAst === "string" ? placedAst : placedAst?.uuid;
+
   const { updateNodeData, getNodes } = useReactFlow<AstNode>();
+  const _placedAst = usePlacedAst(uuid);
 
   useEffect(() => {
-    if (!uuid || !sf.isAstPlaced(uuid)) return;
+    if (!_placedAst) return;
 
-    const placedAst = sf.getPlacedAst(uuid);
-
-    const onValuesChanged: AstEvents["valuesChanged"] = (values) => {
-      if (!sf.isAstPlaced(uuid)) return;
-
+    const onValuesChanged: PlacedAstEvents["valuesChanged"] = (values) => {
       const [nodes = []] = injectValuesToFlow(values, getNodes());
 
       for (const node of nodes) {
@@ -25,10 +25,10 @@ export const useInjectValuesToFlow = (uuid: string | undefined): void => {
       }
     };
 
-    placedAst.on("valuesChanged", onValuesChanged);
+    _placedAst.on("valuesChanged", onValuesChanged);
 
     return () => {
-      placedAst.off("valuesChanged", onValuesChanged);
+      _placedAst.off("valuesChanged", onValuesChanged);
     };
-  }, [getNodes, sf, updateNodeData, uuid]);
+  }, [getNodes, _placedAst, updateNodeData]);
 };
