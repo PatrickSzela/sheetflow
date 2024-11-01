@@ -3,18 +3,17 @@ import { NamedExpressions } from "./namedExpression";
 import { Sheets } from "./sheet";
 import { SheetFlow } from "./sheetflow";
 
-export interface SheetFlowProviderProps {
-  engine: typeof SheetFlow;
+export interface SheetFlowProviderProps<T extends typeof SheetFlow> {
+  engine: T;
   sheets?: Sheets;
   namedExpressions?: NamedExpressions;
-  config?: any;
-  // TODO: proper engine config type
+  config?: Parameters<T["build"]>[2];
 }
 
 const SheetFlowContext = createContext<SheetFlow | null>(null);
 
-export const SheetFlowProvider = (
-  props: PropsWithChildren<SheetFlowProviderProps>
+export const SheetFlowProvider = <T extends typeof SheetFlow>(
+  props: PropsWithChildren<SheetFlowProviderProps<T>>
 ) => {
   const { engine, sheets, namedExpressions, config, children } = props;
 

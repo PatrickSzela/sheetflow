@@ -95,6 +95,9 @@ export abstract class SheetFlow {
   }
 
   // #region abstract methods
+  // engine
+  abstract updateConfig(config: Record<string, unknown>): void;
+
   // conversion
   abstract stringToCellAddress(address: string): CellAddress;
   abstract stringToCellRange(range: string): CellRange;

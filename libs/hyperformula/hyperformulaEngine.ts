@@ -66,7 +66,7 @@ export class HyperFormulaEngine extends SheetFlow {
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
     config?: HyperFormulaConfig
-  ) {
+  ): HyperFormulaEngine {
     const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
     engine.registerEvents();
     return engine;
@@ -113,6 +113,12 @@ export class HyperFormulaEngine extends SheetFlow {
       );
     });
   }
+
+  // #region engine
+  updateConfig(config: HyperFormulaConfig): void {
+    this.hf.updateConfig(config);
+  }
+  // #endregion
 
   // #region conversion
   stringToCellAddress(address: string, sheetName?: string): CellAddress {
