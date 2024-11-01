@@ -2,8 +2,8 @@ import {
   Ast,
   AstNodeType,
   AstWithChildren,
+  buildAst,
   BuildFn,
-  isAst,
   isAstWithChildren,
 } from "./ast";
 
@@ -12,19 +12,18 @@ export interface FunctionAst
   functionName: string;
 }
 
-export const buildFunctionAst: BuildFn<FunctionAst> = ({ id, ...args }) => ({
-  type: AstNodeType.FUNCTION,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildFunctionAst: BuildFn<FunctionAst> = (args) =>
+  buildAst({
+    type: AstNodeType.FUNCTION,
+    ...args,
+  });
 
 export const isFunctionAst = (ast: any): ast is FunctionAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithChildren(ast)) return false;
 
-  const { type, functionName } = ast as FunctionAst;
+  const { type, functionName } = ast as Partial<FunctionAst>;
 
   return (
-    isAstWithChildren(ast) &&
     type === AstNodeType.FUNCTION &&
     typeof functionName === "string" &&
     functionName.length > 0

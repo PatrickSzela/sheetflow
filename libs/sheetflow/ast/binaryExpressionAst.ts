@@ -2,10 +2,10 @@ import {
   Ast,
   AstNodeType,
   AstWithChildren,
+  buildAst,
   BuildFn,
-  isAst,
   isAstWithChildren,
-  Operators,
+  Operators
 } from "./ast";
 
 export interface BinaryExpressionAst
@@ -13,24 +13,21 @@ export interface BinaryExpressionAst
   operator: string;
 }
 
-export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = ({
-  id,
-  ...args
-}) => ({
-  type: AstNodeType.BINARY_EXPRESSION,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (args) =>
+  buildAst({
+    type: AstNodeType.BINARY_EXPRESSION,
+    ...args,
+  });
 
 export const isBinaryExpressionAst = (ast: any): ast is BinaryExpressionAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithChildren(ast)) return false;
 
-  const { type, operator, children } = ast as BinaryExpressionAst;
+  const { type, operator, children } = ast as Partial<BinaryExpressionAst>;
 
   return (
-    isAstWithChildren(ast) &&
     type === AstNodeType.BINARY_EXPRESSION &&
+    operator !== undefined &&
     operator in Operators &&
-    children.length === 2
+    children?.length === 2
   );
 };

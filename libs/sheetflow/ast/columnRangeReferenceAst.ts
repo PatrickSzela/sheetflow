@@ -1,6 +1,7 @@
 import {
   AstNodeSubtype,
   AstNodeType,
+  buildAst,
   BuildFn,
   isAst,
   RangeReferenceAst,
@@ -9,22 +10,22 @@ import {
 export interface ColumnRangeReferenceAst
   extends RangeReferenceAst<AstNodeSubtype.COLUMN_RANGE, number> {}
 
-export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = ({
-  id,
-  ...args
-}) => ({
-  type: AstNodeType.REFERENCE,
-  subtype: AstNodeSubtype.COLUMN_RANGE,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = (
+  args
+) =>
+  buildAst({
+    type: AstNodeType.REFERENCE,
+    subtype: AstNodeSubtype.COLUMN_RANGE,
+    ...args,
+  });
 
 export const isColumnRangeReferenceAst = (
   ast: any
 ): ast is ColumnRangeReferenceAst => {
   if (!isAst(ast)) return false;
 
-  const { type, subtype, start, end, sheet } = ast as ColumnRangeReferenceAst;
+  const { type, subtype, start, end, sheet } =
+    ast as Partial<ColumnRangeReferenceAst>;
 
   return (
     type === AstNodeType.REFERENCE &&

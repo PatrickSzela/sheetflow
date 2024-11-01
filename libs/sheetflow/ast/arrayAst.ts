@@ -3,6 +3,7 @@ import {
   AstNodeSubtype,
   AstNodeType,
   AstWithValue,
+  buildAst,
   BuildFn,
   isAst,
   isAstWithValue,
@@ -10,20 +11,19 @@ import {
 
 export interface ArrayAst extends AstWithValue<AstNodeSubtype.ARRAY, Ast[][]> {}
 
-export const buildArrayAst: BuildFn<ArrayAst> = ({ id, ...args }) => ({
-  type: AstNodeType.VALUE,
-  subtype: AstNodeSubtype.ARRAY,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildArrayAst: BuildFn<ArrayAst> = (args) =>
+  buildAst({
+    type: AstNodeType.VALUE,
+    subtype: AstNodeSubtype.ARRAY,
+    ...args,
+  });
 
 export const isArrayAst = (ast: any): ast is ArrayAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithValue(ast)) return false;
 
-  const { subtype, value } = ast as ArrayAst;
+  const { subtype, value } = ast as Partial<ArrayAst>;
 
   return (
-    isAstWithValue(ast) &&
     subtype === AstNodeSubtype.ARRAY &&
     Array.isArray(value) &&
     value.every((arr) => Array.isArray(arr) && arr.map((ast) => isAst(ast)))

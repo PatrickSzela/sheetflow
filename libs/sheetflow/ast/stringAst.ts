@@ -2,29 +2,25 @@ import {
   AstNodeSubtype,
   AstNodeType,
   AstWithValue,
+  buildAst,
   BuildFn,
-  isAst,
   isAstWithValue,
 } from "./ast";
 
 export interface StringAst
   extends AstWithValue<AstNodeSubtype.STRING, string> {}
 
-export const buildStringAst: BuildFn<StringAst> = ({ id, ...args }) => ({
-  type: AstNodeType.VALUE,
-  subtype: AstNodeSubtype.STRING,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildStringAst: BuildFn<StringAst> = (args) =>
+  buildAst({
+    type: AstNodeType.VALUE,
+    subtype: AstNodeSubtype.STRING,
+    ...args,
+  });
 
 export const isStringAst = (ast: any): ast is StringAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithValue(ast)) return false;
 
-  const { subtype, value } = ast as StringAst;
+  const { subtype, value } = ast as Partial<StringAst>;
 
-  return (
-    isAstWithValue(ast) &&
-    subtype === AstNodeSubtype.STRING &&
-    typeof value === "string"
-  );
+  return subtype === AstNodeSubtype.STRING && typeof value === "string";
 };

@@ -2,6 +2,7 @@ import {
   AstNodeSubtype,
   AstNodeType,
   AstWithSubtype,
+  buildAst,
   BuildFn,
   isAst,
 } from "./ast";
@@ -16,19 +17,20 @@ export interface NamedExpressionReferenceAst
 
 export const buildNamedExpressionReferenceAst: BuildFn<
   NamedExpressionReferenceAst
-> = ({ id, ...args }) => ({
-  type: AstNodeType.REFERENCE,
-  subtype: AstNodeSubtype.NAMED_EXPRESSION,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+> = (args) =>
+  buildAst({
+    type: AstNodeType.REFERENCE,
+    subtype: AstNodeSubtype.NAMED_EXPRESSION,
+    ...args,
+  });
 
 export const isNamedExpressionReferenceAst = (
   ast: any
 ): ast is NamedExpressionReferenceAst => {
   if (!isAst(ast)) return false;
 
-  const { type, subtype, expressionName } = ast as NamedExpressionReferenceAst;
+  const { type, subtype, expressionName } =
+    ast as Partial<NamedExpressionReferenceAst>;
 
   return (
     type === AstNodeType.REFERENCE &&

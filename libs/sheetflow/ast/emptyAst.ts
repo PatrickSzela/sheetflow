@@ -2,26 +2,20 @@ import {
   AstNodeSubtype,
   AstNodeType,
   AstWithValue,
+  buildAst,
   BuildFn,
-  isAst,
   isAstWithValue,
 } from "./ast";
 
 export interface EmptyAst extends AstWithValue<AstNodeSubtype.EMPTY, null> {}
 
-export const buildEmptyAst: BuildFn<EmptyAst> = ({ id, ...args }) => ({
-  type: AstNodeType.VALUE,
-  subtype: AstNodeSubtype.EMPTY,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildEmptyAst: BuildFn<EmptyAst> = (args) =>
+  buildAst({ type: AstNodeType.VALUE, subtype: AstNodeSubtype.EMPTY, ...args });
 
 export const isEmptyAst = (ast: any): ast is EmptyAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithValue(ast)) return false;
 
-  const { subtype, value } = ast as EmptyAst;
+  const { subtype, value } = ast as Partial<EmptyAst>;
 
-  return (
-    isAstWithValue(ast) && subtype === AstNodeSubtype.EMPTY && value === null
-  );
+  return subtype === AstNodeSubtype.EMPTY && value === null;
 };

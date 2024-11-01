@@ -2,31 +2,24 @@ import {
   Ast,
   AstNodeType,
   AstWithChildren,
+  buildAst,
   BuildFn,
-  isAst,
   isAstWithChildren,
 } from "./ast";
 
 export interface ParenthesisAst
   extends AstWithChildren<AstNodeType.PARENTHESIS, [Ast]> {}
 
-export const buildParenthesisAst: BuildFn<ParenthesisAst> = ({
-  id,
-  ...args
-}) => ({
-  type: AstNodeType.PARENTHESIS,
-  id: id ?? crypto.randomUUID(),
-  ...args,
-});
+export const buildParenthesisAst: BuildFn<ParenthesisAst> = (args) =>
+  buildAst({
+    type: AstNodeType.PARENTHESIS,
+    ...args,
+  });
 
 export const isParenthesisAst = (ast: any): ast is ParenthesisAst => {
-  if (!isAst(ast)) return false;
+  if (!isAstWithChildren(ast)) return false;
 
-  const { type, children } = ast as ParenthesisAst;
+  const { type, children } = ast as Partial<ParenthesisAst>;
 
-  return (
-    isAstWithChildren(ast) &&
-    type === AstNodeType.PARENTHESIS &&
-    children.length === 1
-  );
+  return type === AstNodeType.PARENTHESIS && children?.length === 1;
 };

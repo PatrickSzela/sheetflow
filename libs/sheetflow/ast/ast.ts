@@ -75,9 +75,9 @@ export type Operator = `${Operators}`;
 export type BuildAstFnArgs<T extends AstBase> = Omit<
   T,
   "type" | "subtype" | "id"
-> & {
-  id?: T["id"];
-};
+> &
+  Partial<Pick<T, "id">>;
+
 export type BuildFn<T extends AstBase> = (args: BuildAstFnArgs<T>) => T;
 
 export interface AstBase<TType extends AstNodeType = AstNodeType> {
@@ -86,15 +86,31 @@ export interface AstBase<TType extends AstNodeType = AstNodeType> {
   rawContent: string;
   isArrayFormula?: boolean;
 }
+
+type BuildBaseAstFnArgs<T extends AstBase> = Omit<T, "id"> &
+  Partial<Pick<T, "id">>;
+
+export const buildAst = <
+  T extends AstBase,
+  TArgs extends BuildBaseAstFnArgs<T>
+>({
+  id,
+  ...args
+}: TArgs) =>
+  ({
+    id: id ?? crypto.randomUUID(),
+    ...args,
+  } as unknown as T);
+
 export const isAst = (ast: any): ast is AstBase => {
   if (typeof ast !== "object") return false;
 
-  const { type, id, rawContent, isArrayFormula } = ast as AstBase;
+  const { type, id, rawContent, isArrayFormula } = ast as Partial<AstBase>;
 
   return (
+    type !== undefined &&
     type in AstNodeType &&
     typeof id === "string" &&
-    typeof rawContent === "string" &&
     typeof rawContent === "string" &&
     (typeof isArrayFormula === "boolean" || isArrayFormula === undefined)
   );
@@ -122,7 +138,9 @@ export const isAstWithChildren = (
 ): ast is AstWithChildren<AstNodeType, Ast[]> => {
   if (!isAst(ast)) return false;
 
-  const { children, requirements } = ast as AstWithChildren<AstNodeType, Ast[]>;
+  const { children, requirements } = ast as Partial<
+    AstWithChildren<AstNodeType, Ast[]>
+  >;
 
   return (
     Array.isArray(children) &&
@@ -144,10 +162,13 @@ export const isAstWithValue = (
 ): ast is AstWithValue<AstNodeSubtype, any> => {
   if (!isAst(ast)) return false;
 
-  const { type, subtype } = ast as AstWithValue<AstNodeSubtype, any>;
+  const { type, subtype } = ast as Partial<AstWithValue<AstNodeSubtype, any>>;
 
   return (
-    type === AstNodeType.VALUE && subtype in AstNodeSubtype && "value" in ast
+    type === AstNodeType.VALUE &&
+    subtype !== undefined &&
+    subtype in AstNodeSubtype &&
+    "value" in ast
   );
 };
 
