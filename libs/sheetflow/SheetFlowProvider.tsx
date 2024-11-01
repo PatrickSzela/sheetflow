@@ -16,13 +16,7 @@ const SheetFlowContext = createContext<SheetFlow | null>(null);
 export const SheetFlowProvider = (
   props: PropsWithChildren<SheetFlowProviderProps>
 ) => {
-  const {
-    engine,
-    sheets = {},
-    namedExpressions = [],
-    config,
-    children,
-  } = props;
+  const { engine, sheets, namedExpressions, config, children } = props;
 
   const engineInstance = useMemo(() => {
     return engine.build(sheets, namedExpressions, config);
