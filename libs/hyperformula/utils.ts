@@ -58,6 +58,15 @@ export const getSheetIdWithError = (hf: HyperFormula, sheetName: string) => {
   return id;
 };
 
+export const getOptionalSheetIdWithError = (
+  hf: HyperFormula,
+  sheetName?: string
+) => {
+  return sheetName === undefined
+    ? undefined
+    : getSheetIdWithError(hf, sheetName);
+};
+
 export const areHfAddressesEqual = (
   hfAddress1: SimpleCellAddress,
   hfAddress2: SimpleCellAddress

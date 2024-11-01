@@ -43,6 +43,7 @@ import {
 import { remapSheet, remapSheets } from "./remapSheet";
 import {
   areHfAddressesEqual,
+  getOptionalSheetIdWithError,
   getSheetIdWithError,
   registerAllLanguages,
 } from "./utils";
@@ -248,8 +249,7 @@ export class HyperFormulaEngine extends SheetFlow {
 
   // #region named expression
   getNamedExpression(name: string, scope?: string): NamedExpression {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
 
     // `getNamedExpression` provided by HyperFormula won't return named formula's expression if it's not a formula, so we need to extract it ourselves
     // based on `getAllNamedExpressionsSerialized` https://github.com/handsontable/hyperformula/blob/master/src/Serialization.ts#L140
@@ -276,8 +276,7 @@ export class HyperFormulaEngine extends SheetFlow {
   }
 
   setNamedExpression(name: string, content: CellContent, scope?: string): void {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
 
     try {
       this.hf.changeNamedExpression(name, content, sheetId);
@@ -294,29 +293,22 @@ export class HyperFormulaEngine extends SheetFlow {
     content?: CellContent,
     scope?: string
   ): void {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
-
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
     this.hf.addNamedExpression(name, content, sheetId);
   }
 
   removeNamedExpression(name: string, scope?: string): void {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
-
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
     this.hf.removeNamedExpression(name, sheetId);
   }
 
   doesNamedExpressionExists(name: string, scope?: string): boolean {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
-
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
     return this.hf.listNamedExpressions(sheetId).includes(name);
   }
 
   getNamedExpressionValue(name: string, scope?: string): Value {
-    const sheetId =
-      scope !== undefined ? getSheetIdWithError(this.hf, scope) : undefined;
+    const sheetId = getOptionalSheetIdWithError(this.hf, scope);
 
     const val = this.hf.getNamedExpressionValue(name, sheetId);
     if (val === undefined) throw new Error();
