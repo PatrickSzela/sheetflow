@@ -19,8 +19,8 @@ import { Edge } from "@xyflow/react";
 export const generateNodes = (
   flatAst: Ast[],
   nodeSettings: NodeSettings,
-  skipParenthesis: Boolean = false,
-  skipValues: Boolean = false
+  skipParenthesis: boolean = false,
+  skipValues: boolean = false
 ): AstNode[] => {
   let flat = flatAst;
 
@@ -70,8 +70,8 @@ const findNearestNonParenthesisChild = (ast: Ast) => {
 
 export const generateEdges = (
   flatAst: Ast[],
-  skipParenthesis: Boolean = false,
-  skipValues: Boolean = false
+  skipParenthesis: boolean = false,
+  skipValues: boolean = false
 ): Edge[] => {
   const arr: Edge[] = [];
 
