@@ -7,6 +7,7 @@ export * from "./change";
 export * from "./flattenAst";
 export * from "./namedExpression";
 export * from "./placedAst";
+export * from "./reference";
 export * from "./sheet";
 export * from "./sheetflow";
 export * from "./SheetFlowProvider";
