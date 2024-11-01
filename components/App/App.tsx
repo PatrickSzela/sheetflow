@@ -4,8 +4,10 @@ import { Main } from "@/components/Main";
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   groupReferencesBySheet,
+  PlacedAst,
   SheetFlowProvider,
   Sheets,
+  usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
 } from "@/libs/sheetflow";
@@ -32,19 +34,31 @@ export const App = () => {
   );
 };
 
-const AppInner = () => {
+const DependenciesEditorPlacedAst = (props: { uuid: string }) => {
+  const { uuid } = props;
+
   const sf = useSheetFlow();
 
-  const [selectedEditor, setSelectedEditor] = useState<string>();
-  const { precedents } = usePlacedAstData(selectedEditor);
+  const { placedAst } = usePlacedAst(uuid);
+  const { precedents } = usePlacedAstData(placedAst);
 
   const { cells, namedExpressions } = useMemo(() => {
     return groupReferencesBySheet(sf, precedents ?? []);
   }, [sf, precedents]);
 
-  const drawerChildren = (
+  return (
     <DependenciesEditor cells={cells} namedExpressions={namedExpressions} />
   );
+};
+
+const AppInner = () => {
+  const sf = useSheetFlow();
+  const [selectedEditor, setSelectedEditor] = useState<string>();
+
+  const drawerChildren =
+    selectedEditor && sf.isAstPlaced(selectedEditor) ? (
+      <DependenciesEditorPlacedAst uuid={selectedEditor} />
+    ) : null;
 
   return (
     <Main

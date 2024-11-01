@@ -42,7 +42,7 @@ export interface FormulaFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
-  placedAst?: PlacedAst;
+  placedAst: PlacedAst;
   skipParenthesis?: Boolean;
   skipValues?: Boolean;
 }
@@ -61,15 +61,17 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
   const sf = useSheetFlow();
   const { mode, systemMode } = useColorScheme();
   const { updateNodeData } = useReactFlow<AstNode>();
-  const { flatAst } = usePlacedAstData(placedAst);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<AstNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
+  const { uuid } = placedAst;
+  const { flatAst } = usePlacedAstData(placedAst);
+
   // generate layout
   useEffect(() => {
-    if (!placedAst || !flatAst || !sf.isAstPlaced(placedAst.uuid)) return;
+    if (!sf.isAstPlaced(uuid)) return;
 
     let ignoreLayout = false;
 
@@ -84,12 +86,14 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     const generateLayout = async () => {
       let elkNodes = await generateElkLayout(nodes, edges);
 
-      if (ignoreLayout || !sf.isAstPlaced(placedAst.uuid)) return;
+      if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
+
+      const { values } = sf.getPlacedAst(uuid);
 
       console.log("Generated nodes", elkNodes);
       console.log("Generated edges", edges);
 
-      elkNodes = injectValuesToFlow(placedAst.values, elkNodes)[0] ?? elkNodes;
+      elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
 
       setNodes(elkNodes);
       setEdges(edges);
@@ -100,7 +104,7 @@ const FormulaFlowInner = (props: FormulaFlowProps) => {
     return () => {
       ignoreLayout = true;
     };
-  }, [flatAst, placedAst, setEdges, setNodes, sf, skipParenthesis, skipValues]);
+  }, [flatAst, setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
 
   useInjectValuesToFlow(placedAst);
 

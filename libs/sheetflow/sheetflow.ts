@@ -169,13 +169,18 @@ export abstract class SheetFlow {
     return this.placedAsts[uuid];
   }
 
-  createPlacedAst(): PlacedAst {
+  createPlacedAst(formula?: string, scope?: string): PlacedAst {
     const uuid = crypto.randomUUID();
     const row = this.getFirstAvailableRowForPlaceableAst();
     const address = buildCellAddress(0, row, SpecialSheets.PLACED_ASTS);
 
     const placedAst = new PlacedAst(uuid, address);
     this.placedAsts[uuid] = placedAst;
+
+    // TODO: warning when one of the args is passed but the other isn't
+    if (formula && scope) {
+      this.updatePlacedAstWithFormula(uuid, formula, scope);
+    }
 
     return placedAst;
   }
@@ -229,7 +234,8 @@ export abstract class SheetFlow {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
-    this.pauseEvaluation();
+    if (!this.doesSheetExists(scope))
+      throw new Error(`Scope \`${scope}\` doesn't exists`);
 
     const placedAst = this.getPlacedAst(uuid);
     const normalizedFormula = this.normalizeFormula(formula);
@@ -246,9 +252,9 @@ export abstract class SheetFlow {
 
     placedAst.updateData({ formula, scope, ast, flatAst, precedents, missing });
 
+    this.pauseEvaluation();
     this.clearRow(address.sheet, address.row);
     this.placeAst(uuid);
-
     this.resumeEvaluation();
 
     return placedAst;

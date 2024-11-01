@@ -12,7 +12,7 @@ export * from "./sheet";
 export * from "./sheetflow";
 export * from "./SheetFlowProvider";
 export * from "./useContent";
-export * from "./usePlaceAstFromFormula";
+export * from "./useCreatePlacedAst";
 export * from "./usePlacedAst";
 export * from "./usePlacedAstData";
 export * from "./usePlacedAstValues";

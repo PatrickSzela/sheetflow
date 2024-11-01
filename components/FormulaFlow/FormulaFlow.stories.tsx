@@ -2,11 +2,11 @@ import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   SheetFlowProvider,
   Sheets,
-  usePlaceAstFromFormula,
+  useCreatePlacedAst,
 } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import * as Languages from "hyperformula/es/i18n/languages";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
 
 const options: HyperFormulaConfig = {
@@ -29,7 +29,23 @@ const FormulaFlowFromString = ({
   skipValues,
   skipParenthesis,
 }: FormulaFlowFromStringProps) => {
-  const { placedAst, error } = usePlaceAstFromFormula(formula, "Sheet1");
+  const [initialFormula] = useState(formula);
+  const [error, setError] = useState<Error>();
+
+  const { placedAst, updateFormula } = useCreatePlacedAst(
+    initialFormula,
+    "Sheet1"
+  );
+
+  useEffect(() => {
+    try {
+      updateFormula(formula, "Sheet1");
+      setError(undefined);
+    } catch (e) {
+      if (e instanceof Error) setError(e);
+      else throw e;
+    }
+  }, [formula, updateFormula]);
 
   return (
     <div style={{ height: "100vh" }}>
@@ -51,7 +67,7 @@ const FormulaFlowFromString = ({
             color: "white",
           }}
         >
-          {error}
+          {error.message}
         </div>
       ) : null}
     </div>

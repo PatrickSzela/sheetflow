@@ -1,28 +1,21 @@
 import { useCallback, useSyncExternalStore } from "react";
 import { PlacedAst, PlacedAstEvents, PlacedAstValues } from "./placedAst";
-import { usePlacedAst } from "./usePlacedAst";
 
-export const usePlacedAstValues = (
-  placedAst: PlacedAst | string | undefined
-): PlacedAstValues | Partial<PlacedAstValues> => {
-  const uuid = typeof placedAst === "string" ? placedAst : placedAst?.uuid;
-
-  const _placedAst = usePlacedAst(uuid);
-
+export const usePlacedAstValues = (placedAst: PlacedAst): PlacedAstValues => {
   const subscribe = useCallback(
     (listener: PlacedAstEvents["valuesChanged"]) => {
-      _placedAst?.on("valuesChanged", listener);
+      placedAst.on("valuesChanged", listener);
 
       return () => {
-        _placedAst?.off("valuesChanged", listener);
+        placedAst.off("valuesChanged", listener);
       };
     },
-    [_placedAst]
+    [placedAst]
   );
 
-  const getSnapshot = useCallback((): PlacedAstValues | undefined => {
-    return _placedAst?.values;
-  }, [_placedAst]);
+  const getSnapshot = useCallback((): PlacedAstValues => {
+    return placedAst.values;
+  }, [placedAst]);
 
-  return useSyncExternalStore(subscribe, getSnapshot) ?? {};
+  return useSyncExternalStore(subscribe, getSnapshot);
 };

@@ -1,14 +1,15 @@
-import { PlacedAst } from "./placedAst";
+import { useCallback } from "react";
 import { useSheetFlow } from "./SheetFlowProvider";
 
-export const usePlacedAst = (
-  uuid: string | undefined
-): PlacedAst | undefined => {
+export const usePlacedAst = (uuid: string) => {
   const sf = useSheetFlow();
 
-  if (!uuid || !sf.isAstPlaced(uuid)) {
-    return undefined;
-  }
+  const updateFormula = useCallback(
+    (formula: string, scope: string) => {
+      sf.updatePlacedAstWithFormula(uuid, formula, scope);
+    },
+    [sf, uuid]
+  );
 
-  return sf.getPlacedAst(uuid);
+  return { updateFormula, placedAst: sf.getPlacedAst(uuid) };
 };

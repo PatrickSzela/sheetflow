@@ -1,7 +1,8 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
-import { Sheets, usePlaceAstFromFormula } from "@/libs/sheetflow";
+import { Sheets, useCreatePlacedAst } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/react";
+import { useEffect, useState } from "react";
 import { ObjectInspector, chromeDark, chromeLight } from "react-inspector";
 import { SheetFlowProvider } from "./SheetFlowProvider";
 
@@ -12,7 +13,24 @@ interface AstPreviewProps {
 const AstPreview = (props: AstPreviewProps) => {
   const { formula = "" } = props;
 
-  const data = usePlaceAstFromFormula(formula, "Sheet1");
+  const [initialFormula] = useState(formula);
+  const [error, setError] = useState<Error>();
+
+  const { placedAst, updateFormula } = useCreatePlacedAst(
+    initialFormula,
+    "Sheet1"
+  );
+
+  useEffect(() => {
+    try {
+      updateFormula(formula, "Sheet1");
+      setError(undefined);
+    } catch (e) {
+      if (e instanceof Error) setError(e);
+      else throw e;
+    }
+  }, [formula, updateFormula]);
+
   const { mode, systemMode } = useColorScheme();
 
   const isDarkMode =
@@ -26,7 +44,7 @@ const AstPreview = (props: AstPreviewProps) => {
   return (
     <ObjectInspector
       expandLevel={10}
-      data={data}
+      data={error?.message ?? placedAst}
       theme={theme as any} // workaround for broken types
     />
   );

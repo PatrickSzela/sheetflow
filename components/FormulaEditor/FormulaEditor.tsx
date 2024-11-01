@@ -1,11 +1,15 @@
 import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
 import { Overlay } from "@/components/Overlay";
 import {
-  usePlaceAstFromFormula,
+  useCreatePlacedAst,
   usePlacedAstData,
   useSheetFlow,
 } from "@/libs/sheetflow";
-import { CheckCircle, Error, SvgIconComponent } from "@mui/icons-material";
+import {
+  CheckCircle,
+  Error as ErrorIcon,
+  SvgIconComponent,
+} from "@mui/icons-material";
 import {
   Alert,
   AlertTitle,
@@ -33,13 +37,14 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   const sf = useSheetFlow();
 
-  const [formula, setFormula] = useState<string>(defaultFormula ?? "");
-  const { placedAst, error } = usePlaceAstFromFormula(formula, scope);
+  const [error, setError] = useState<string>();
+  const { placedAst, updateFormula } = useCreatePlacedAst(
+    defaultFormula,
+    scope
+  );
   const { missing } = usePlacedAstData(placedAst);
 
   const addMissing = useCallback(() => {
-    if (!missing) return;
-
     const { namedExpressions, sheets } = missing;
 
     sf.pauseEvaluation();
@@ -63,7 +68,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   if (error) {
     state = "error";
-  } else if (missing?.namedExpressions.length || missing?.sheets.length) {
+  } else if (missing.namedExpressions.length || missing.sheets.length) {
     state = "warning";
   }
 
@@ -74,7 +79,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       break;
 
     case "warning":
-      Icon = Error;
+      Icon = ErrorIcon;
       title = "Missing references";
       description =
         "Your formula refers to sheets or named expressions that are currently missing. Would you like to add them?";
@@ -86,7 +91,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       break;
 
     case "error":
-      Icon = Error;
+      Icon = ErrorIcon;
       title = "Error";
       description = error;
       break;
@@ -94,7 +99,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
   useEffect(() => {
-    placedAst && onFocus?.(placedAst.uuid);
+    onFocus?.(placedAst.uuid);
   }, [onFocus, placedAst]);
 
   return (
@@ -108,7 +113,13 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
           <OutlinedInput
             defaultValue={defaultFormula}
             onChange={(e) => {
-              setFormula(e.target.value);
+              try {
+                updateFormula(e.target.value, scope);
+                setError(undefined);
+              } catch (e) {
+                if (e instanceof Error) setError(e.message);
+                else throw e;
+              }
             }}
             size="small"
             placeholder="Enter your Formula here..."
