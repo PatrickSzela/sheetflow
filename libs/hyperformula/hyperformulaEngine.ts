@@ -54,6 +54,13 @@ export type HyperFormulaConfig = Partial<ConfigParams>;
 export class HyperFormulaEngine extends SheetFlow {
   protected hf: HyperFormula;
 
+  static VALUE_ERROR_TYPES = {
+    ...SheetFlow.VALUE_ERROR_TYPES,
+    CYCLE: "#CYCLE!",
+    ERROR: "#ERROR!",
+    LIC: "#LIC!",
+  };
+
   static build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
@@ -62,25 +69,6 @@ export class HyperFormulaEngine extends SheetFlow {
     const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
     engine.registerEvents();
     return engine;
-  }
-
-  registerEvents(): void {
-    super.registerEvents();
-
-    this.hf.on("namedExpressionAdded", (namedExpression) => {
-      this.eventEmitter.emit("namedExpressionAdded", namedExpression);
-    });
-
-    this.hf.on("sheetAdded", (sheet) => {
-      this.eventEmitter.emit("sheetAdded", sheet);
-    });
-
-    this.hf.on("valuesUpdated", (changes) => {
-      this.eventEmitter.emit(
-        "valuesChanged",
-        remapChanges(this, this.hf, changes)
-      );
-    });
   }
 
   constructor(
@@ -104,10 +92,25 @@ export class HyperFormulaEngine extends SheetFlow {
         this.hf.addNamedExpression(name, expression, scope);
       }
     }
+  }
 
-    // TODO: remove
-    // @ts-expect-error make HF instance available in browser's console
-    window.hf = this.hf;
+  registerEvents(): void {
+    super.registerEvents();
+
+    this.hf.on("namedExpressionAdded", (namedExpression) => {
+      this.eventEmitter.emit("namedExpressionAdded", namedExpression);
+    });
+
+    this.hf.on("sheetAdded", (sheet) => {
+      this.eventEmitter.emit("sheetAdded", sheet);
+    });
+
+    this.hf.on("valuesUpdated", (changes) => {
+      this.eventEmitter.emit(
+        "valuesChanged",
+        remapChanges(this, this.hf, changes)
+      );
+    });
   }
 
   // #region conversion

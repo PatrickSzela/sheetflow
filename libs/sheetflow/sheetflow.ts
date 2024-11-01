@@ -38,17 +38,35 @@ export type SheetFlowEventEmitter = TypedEmitter<Events>;
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
 export abstract class SheetFlow {
+  static VALUE_ERROR_TYPES: Record<string, string> = {
+    "DIV/0": "#DIV/0!",
+    "N/A": "#N/A",
+    NAME: "#NAME?",
+    NULL: "#NULL!",
+    NUM: "#NUM!",
+    REF: "#REF!",
+    VALUE: "#VALUE!",
+  };
+
   protected placedAsts: Record<string, PlacedAst> = {};
   protected eventEmitter: SheetFlowEventEmitter =
     new EventEmitter() as SheetFlowEventEmitter;
 
+  static build(
+    sheets?: Sheets,
+    namedExpressions?: NamedExpressions,
+    config?: any
+  ): SheetFlow {
+    throw new Error("Called `build` function on an abstract class");
+  }
+
   constructor() {
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
-    window.engine = this;
+    window.sf = this;
   }
 
-  registerEvents() {
+  registerEvents(): void {
     const astValuesChangedListener: Events["valuesChanged"] = (changes) => {
       for (const uuid of Object.keys(this.placedAsts)) {
         if (this.isPlacedAstPartOfChanges(uuid, changes)) {
@@ -74,14 +92,6 @@ export abstract class SheetFlow {
     this.on("valuesChanged", astValuesChangedListener);
     this.on("sheetAdded", sheetNamedExpressionAdded);
     this.on("namedExpressionAdded", sheetNamedExpressionAdded);
-  }
-
-  static build(
-    sheets?: Sheets,
-    namedExpressions?: NamedExpressions,
-    config?: any
-  ): SheetFlow {
-    throw new Error("Called `build` function on an abstract class");
   }
 
   // #region abstract methods
@@ -273,6 +283,16 @@ export abstract class SheetFlow {
 
       return false;
     });
+  }
+
+  isCalculatedValueAnError(value: CellValue["value"]): boolean {
+    const prototype = Object.getPrototypeOf(this)
+      .constructor as typeof SheetFlow;
+
+    return (
+      typeof value === "string" &&
+      Object.values<string>(prototype.VALUE_ERROR_TYPES).includes(value)
+    );
   }
 
   getNonEmptyCellsFromSheet(sheetName: string): Reference[] {

@@ -1,4 +1,4 @@
-import { Ast } from "@/libs/sheetflow";
+import { Ast, useSheetFlow } from "@/libs/sheetflow";
 import { Node, NodeProps } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { AstNodeValue, CommonNodeData, getNodeDataFromAst } from "./utils";
@@ -18,7 +18,12 @@ export const AstNode = (props: AstNodeProps) => {
   const { data, ...otherProps } = props;
   const { ast, inputs, output, ...otherData } = data;
 
-  const _data = { ...otherData, ...getNodeDataFromAst(ast, inputs, output) };
+  const sf = useSheetFlow();
+
+  const _data = {
+    ...otherData,
+    ...getNodeDataFromAst(sf, ast, inputs, output),
+  };
 
   return <BaseNode {...otherProps} type="base" data={_data} />;
 };

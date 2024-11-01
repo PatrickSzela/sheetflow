@@ -3,8 +3,8 @@ import {
   Ast,
   AstNodeType,
   isAstWithChildren,
-  isCalculatedValueAnError,
   printCellValue,
+  SheetFlow,
   Value,
 } from "@/libs/sheetflow";
 import Add from "@mui/icons-material/Add";
@@ -53,6 +53,7 @@ export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
 });
 
 export const getNodeDataFromAst = (
+  sf: SheetFlow,
   ast: Ast,
   inputs?: AstNodeValue[],
   output?: AstNodeValue
@@ -65,7 +66,7 @@ export const getNodeDataFromAst = (
 
   let error: Partial<BaseNodeData> = {};
 
-  if (nodeData.output && isCalculatedValueAnError(nodeData.output.value)) {
+  if (nodeData.output && sf.isCalculatedValueAnError(nodeData.output.value)) {
     error = {
       icon: <Tag />,
       color: "error",
