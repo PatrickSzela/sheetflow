@@ -1,123 +1,78 @@
-import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
+import { withFullscreen } from "@/.storybook/decorators/Fullscreen";
 import {
-  SheetFlowProvider,
-  Sheets,
-  useCreatePlacedAst,
-} from "@/libs/sheetflow";
+  HfEngineProviderArgTypes,
+  HfEngineProviderArgs,
+  HfEngineProviderProps,
+  withHfEngineProvider,
+} from "@/.storybook/decorators/HfEngineProvider";
+import { withReactFlowProvider } from "@/.storybook/decorators/ReactFlowProvider";
+import {
+  FormulaControlsArgTypes,
+  FormulaControlsProps,
+  useFormulaControls,
+} from "@/.storybook/helpers/useFormulaControls";
 import type { Meta, StoryObj } from "@storybook/react";
-import * as Languages from "hyperformula/es/i18n/languages";
-import { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
 
-const options: HyperFormulaConfig = {
-  licenseKey: "gpl-v3",
-  language: "enUS",
-};
-
-const sheets: Sheets = {
-  Sheet1: [],
-};
-
-interface FormulaFlowFromStringProps
-  extends Omit<FormulaFlowProps, "placedAst"> {
-  formula: string;
-  language: string;
-}
-
-const FormulaFlowFromString = ({
-  formula,
-  skipValues,
-  skipParenthesis,
-}: FormulaFlowFromStringProps) => {
-  const [initialFormula] = useState(formula);
-  const [error, setError] = useState<Error>();
-
-  const { placedAst, updateFormula } = useCreatePlacedAst(
-    initialFormula,
-    "Sheet1"
-  );
-
-  useEffect(() => {
-    try {
-      updateFormula(formula, "Sheet1");
-      setError(undefined);
-    } catch (e) {
-      if (e instanceof Error) setError(e);
-      else throw e;
-    }
-  }, [formula, updateFormula]);
-
-  return (
-    <div style={{ height: "100vh" }}>
-      <FormulaFlow
-        placedAst={placedAst}
-        skipValues={skipValues}
-        skipParenthesis={skipParenthesis}
-      />
-
-      {error ? (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.85)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            color: "white",
-          }}
-        >
-          {error.message}
-        </div>
-      ) : null}
-    </div>
-  );
-};
+type MetaArgs = FormulaControlsProps & FormulaFlowProps & HfEngineProviderProps;
 
 const meta = {
-  title: "Formula",
-  component: FormulaFlowFromString,
+  title: "Components/Formula",
+  component: FormulaFlow,
+  render: (args) => {
+    const { formula, scope, ...rest } = args;
+
+    const { placedAst, error } = useFormulaControls(args);
+
+    return (
+      <React.Fragment>
+        <FormulaFlow {...rest} placedAst={placedAst} />
+
+        {error ? (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.85)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              color: "white",
+            }}
+          >
+            {error.message}
+          </div>
+        ) : null}
+      </React.Fragment>
+    );
+  },
   parameters: {
     layout: "fullscreen",
   },
   decorators: [
-    (Story, c) => {
-      const config = useMemo<HyperFormulaConfig>(
-        () => ({
-          ...options,
-          language: c.args.language,
-        }),
-        [c.args.language]
-      );
-
-      return (
-        <SheetFlowProvider
-          engine={HyperFormulaEngine}
-          sheets={sheets}
-          config={config}
-        >
-          <Story />
-        </SheetFlowProvider>
-      );
-    },
+    withFullscreen(),
+    withReactFlowProvider(),
+    withHfEngineProvider(),
   ],
-} satisfies Meta<FormulaFlowFromStringProps>;
+  argTypes: {
+    ...HfEngineProviderArgTypes,
+    ...FormulaControlsArgTypes,
+    placedAst: { table: { disable: true } },
+  },
+  args: {
+    ...HfEngineProviderArgs,
+    placedAst: undefined,
+  },
+} satisfies Meta<MetaArgs>;
 
 type Story = StoryObj<typeof meta>;
 
 export const FormulaFlowStory: Story = {
-  name: "Formula Flow",
+  name: "Flow",
   args: {
     formula: "=(PI()*0.5)+(-FLOOR(Sheet1!A1+A2*A3,1)*(1 + 100%))",
-    skipParenthesis: true,
-    skipValues: false,
-    language: "enUS",
-  },
-  argTypes: {
-    language: {
-      control: "select",
-      options: Object.keys(Languages),
-    },
+    scope: "Sheet1",
   },
 };
 

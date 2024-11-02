@@ -9,7 +9,6 @@ export type AstNodeData = CommonNodeData & {
   ast: Ast;
   output?: AstNodeValue;
   inputs?: AstNodeValue[];
-  highlighted?: boolean;
 };
 export type AstNode = Node<AstNodeData, "ast">;
 export type AstNodeProps = NodeProps<AstNode>;

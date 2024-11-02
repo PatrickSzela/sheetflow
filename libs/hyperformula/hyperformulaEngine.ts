@@ -327,6 +327,10 @@ export class HyperFormulaEngine extends SheetFlow {
       .getAllNamedExpressionsSerialized()
       .map((i) => remapNamedExpression(this.hf, i));
   }
+
+  getAllNamedExpressionNames(): string[] {
+    return this.hf.listNamedExpressions();
+  }
   // #endregion
 
   // #region formula

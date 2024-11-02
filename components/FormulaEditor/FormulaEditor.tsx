@@ -26,21 +26,21 @@ import { useCallback, useEffect, useState } from "react";
 type State = "success" | "warning" | "error";
 
 export interface FormulaEditorProps {
-  scope: string;
+  defaultScope: string;
   defaultFormula?: string;
   flowProps?: Omit<FormulaFlowProps, "placedAst">;
   onFocus?: (uuid: string) => void;
 }
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
-  const { defaultFormula, flowProps, scope, onFocus } = props;
+  const { defaultFormula, flowProps, defaultScope, onFocus } = props;
 
   const sf = useSheetFlow();
 
   const [error, setError] = useState<string>();
   const { placedAst, updateFormula } = useCreatePlacedAst(
     defaultFormula,
-    scope
+    defaultScope
   );
   const { missing } = usePlacedAstData(placedAst);
 
@@ -114,7 +114,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
             defaultValue={defaultFormula}
             onChange={(e) => {
               try {
-                updateFormula(e.target.value, scope);
+                updateFormula(e.target.value, defaultScope);
                 setError(undefined);
               } catch (e) {
                 if (e instanceof Error) setError(e.message);

@@ -1,104 +1,71 @@
-import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
-  groupReferencesBySheet,
-  NamedExpressions,
-  SheetFlowProvider,
-  Sheets,
-  useSheetFlow,
-} from "@/libs/sheetflow";
+  HfEngineProviderArgTypes,
+  HfEngineProviderArgs,
+  HfEngineProviderProps,
+  withHfEngineProvider,
+} from "@/.storybook/decorators/HfEngineProvider";
+import { withReactFlowProvider } from "@/.storybook/decorators/ReactFlowProvider";
+import { groupReferencesBySheet, useSheetFlow } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
-import * as Languages from "hyperformula/es/i18n/languages";
 import { useMemo } from "react";
 import {
   DependenciesEditor,
   DependenciesEditorProps,
 } from "./DependenciesEditor";
 
-// TODO: share stuff between stories
-
-const options: HyperFormulaConfig = {
-  licenseKey: "gpl-v3",
-  language: "enUS",
-};
-
-const sheets: Sheets = {
-  Sheet1: [
-    [1, 2, 3],
-    ["=1+2+3", "=A1+A2+A3"],
-  ],
-  Sheet2: [[4, 5, 6]],
-};
-
-const namedExpressions: NamedExpressions = [
-  {
-    name: "Number",
-    expression: "123",
-  },
-  {
-    name: "String",
-    expression: "text",
-  },
-];
-
-interface DependenciesEditorFromStringProps
-  extends Omit<DependenciesEditorProps, "cells"> {
-  language: string;
-}
-
-const DependenciesEditorFromString =
-  ({}: DependenciesEditorFromStringProps) => {
-    const sf = useSheetFlow();
-    const { cells } = groupReferencesBySheet(sf, sf.getAllNonEmptyCells());
-
-    return (
-      <div style={{ height: "100vh" }}>
-        <DependenciesEditor cells={cells} namedExpressions={namedExpressions} />
-      </div>
-    );
-  };
+type MetaArgs = DependenciesEditorProps & HfEngineProviderProps;
 
 const meta = {
-  title: "Formula",
-  component: DependenciesEditorFromString,
+  title: "Components/Formula",
+  component: DependenciesEditor,
+  render: () => {
+    const sf = useSheetFlow();
+
+    const { cells, namedExpressions } = useMemo(() => {
+      return groupReferencesBySheet(sf, [
+        ...sf.getAllNonEmptyCells(),
+        ...sf.getAllNamedExpressionNames(),
+      ]);
+    }, [sf]);
+
+    return (
+      <DependenciesEditor cells={cells} namedExpressions={namedExpressions} />
+    );
+  },
   parameters: {
     layout: "fullscreen",
   },
-  decorators: [
-    (Story, c) => {
-      const config = useMemo<HyperFormulaConfig>(
-        () => ({
-          ...options,
-          language: c.args.language,
-        }),
-        [c.args.language]
-      );
-
-      return (
-        <SheetFlowProvider
-          engine={HyperFormulaEngine}
-          sheets={sheets}
-          namedExpressions={namedExpressions}
-          config={config}
-        >
-          <Story />
-        </SheetFlowProvider>
-      );
-    },
-  ],
-} satisfies Meta<DependenciesEditorFromStringProps>;
+  decorators: [withReactFlowProvider(), withHfEngineProvider()],
+  args: { ...HfEngineProviderArgs },
+  argTypes: {
+    ...HfEngineProviderArgTypes,
+    cells: { table: { disable: true } },
+    namedExpressions: { table: { disable: true } },
+  },
+} satisfies Meta<MetaArgs>;
 
 type Story = StoryObj<typeof meta>;
 
 export const DependenciesEditorStory: Story = {
   name: "Dependencies Editor",
   args: {
-    language: "enUS",
-  },
-  argTypes: {
-    language: {
-      control: "select",
-      options: Object.keys(Languages),
+    "sheetflow.sheets": {
+      Sheet1: [
+        [1, 2, 3],
+        ["=1+2+3", "=A1+A2+A3"],
+      ],
+      Sheet2: [[4, 5, 6]],
     },
+    "sheetflow.namedExpressions": [
+      {
+        name: "Number",
+        expression: "123",
+      },
+      {
+        name: "String",
+        expression: "text",
+      },
+    ],
   },
 };
 

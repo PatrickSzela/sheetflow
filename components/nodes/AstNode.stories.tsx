@@ -1,3 +1,14 @@
+import { withFullscreen } from "@/.storybook/decorators/Fullscreen";
+import {
+  HfEngineProviderProps,
+  withHfEngineProvider,
+} from "@/.storybook/decorators/HfEngineProvider";
+import { withReactFlowProvider } from "@/.storybook/decorators/ReactFlowProvider";
+import {
+  NodeWrapper,
+  NodeWrapperArgTypes,
+  NodeWrapperProps,
+} from "@/.storybook/wrappers/NodeWrapper";
 import {
   buildCellAddress,
   buildCellReferenceAst,
@@ -8,72 +19,27 @@ import {
   buildNumberAst,
   buildStringAst,
 } from "@/libs/sheetflow";
-import { useColorScheme } from "@mui/material";
 import type { Meta, StoryObj } from "@storybook/react";
-import {
-  Background,
-  ReactFlow,
-  ReactFlowProvider,
-  useNodesState,
-} from "@xyflow/react";
-import { useMemo, useRef } from "react";
 import { AstNode, AstNodeData } from "./AstNode";
-import { nodeTypes } from "./index";
 
-import "@xyflow/react/dist/style.css";
+// TODO: figure out why `satisfies Meta<MetaArgs>` causes items from AstNodeData to be ignored. This probably has something to do with AstWithChildren...
 
-const generateNodesFromNodeData = (data: AstNodeData): AstNode[] => [
-  { data, id: "", position: { x: 0, y: 0 }, type: "ast" },
-];
+type MetaArgs = AstNodeData & NodeWrapperProps & HfEngineProviderProps;
 
-const AstNodeWrapper = (props: AstNodeData) => {
-  const { mode, systemMode } = useColorScheme();
-
-  const initialNodes = useMemo<AstNode[]>(
-    () => generateNodesFromNodeData(props),
-    [props]
-  );
-  const [nodes, setNodes, onNodesChange] = useNodesState<AstNode>(initialNodes);
-
-  const prevProps = useRef<AstNodeData>(props);
-
-  if (prevProps.current !== props) {
-    prevProps.current = props;
-    setNodes(generateNodesFromNodeData(props));
-  }
-
-  return (
-    <ReactFlow
-      nodes={nodes}
-      onNodesChange={onNodesChange}
-      nodeTypes={nodeTypes}
-      colorMode={mode ?? systemMode ?? "system"}
-      nodesConnectable={false}
-      elevateNodesOnSelect
-      elevateEdgesOnSelect
-      fitView
-    >
-      <Background />
-    </ReactFlow>
-  );
-};
-
-const meta = {
+const meta: Meta<MetaArgs> = {
   title: "Components/Nodes",
-  component: AstNodeWrapper,
+  component: NodeWrapper,
   parameters: {
     layout: "fullscreen",
   },
   decorators: [
-    (Story) => (
-      <ReactFlowProvider>
-        <div style={{ height: "100vh" }}>
-          <Story />
-        </div>
-      </ReactFlowProvider>
-    ),
+    withFullscreen(),
+    withReactFlowProvider(),
+    withHfEngineProvider(),
   ],
-} satisfies Meta<AstNodeData>;
+  args: { node: AstNode },
+  argTypes: { ...NodeWrapperArgTypes },
+};
 
 type Story = StoryObj<typeof meta>;
 

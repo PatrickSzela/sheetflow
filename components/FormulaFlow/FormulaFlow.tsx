@@ -8,9 +8,7 @@ import {
   FitViewOptions,
   ReactFlow,
   ReactFlowProps,
-  ReactFlowProvider,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { useGenerateFlow } from "./useGenerateFlow";
 import { useHighlightNodes } from "./useHighlightNodes";
 import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
@@ -29,14 +27,6 @@ export interface FormulaFlowProps<
 }
 
 export const FormulaFlow = (props: FormulaFlowProps) => {
-  return (
-    <ReactFlowProvider>
-      <FormulaFlowInner {...props} />
-    </ReactFlowProvider>
-  );
-};
-
-const FormulaFlowInner = (props: FormulaFlowProps) => {
   const { placedAst, skipParenthesis, skipValues, ...otherProps } = props;
 
   const { mode, systemMode } = useColorScheme();

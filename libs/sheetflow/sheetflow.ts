@@ -137,6 +137,7 @@ export abstract class SheetFlow {
   abstract doesNamedExpressionExists(name: string, scope?: string): boolean;
   abstract getNamedExpressionValue(name: string, scope?: string): Value;
   abstract getAllNamedExpressions(): NamedExpressions;
+  abstract getAllNamedExpressionNames(): string[];
 
   // formula
   abstract isFormulaValid(formula: string): boolean;
@@ -248,7 +249,7 @@ export abstract class SheetFlow {
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
     if (!this.doesSheetExists(scope))
-      throw new Error(`Scope \`${scope}\` doesn't exists`);
+      throw new Error(`Sheet \`${scope}\` doesn't exists`);
 
     const placedAst = this.getPlacedAst(uuid);
     const normalizedFormula = this.normalizeFormula(formula);

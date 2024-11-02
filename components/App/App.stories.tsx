@@ -1,25 +1,20 @@
+import { withFullscreen } from "@/.storybook/decorators/Fullscreen";
 import type { Meta, StoryObj } from "@storybook/react";
 import { App } from "./App";
 
 const meta = {
-  title: "Formula",
+  title: "Main",
   component: App,
   parameters: {
     layout: "fullscreen",
   },
-  decorators: [
-    (Story) => (
-      <div style={{ height: "100vh", width: "100%" }}>
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [withFullscreen()],
 } satisfies Meta<{}>;
 
 type Story = StoryObj<typeof meta>;
 
 export const AppStory: Story = {
-  name: "Main App",
+  name: "App",
 };
 
 export default meta;

@@ -4,13 +4,14 @@ import { Main } from "@/components/Main";
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   groupReferencesBySheet,
-  PlacedAst,
   SheetFlowProvider,
   Sheets,
   usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
 } from "@/libs/sheetflow";
+import { ReactFlowProvider } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { useMemo, useState } from "react";
 
 const options: HyperFormulaConfig = {
@@ -73,11 +74,13 @@ const AppInner = () => {
         },
       }}
     >
-      <FormulaEditor
-        scope="Sheet1"
-        onFocus={setSelectedEditor}
-        defaultFormula="=A1+A2*A3"
-      />
+      <ReactFlowProvider>
+        <FormulaEditor
+          defaultScope="Sheet1"
+          onFocus={setSelectedEditor}
+          defaultFormula="=A1+A2*A3"
+        />
+      </ReactFlowProvider>
     </Main>
   );
 };
