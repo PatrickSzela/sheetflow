@@ -11,7 +11,7 @@ import {
   FormulaControlsProps,
   useFormulaControls,
 } from "@/.storybook/helpers/useFormulaControls";
-import { useInjectValuesToFlow } from "@/components/FormulaEditor/useInjectValuesToFlow";
+import { useInjectValuesToFlow } from "@/components/FormulaEditor";
 import { usePlacedAstData } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import React from "react";
