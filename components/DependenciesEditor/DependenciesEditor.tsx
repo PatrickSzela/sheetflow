@@ -21,7 +21,6 @@ import React from "react";
 export interface DependenciesEditorProps {
   cells?: GroupedCells;
   namedExpressions?: NamedExpressions;
-  onClose?: () => void;
 }
 
 type DependencyData = ({ id: string; label: string } & Omit<
@@ -83,7 +82,7 @@ const DependencyAccordion = (props: DependencyAccordion) => {
 };
 
 export const DependenciesEditor = (props: DependenciesEditorProps) => {
-  const { cells = {}, namedExpressions = [], onClose } = props;
+  const { cells = {}, namedExpressions = [] } = props;
 
   const namedExpressionData: DependencyAccordion["data"] = namedExpressions.map(
     ({ name, scope }) => ({
