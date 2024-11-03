@@ -1,4 +1,4 @@
-import { withFullscreen } from "@/.storybook/decorators/Fullscreen";
+import { withFullscreen } from "@/.storybook/decorators";
 import type { Meta, StoryObj } from "@storybook/react";
 import { App } from "./App";
 

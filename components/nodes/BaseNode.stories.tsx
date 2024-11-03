@@ -1,11 +1,13 @@
-import { withFullscreen } from "@/.storybook/decorators/Fullscreen";
-import { MuiThemeColorArgTypes } from "@/.storybook/decorators/MuiThemeProvider";
-import { withReactFlowProvider } from "@/.storybook/decorators/ReactFlowProvider";
+import {
+  MuiThemeColorArgTypes,
+  withFullscreen,
+  withReactFlowProvider,
+} from "@/.storybook/decorators";
 import {
   NodeWrapper,
   NodeWrapperArgTypes,
   NodeWrapperProps,
-} from "@/.storybook/wrappers/NodeWrapper";
+} from "@/.storybook/wrappers";
 import type { Meta, StoryObj } from "@storybook/react";
 import { BaseNode, BaseNodeData } from "./BaseNode";
 

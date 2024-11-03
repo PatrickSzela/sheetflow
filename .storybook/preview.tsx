@@ -1,5 +1,5 @@
 import type { Preview } from "@storybook/react";
-import { withMuiThemeProvider } from "./decorators/MuiThemeProvider";
+import { withMuiThemeProvider } from "./decorators";
 
 const preview: Preview = {
   decorators: [withMuiThemeProvider()],

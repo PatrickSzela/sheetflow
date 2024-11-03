@@ -3,16 +3,16 @@ import {
   HfEngineProviderArgs,
   HfEngineProviderProps,
   withHfEngineProvider,
-} from "@/.storybook/decorators/HfEngineProvider";
+} from "@/.storybook/decorators";
 import {
   FormulaControlsArgTypes,
   FormulaControlsProps,
   useFormulaControls,
-} from "@/.storybook/helpers/useFormulaControls";
+} from "@/.storybook/helpers";
 import {
   ObjectInspectorWrapper,
   ObjectInspectorWrapperProps,
-} from "@/.storybook/wrappers/ObjectInspectorWrapper";
+} from "@/.storybook/wrappers";
 import type { Meta, StoryObj } from "@storybook/react";
 
 type MetaArgs = FormulaControlsProps &
