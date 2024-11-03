@@ -1,5 +1,5 @@
 import { AstNode, nodeTypes } from "@/components/nodes";
-import { PlacedAst } from "@/libs/sheetflow";
+import { Ast } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
@@ -11,7 +11,6 @@ import {
 } from "@xyflow/react";
 import { useGenerateFlow } from "./useGenerateFlow";
 import { useHighlightNodes } from "./useHighlightNodes";
-import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 const fitViewOptions: FitViewOptions = {
   padding: 0.2,
@@ -21,18 +20,27 @@ export interface FormulaFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
-  placedAst: PlacedAst;
+  flatAst: Ast[];
   skipParenthesis?: boolean;
   skipValues?: boolean;
+  enhanceGeneratedFlow?: (
+    nodes: AstNode[],
+    edges: Edge[]
+  ) => { nodes: AstNode[]; edges: Edge[] };
 }
 
 export const FormulaFlow = (props: FormulaFlowProps) => {
-  const { placedAst, skipParenthesis, skipValues, ...otherProps } = props;
+  const {
+    flatAst,
+    skipParenthesis,
+    skipValues,
+    enhanceGeneratedFlow,
+    ...otherProps
+  } = props;
 
   const { mode, systemMode } = useColorScheme();
 
-  useGenerateFlow(placedAst, skipParenthesis, skipValues);
-  useInjectValuesToFlow(placedAst);
+  useGenerateFlow(flatAst, skipParenthesis, skipValues, enhanceGeneratedFlow);
   useHighlightNodes();
 
   return (

@@ -1,51 +1,45 @@
 import { AstNode, NODE_SETTINGS } from "@/components/nodes";
-import { PlacedAst, usePlacedAstData, useSheetFlow } from "@/libs/sheetflow";
-import { useReactFlow } from "@xyflow/react";
+import { Ast } from "@/libs/sheetflow";
+import { Edge, useReactFlow } from "@xyflow/react";
 import { useEffect } from "react";
 import { generateElkLayout } from "./elkLayout";
-import {
-  generateEdges,
-  generateNodes,
-  injectValuesToFlow,
-} from "./generateFlow";
+import { generateEdges, generateNodes } from "./generateFlow";
 
 export const useGenerateFlow = (
-  placedAst: PlacedAst,
+  flatAst: Ast[],
   skipParenthesis?: boolean,
-  skipValues?: boolean
+  skipValues?: boolean,
+  enhanceGeneratedFlow?: (
+    nodes: AstNode[],
+    edges: Edge[]
+  ) => { nodes: AstNode[]; edges: Edge[] }
 ): void => {
-  const sf = useSheetFlow();
   const { setEdges, setNodes } = useReactFlow<AstNode>();
 
-  const { uuid } = placedAst;
-  const { flatAst } = usePlacedAstData(placedAst);
-
   useEffect(() => {
-    if (!sf.isAstPlaced(uuid)) return;
-
     let ignoreLayout = false;
 
-    const nodes = generateNodes(
+    const initNodes = generateNodes(
       flatAst,
       NODE_SETTINGS,
       skipParenthesis,
       skipValues
     );
-    const edges = generateEdges(flatAst, skipParenthesis, skipValues);
+    const initEdges = generateEdges(flatAst, skipParenthesis, skipValues);
 
     const generateLayout = async () => {
-      let elkNodes = await generateElkLayout(nodes, edges);
+      let nodes = await generateElkLayout(initNodes, initEdges);
+      let edges = initEdges;
 
-      if (ignoreLayout || !sf.isAstPlaced(uuid)) return;
+      if (ignoreLayout) return;
 
-      const { values } = sf.getPlacedAst(uuid);
+      console.log("Generated nodes", nodes);
+      console.log("Generated edges", initEdges);
 
-      console.log("Generated nodes", elkNodes);
-      console.log("Generated edges", edges);
+      if (enhanceGeneratedFlow)
+        ({ nodes, edges } = enhanceGeneratedFlow(nodes, edges));
 
-      elkNodes = injectValuesToFlow(values, elkNodes)[0] ?? elkNodes;
-
-      setNodes(elkNodes);
+      setNodes(nodes);
       setEdges(edges);
     };
 
@@ -54,5 +48,12 @@ export const useGenerateFlow = (
     return () => {
       ignoreLayout = true;
     };
-  }, [flatAst, setEdges, setNodes, sf, skipParenthesis, skipValues, uuid]);
+  }, [
+    flatAst,
+    enhanceGeneratedFlow,
+    setEdges,
+    setNodes,
+    skipParenthesis,
+    skipValues,
+  ]);
 };

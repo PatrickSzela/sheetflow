@@ -11,6 +11,8 @@ import {
   FormulaControlsProps,
   useFormulaControls,
 } from "@/.storybook/helpers/useFormulaControls";
+import { useInjectValuesToFlow } from "@/components/FormulaEditor/useInjectValuesToFlow";
+import { usePlacedAstData } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import React from "react";
 import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
@@ -24,10 +26,16 @@ const meta = {
     const { formula, scope, ...rest } = args;
 
     const { placedAst, error } = useFormulaControls(args);
+    const { flatAst } = usePlacedAstData(placedAst);
+    const { injectValues } = useInjectValuesToFlow(placedAst);
 
     return (
       <React.Fragment>
-        <FormulaFlow {...rest} placedAst={placedAst} />
+        <FormulaFlow
+          {...rest}
+          enhanceGeneratedFlow={injectValues}
+          flatAst={flatAst}
+        />
 
         {error ? (
           <div
@@ -58,11 +66,11 @@ const meta = {
   argTypes: {
     ...HfEngineProviderArgTypes,
     ...FormulaControlsArgTypes,
-    placedAst: { table: { disable: true } },
+    flatAst: { table: { disable: true } },
   },
   args: {
     ...HfEngineProviderArgs,
-    placedAst: undefined,
+    flatAst: undefined,
   },
 } satisfies Meta<MetaArgs>;
 

@@ -11,8 +11,6 @@ import {
   isAstWithChildren,
   isAstWithValue,
   isParenthesisAst,
-  printCellValue,
-  Value,
 } from "@/libs/sheetflow";
 import { Edge } from "@xyflow/react";
 
@@ -101,47 +99,4 @@ export const generateEdges = (
       flatAst.findIndex((ast) => ast.id === a.source) -
       flatAst.findIndex((ast) => ast.id === b.source)
   );
-};
-
-export const injectValuesToFlow = (
-  values: Record<string, Value>,
-  nodes?: AstNode[],
-  edges?: Edge[]
-): [AstNode[] | undefined, Edge[] | undefined] => {
-  let copyNodes: typeof nodes;
-  let copyEdges: typeof edges;
-
-  if (nodes && nodes.length) {
-    copyNodes = structuredClone(nodes);
-
-    for (const { data } of copyNodes) {
-      const { ast, output, inputs } = data;
-
-      // nodes not synced with values
-      if (!(ast.id in values)) return [undefined, undefined];
-
-      if (output) output.value = values[ast.id];
-
-      if (inputs && isAstWithChildren(ast)) {
-        const { children } = ast;
-
-        inputs.forEach((i, idx) => {
-          if (children[idx].id in values) i.value = values[children[idx].id];
-        });
-      }
-    }
-  }
-
-  // TODO: finish edges
-  if (edges && edges.length) {
-    copyEdges = structuredClone(edges);
-
-    for (const edge of copyEdges) {
-      edge.label = printCellValue(values[edge.source]);
-    }
-  }
-
-  if (copyNodes || copyEdges) console.log("Injected values to flow", values);
-
-  return [copyNodes, copyEdges];
 };

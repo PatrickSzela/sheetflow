@@ -22,13 +22,14 @@ import {
   Typography,
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
+import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 type State = "success" | "warning" | "error";
 
 export interface FormulaEditorProps {
   defaultScope: string;
   defaultFormula?: string;
-  flowProps?: Omit<FormulaFlowProps, "placedAst">;
+  flowProps?: Omit<FormulaFlowProps, "flatAst">;
   onFocus?: (uuid: string) => void;
 }
 
@@ -42,7 +43,8 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     defaultFormula,
     defaultScope
   );
-  const { missing } = usePlacedAstData(placedAst);
+  const { flatAst, missing } = usePlacedAstData(placedAst);
+  const { injectValues } = useInjectValuesToFlow(placedAst);
 
   const addMissing = useCallback(() => {
     const { namedExpressions, sheets } = missing;
@@ -105,7 +107,11 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <FormulaFlow placedAst={placedAst} {...flowProps} />
+        <FormulaFlow
+          flatAst={flatAst}
+          enhanceGeneratedFlow={injectValues}
+          {...flowProps}
+        />
       </Box>
 
       <Overlay>
