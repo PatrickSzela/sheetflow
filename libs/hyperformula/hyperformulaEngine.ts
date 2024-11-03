@@ -9,7 +9,7 @@ import {
   NamedExpression,
   NamedExpressions,
   Sheet,
-  SheetFlow,
+  SheetFlowEngine,
   Sheets,
   SpecialSheets,
   Value,
@@ -52,11 +52,11 @@ registerAllLanguages();
 
 export type HyperFormulaConfig = Partial<ConfigParams>;
 
-export class HyperFormulaEngine extends SheetFlow {
+export class HyperFormulaEngine extends SheetFlowEngine {
   protected hf: HyperFormula;
 
   static VALUE_ERROR_TYPES = {
-    ...SheetFlow.VALUE_ERROR_TYPES,
+    ...SheetFlowEngine.VALUE_ERROR_TYPES,
     CYCLE: "#CYCLE!",
     ERROR: "#ERROR!",
     LIC: "#LIC!",

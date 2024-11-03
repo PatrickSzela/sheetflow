@@ -4,7 +4,7 @@ import {
   AstNodeType,
   isAstWithChildren,
   printCellValue,
-  SheetFlow,
+  SheetFlowEngine,
   Value,
 } from "@/libs/sheetflow";
 import Add from "@mui/icons-material/Add";
@@ -53,7 +53,7 @@ export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
 });
 
 export const getNodeDataFromAst = (
-  sf: SheetFlow,
+  sf: SheetFlowEngine,
   ast: Ast,
   inputs?: AstNodeValue[],
   output?: AstNodeValue

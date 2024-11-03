@@ -5,7 +5,7 @@ import { isCellRange } from "./cellRange";
 import { Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
 import { Reference } from "./reference";
-import { Events } from "./sheetflow";
+import { Events } from "./sheetflowEngine";
 
 export const useValue = (reference: Reference): Value | undefined => {
   const sf = useSheetFlow();

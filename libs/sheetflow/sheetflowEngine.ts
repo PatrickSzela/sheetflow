@@ -37,7 +37,7 @@ export type SheetFlowEventEmitter = TypedEmitter<Events>;
 // - named expression name limitations
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
-export abstract class SheetFlow {
+export abstract class SheetFlowEngine {
   static VALUE_ERROR_TYPES: Record<string, string> = {
     "DIV/0": "#DIV/0!",
     "N/A": "#N/A",
@@ -56,7 +56,7 @@ export abstract class SheetFlow {
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
     config?: any
-  ): SheetFlow {
+  ): SheetFlowEngine {
     throw new Error("Called `build` function on an abstract class");
   }
 
@@ -291,7 +291,7 @@ export abstract class SheetFlow {
 
   isCalculatedValueAnError(value: CellValue["value"]): boolean {
     const prototype = Object.getPrototypeOf(this)
-      .constructor as typeof SheetFlow;
+      .constructor as typeof SheetFlowEngine;
 
     return (
       typeof value === "string" &&

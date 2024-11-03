@@ -3,7 +3,7 @@ import { buildCellAddress, CellAddress, isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
 import { NamedExpression, NamedExpressions } from "./namedExpression";
 import { Reference } from "./reference";
-import { SheetFlow } from "./sheetflow";
+import { SheetFlowEngine } from "./sheetflowEngine";
 
 export type Sheet = CellContent[][];
 export type Sheets = Record<string, Sheet>;
@@ -16,7 +16,7 @@ export type GroupedCells = Record<
 >;
 
 export const groupReferencesBySheet = (
-  sf: SheetFlow,
+  sf: SheetFlowEngine,
   references: Reference[]
 ): {
   cells: GroupedCells;
