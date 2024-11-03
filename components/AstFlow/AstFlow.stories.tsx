@@ -15,13 +15,13 @@ import { useInjectValuesToFlow } from "@/components/FormulaEditor/useInjectValue
 import { usePlacedAstData } from "@/libs/sheetflow";
 import type { Meta, StoryObj } from "@storybook/react";
 import React from "react";
-import { FormulaFlow, FormulaFlowProps } from "./FormulaFlow";
+import { AstFlow, AstFlowProps } from "./AstFlow";
 
-type MetaArgs = FormulaControlsProps & FormulaFlowProps & HfEngineProviderProps;
+type MetaArgs = FormulaControlsProps & AstFlowProps & HfEngineProviderProps;
 
 const meta = {
   title: "Components/Formula",
-  component: FormulaFlow,
+  component: AstFlow,
   render: (args) => {
     const { formula, scope, ...rest } = args;
 
@@ -31,7 +31,7 @@ const meta = {
 
     return (
       <React.Fragment>
-        <FormulaFlow
+        <AstFlow
           {...rest}
           enhanceGeneratedFlow={injectValues}
           flatAst={flatAst}

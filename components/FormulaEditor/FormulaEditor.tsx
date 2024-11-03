@@ -1,4 +1,4 @@
-import { FormulaFlow, FormulaFlowProps } from "@/components/FormulaFlow";
+import { AstFlow, AstFlowProps } from "@/components/AstFlow";
 import { Overlay } from "@/components/Overlay";
 import {
   useCreatePlacedAst,
@@ -29,7 +29,7 @@ type State = "success" | "warning" | "error";
 export interface FormulaEditorProps {
   defaultScope: string;
   defaultFormula?: string;
-  flowProps?: Omit<FormulaFlowProps, "flatAst">;
+  flowProps?: Omit<AstFlowProps, "flatAst">;
   onFocus?: (uuid: string) => void;
 }
 
@@ -107,7 +107,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <FormulaFlow
+        <AstFlow
           flatAst={flatAst}
           enhanceGeneratedFlow={injectValues}
           {...flowProps}

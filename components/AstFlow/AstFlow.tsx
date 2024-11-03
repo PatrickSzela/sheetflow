@@ -16,7 +16,7 @@ const fitViewOptions: FitViewOptions = {
   padding: 0.2,
 };
 
-export interface FormulaFlowProps<
+export interface AstFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
@@ -29,7 +29,7 @@ export interface FormulaFlowProps<
   ) => { nodes: AstNode[]; edges: Edge[] };
 }
 
-export const FormulaFlow = (props: FormulaFlowProps) => {
+export const AstFlow = (props: AstFlowProps) => {
   const {
     flatAst,
     skipParenthesis,
