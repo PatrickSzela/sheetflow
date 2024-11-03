@@ -1,5 +1,6 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import reactCompiler from "eslint-plugin-react-compiler";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,6 +16,12 @@ const compat = new FlatCompat({
 export default [
   {
     ignores: ["!**/.storybook"],
+    plugins: {
+      "react-compiler": reactCompiler,
+    },
+    rules: {
+      "react-compiler/react-compiler": "error",
+    },
   },
   ...compat.extends("next/core-web-vitals", "plugin:storybook/recommended"),
 ];

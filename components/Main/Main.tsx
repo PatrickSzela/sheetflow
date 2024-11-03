@@ -93,7 +93,8 @@ enum LayoutOptions {
 
 export const Main = (props: MainProps) => {
   const { slotProps, children, ...restProps } = props;
-  const { drawer = {} } = slotProps ?? {};
+  const { drawer: _drawer = {} } = slotProps ?? {};
+  const drawer = { ..._drawer };
 
   const theme = useTheme();
   const isNotMobile = useMediaQuery(theme.breakpoints.up("sm"));
