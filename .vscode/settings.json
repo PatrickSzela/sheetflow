@@ -15,6 +15,7 @@
     "xyflow",
     "clsx",
     "docgen",
-    "endregion"
+    "endregion",
+    "mantine"
   ]
 }

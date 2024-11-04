@@ -1,13 +1,16 @@
 import { AstFlow, AstFlowProps } from "@/components/AstFlow";
 import { Overlay } from "@/components/Overlay";
+import { PaletteColorName } from "@/libs/mui";
 import {
   useCreatePlacedAst,
   usePlacedAstData,
   useSheetFlow,
+  useUpdateFormulaDebounced,
 } from "@/libs/sheetflow";
 import {
   CheckCircle,
   Error as ErrorIcon,
+  Pending,
   SvgIconComponent,
 } from "@mui/icons-material";
 import {
@@ -21,10 +24,10 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
-type State = "success" | "warning" | "error";
+type State = "success" | "warning" | "error" | "loading";
 
 export interface FormulaEditorProps {
   defaultScope: string;
@@ -38,13 +41,12 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   const sf = useSheetFlow();
 
-  const [error, setError] = useState<string>();
-  const { placedAst, updateFormula } = useCreatePlacedAst(
-    defaultFormula,
-    defaultScope
-  );
+  const { placedAst } = useCreatePlacedAst(defaultFormula, defaultScope);
   const { flatAst, missing } = usePlacedAstData(placedAst);
   const { injectValues } = useInjectValuesToFlow(placedAst);
+
+  const { formula, updateFormula, error, loading } =
+    useUpdateFormulaDebounced(placedAst);
 
   const addMissing = useCallback(() => {
     const { namedExpressions, sheets } = missing;
@@ -63,6 +65,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   }, [missing, sf]);
 
   let state: State = "success";
+  let color: PaletteColorName;
   let title: string | undefined;
   let description: string | undefined;
   let action: React.ReactNode;
@@ -70,17 +73,20 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   if (error) {
     state = "error";
+  } else if (loading) {
+    state = "loading";
   } else if (missing.namedExpressions.length || missing.sheets.length) {
     state = "warning";
   }
 
   switch (state) {
-    case "success":
+    case "success": {
       Icon = CheckCircle;
       title = "Formula is valid";
+      color = "success";
       break;
-
-    case "warning":
+    }
+    case "warning": {
       Icon = ErrorIcon;
       title = "Missing references";
       description =
@@ -90,13 +96,21 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
           Add
         </Button>
       );
+      color = "warning";
       break;
-
-    case "error":
+    }
+    case "error": {
       Icon = ErrorIcon;
       title = "Error";
       description = error;
+      color = "error";
       break;
+    }
+    case "loading": {
+      Icon = Pending;
+      color = "info";
+      break;
+    }
   }
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
@@ -117,25 +131,19 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       <Overlay>
         <Paper elevation={4} sx={{ gridArea: "top", borderRadius: 40 }}>
           <OutlinedInput
-            defaultValue={defaultFormula}
+            value={formula}
             onChange={(e) => {
-              try {
-                updateFormula(e.target.value, defaultScope);
-                setError(undefined);
-              } catch (e) {
-                if (e instanceof Error) setError(e.message);
-                else throw e;
-              }
+              updateFormula(e.target.value);
             }}
             size="small"
             placeholder="Enter your Formula here..."
-            color={state}
+            color={color}
             fullWidth
             sx={{ borderRadius: "inherit" }}
             endAdornment={
               <InputAdornment position="end">
                 <Tooltip title={title}>
-                  <Icon color={state} {...(error && { titleAccess: error })} />
+                  <Icon color={color} {...(error && { titleAccess: error })} />
                 </Tooltip>
               </InputAdornment>
             }
@@ -144,7 +152,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
         {title && description ? (
           <Alert
-            severity={state}
+            severity={color}
             icon={false}
             sx={{
               gridArea: "right",

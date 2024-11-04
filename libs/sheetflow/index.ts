@@ -17,5 +17,6 @@ export * from "./usePlacedAst";
 export * from "./usePlacedAstData";
 export * from "./usePlacedAstValues";
 export * from "./useSheetFlow";
+export * from "./useUpdateFormulaDebounced";
 export * from "./useValue";
 export * from "./utils";
