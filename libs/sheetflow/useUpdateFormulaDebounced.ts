@@ -6,7 +6,7 @@ import { usePlacedAst } from "./usePlacedAst";
 
 export const useUpdateFormulaDebounced = (
   placedAst: PlacedAst,
-  delay = 500
+  delay = 300
 ) => {
   const sf = useSheetFlow();
   const { updateFormula } = usePlacedAst(placedAst.uuid);
