@@ -22,6 +22,7 @@ import {
   SerializedNamedExpression,
 } from "hyperformula";
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
+import * as Languages from "hyperformula/es/i18n/languages";
 import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
 import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
@@ -55,13 +56,6 @@ export type HyperFormulaConfig = Partial<ConfigParams>;
 export class HyperFormulaEngine extends SheetFlowEngine {
   protected hf: HyperFormula;
 
-  static override VALUE_ERROR_TYPES = {
-    ...SheetFlowEngine.VALUE_ERROR_TYPES,
-    CYCLE: "#CYCLE!",
-    ERROR: "#ERROR!",
-    LIC: "#LIC!",
-  };
-
   static override build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
@@ -93,6 +87,9 @@ export class HyperFormulaEngine extends SheetFlowEngine {
         this.hf.addNamedExpression(name, expression, scope);
       }
     }
+
+    this.valueErrorTypes =
+      Languages[this.hf.getConfig().language as keyof typeof Languages].errors;
   }
 
   override registerEvents(): void {

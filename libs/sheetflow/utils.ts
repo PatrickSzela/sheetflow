@@ -73,7 +73,8 @@ export const getMissingSheetsAndNamedExpressions = (
   const sheets = new Set<string>();
 
   for (const ast of flatAst) {
-    if (isErrorAst(ast) && ast.error === "REF") {
+    // TODO: add types for errors
+    if (isErrorAst(ast) && sf.isErrorType(ast.error)) {
       const { sheet } = extractDataFromStringAddress(ast.rawContent);
 
       if (sheet && !sf.doesSheetExists(sheet)) {

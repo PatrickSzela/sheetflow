@@ -38,7 +38,7 @@ export type SheetFlowEventEmitter = TypedEmitter<Events>;
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
 export abstract class SheetFlowEngine {
-  static VALUE_ERROR_TYPES: Record<string, string> = {
+  protected valueErrorTypes: Record<string, string> = {
     "DIV/0": "#DIV/0!",
     "N/A": "#N/A",
     NAME: "#NAME?",
@@ -289,13 +289,14 @@ export abstract class SheetFlowEngine {
     });
   }
 
-  isCalculatedValueAnError(value: CellValue["value"]): boolean {
-    const prototype = (Object.getPrototypeOf(this) as SheetFlowEngine)
-      .constructor as typeof SheetFlowEngine;
+  isErrorType(error: string): boolean {
+    return error in this.valueErrorTypes;
+  }
 
+  isCalculatedValueAnError(value: CellValue["value"]): boolean {
     return (
       typeof value === "string" &&
-      Object.values<string>(prototype.VALUE_ERROR_TYPES).includes(value)
+      Object.values(this.valueErrorTypes).includes(value)
     );
   }
 

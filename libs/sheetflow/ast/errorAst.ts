@@ -1,5 +1,7 @@
 import { AstBase, AstNodeType, buildAst, BuildFn, isAst } from "./ast";
 
+// TODO: add types for errors, based on `ErrorType` from hyperformula
+
 export interface ErrorAst extends AstBase<AstNodeType.ERROR> {
   error: string;
 }
