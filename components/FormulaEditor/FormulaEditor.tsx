@@ -2,6 +2,7 @@ import { AstFlow, AstFlowProps } from "@/components/AstFlow";
 import { Overlay } from "@/components/Overlay";
 import { PaletteColorName } from "@/libs/mui";
 import {
+  MissingReferences,
   useCreatePlacedAst,
   usePlacedAstData,
   useSheetFlow,
@@ -36,34 +37,12 @@ export interface FormulaEditorProps {
   onFocus?: (uuid: string) => void;
 }
 
-export const FormulaEditor = (props: FormulaEditorProps) => {
-  const { defaultFormula, flowProps, defaultScope, onFocus } = props;
-
-  const sf = useSheetFlow();
-
-  const { placedAst } = useCreatePlacedAst(defaultFormula, defaultScope);
-  const { flatAst, missing } = usePlacedAstData(placedAst);
-  const { injectValues } = useInjectValuesToFlow(placedAst);
-
-  const { formula, updateFormula, error, loading } =
-    useUpdateFormulaDebounced(placedAst);
-
-  const addMissing = useCallback(() => {
-    const { namedExpressions, sheets } = missing;
-
-    sf.pauseEvaluation();
-
-    for (const sheet of sheets) {
-      sf.addSheet(sheet);
-    }
-
-    for (const namedExpression of namedExpressions) {
-      sf.addNamedExpression(namedExpression);
-    }
-
-    sf.resumeEvaluation();
-  }, [missing, sf]);
-
+const getEditorData = (
+  loading: boolean,
+  error: string | undefined,
+  missing: MissingReferences,
+  addMissing: () => void
+) => {
   let state: State = "success";
   let color: PaletteColorName;
   let title: string | undefined;
@@ -112,6 +91,44 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       break;
     }
   }
+
+  return { state, color, title, description, action, Icon };
+};
+
+export const FormulaEditor = (props: FormulaEditorProps) => {
+  const { defaultFormula, flowProps, defaultScope, onFocus } = props;
+
+  const sf = useSheetFlow();
+
+  const { placedAst } = useCreatePlacedAst(defaultFormula, defaultScope);
+  const { flatAst, missing } = usePlacedAstData(placedAst);
+  const { injectValues } = useInjectValuesToFlow(placedAst);
+
+  const { formula, updateFormula, error, loading } =
+    useUpdateFormulaDebounced(placedAst);
+
+  const addMissing = useCallback(() => {
+    const { namedExpressions, sheets } = missing;
+
+    sf.pauseEvaluation();
+
+    for (const sheet of sheets) {
+      sf.addSheet(sheet);
+    }
+
+    for (const namedExpression of namedExpressions) {
+      sf.addNamedExpression(namedExpression);
+    }
+
+    sf.resumeEvaluation();
+  }, [missing, sf]);
+
+  const { Icon, action, color, description, title } = getEditorData(
+    loading,
+    error,
+    missing,
+    addMissing
+  );
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
   useEffect(() => {
