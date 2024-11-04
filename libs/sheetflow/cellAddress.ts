@@ -14,7 +14,7 @@ export const buildCellAddress = (
   sheet,
 });
 
-export const isCellAddress = (address: any): address is CellAddress => {
+export const isCellAddress = (address: unknown): address is CellAddress => {
   const { column, row, sheet } = (address ?? {}) as CellAddress;
 
   return (

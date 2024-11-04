@@ -10,7 +10,7 @@ import React from "react";
 
 // TODO: remove
 
-export const NODE_SETTINGS: NodeSettings = {
+const NODE_SETTINGS: NodeSettings = {
   header: {
     height: 23,
     spacing: {
@@ -89,7 +89,7 @@ export const AstNode = (props: AstNodeProps) => {
                 >
                   {inputs ? printCellValue(inputs[idx].value) : ""}
 
-                  {inputs && inputs[idx].handleId !== undefined ? (
+                  {inputs?.[idx].handleId !== undefined ? (
                     <Handle
                       type="target"
                       position={targetPosition ?? Position.Left}
@@ -124,3 +124,5 @@ export const AstNode = (props: AstNodeProps) => {
     </div>
   );
 };
+
+AstNode.settings = NODE_SETTINGS;

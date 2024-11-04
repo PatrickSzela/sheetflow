@@ -1,4 +1,4 @@
-import { AstNode, nodeTypes } from "@/components/nodes";
+import { AstNode } from "@/components/nodes";
 import { Ast } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
@@ -14,6 +14,10 @@ import { useHighlightNodes } from "./useHighlightNodes";
 
 const fitViewOptions: FitViewOptions = {
   padding: 0.2,
+};
+
+const nodeTypes = {
+  ast: AstNode,
 };
 
 export interface AstFlowProps<

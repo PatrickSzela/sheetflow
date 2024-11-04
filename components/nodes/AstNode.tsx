@@ -3,8 +3,6 @@ import { Node, NodeProps } from "@xyflow/react";
 import { BaseNode } from "./BaseNode";
 import { AstNodeValue, CommonNodeData, getNodeDataFromAst } from "./utils";
 
-export { NODE_SETTINGS } from "./BaseNode";
-
 export type AstNodeData = CommonNodeData & {
   ast: Ast;
   output?: AstNodeValue;
@@ -26,3 +24,5 @@ export const AstNode = (props: AstNodeProps) => {
 
   return <BaseNode {...otherProps} type="base" data={_data} />;
 };
+
+AstNode.settings = BaseNode.settings;

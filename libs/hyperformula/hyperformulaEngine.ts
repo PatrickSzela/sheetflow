@@ -198,10 +198,16 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     let value: HfCellValue | HfCellValue[][];
 
     // TODO: add safeguards
-    if (typeof contents === "string" && this.hf.validateFormula(contents)) {
-      value = this.hf.calculateFormula(contents, addr.sheet);
+    if (typeof contents === "string") {
+      if (this.hf.validateFormula(contents)) {
+        value = this.hf.calculateFormula(contents, addr.sheet);
+      } else {
+        value = this.hf.calculateFormula(`=${contents}`, addr.sheet);
+      }
+    } else if (contents instanceof Date) {
+      throw new Error("Date not supported");
     } else {
-      value = this.hf.calculateFormula(`=${contents}`, addr.sheet);
+      value = contents ?? null;
     }
 
     return remapCellValue(value);
@@ -379,6 +385,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     const hfAddress = unmapCellAddress(this.hf, address);
 
     // @ts-expect-error we're using private property here
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const { ast } = this.hf._parser.parse(formula, hfAddress) as ParsingResult;
     const astWithSheetNames = ensureReferencesInAstHaveSheetNames(
       ast,

@@ -17,7 +17,7 @@ export const buildCellRange = (
   end,
 });
 
-export const isCellRange = (range: any): range is CellRange => {
+export const isCellRange = (range: unknown): range is CellRange => {
   const { start, end } = (range ?? {}) as CellRange;
   return isCellAddress(start) && isCellAddress(end);
 };

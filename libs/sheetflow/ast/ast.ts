@@ -102,7 +102,7 @@ export const buildAst = <
     ...args,
   } as unknown as T);
 
-export const isAst = (ast: any): ast is AstBase => {
+export const isAst = (ast: unknown): ast is AstBase => {
   if (typeof ast !== "object") return false;
 
   const { type, id, rawContent, isArrayFormula } = ast as Partial<AstBase>;
@@ -134,7 +134,7 @@ export interface AstWithChildren<
   };
 }
 export const isAstWithChildren = (
-  ast: any
+  ast: unknown
 ): ast is AstWithChildren<AstNodeType, Ast[]> => {
   if (!isAst(ast)) return false;
 
@@ -158,11 +158,11 @@ export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
 }
 
 export const isAstWithValue = (
-  ast: any
-): ast is AstWithValue<AstNodeSubtype, any> => {
+  ast: unknown
+): ast is AstWithValue<AstNodeSubtype, unknown> => {
   if (!isAst(ast)) return false;
 
-  const { type, subtype } = ast as Partial<AstWithValue<AstNodeSubtype, any>>;
+  const { type, subtype } = ast as Partial<AstWithValue<AstNodeSubtype, unknown>>;
 
   return (
     type === AstNodeType.VALUE &&

@@ -85,7 +85,9 @@ export const remapDetailedCellValue = (
     return SheetFlow.buildStringCellValue({ value: details.value });
   } else {
     throw new Error(
-      `Cannot remap type \`${details.type}\` with value \`${details.value}\``
+      `Cannot remap type \`${details.type}\` with value \`${JSON.stringify(
+        details.value
+      )}\``
     );
   }
 };

@@ -14,7 +14,7 @@ import Functions from "@mui/icons-material/Functions";
 import PlusOne from "@mui/icons-material/PlusOne";
 import SixtyFps from "@mui/icons-material/SixtyFps";
 import Tag from "@mui/icons-material/Tag";
-import { CSSProperties } from "react";
+import React, { CSSProperties } from "react";
 
 export type NodeValue = {
   value: string | number | null;
@@ -68,7 +68,7 @@ export const getNodeDataFromAst = (
 
   if (nodeData.output && sf.isCalculatedValueAnError(nodeData.output.value)) {
     error = {
-      icon: <Tag />,
+      icon: React.createElement(Tag),
       color: "error",
     };
   }
@@ -78,7 +78,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: ast.subtype,
-        icon: <SixtyFps />,
+        icon: React.createElement(SixtyFps),
         color: "primary",
         ...error,
       };
@@ -87,7 +87,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: ast.rawContent,
-        icon: <FormatShapes />,
+        icon: React.createElement(FormatShapes),
         color: "success",
         ...error,
       };
@@ -96,7 +96,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: `${ast.functionName}()`,
-        icon: <Functions />,
+        icon: React.createElement(Functions),
         color: "info",
         ...error,
       };
@@ -105,7 +105,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: ast.operatorOnRight ? `A${ast.operator}` : `${ast.operator}A`,
-        icon: <PlusOne />,
+        icon: React.createElement(PlusOne),
         color: "secondary",
         ...error,
       };
@@ -114,7 +114,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: `A ${ast.operator} B`,
-        icon: <Add />,
+        icon: React.createElement(Add),
         color: "secondary",
         ...error,
       };
@@ -123,7 +123,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: ast.type,
-        icon: <DataArray />,
+        icon: React.createElement(DataArray),
         color: "warning",
         ...error,
       };
@@ -132,7 +132,7 @@ export const getNodeDataFromAst = (
       return {
         ...nodeData,
         title: ast.rawContent,
-        icon: <Tag />,
+        icon: React.createElement(Tag),
         color: "error",
       };
   }

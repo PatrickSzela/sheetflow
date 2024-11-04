@@ -39,7 +39,7 @@ interface NodeRootProps extends Omit<CardProps, "color"> {
   color?: BaseNodeData["color"];
 }
 
-export const NODE_SETTINGS: NodeSettings = {
+const NODE_SETTINGS: NodeSettings = {
   header: {
     height: 20,
     spacing: {
@@ -219,9 +219,9 @@ export const BaseNode = (props: BaseNodeProps) => {
       {...(style && { style })}
     >
       <NodeHeader
-        avatar={icon}
         title={title}
         titleTypographyProps={{ title }}
+        {...(icon && { avatar: icon })}
       />
 
       {/* TODO: generate classes the proper way */}
@@ -263,6 +263,8 @@ export const BaseNode = (props: BaseNodeProps) => {
     </NodeRoot>
   );
 };
+
+BaseNode.settings = NODE_SETTINGS;
 
 interface ValueProps extends NodeValue {
   type: "input" | "output";

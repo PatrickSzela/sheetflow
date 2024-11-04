@@ -17,7 +17,7 @@ export const buildStringAst: BuildFn<StringAst> = (args) =>
     ...args,
   });
 
-export const isStringAst = (ast: any): ast is StringAst => {
+export const isStringAst = (ast: unknown): ast is StringAst => {
   if (!isAstWithValue(ast)) return false;
 
   const { subtype, value } = ast as Partial<StringAst>;

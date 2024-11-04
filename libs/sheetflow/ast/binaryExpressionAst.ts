@@ -19,7 +19,7 @@ export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (args) =>
     ...args,
   });
 
-export const isBinaryExpressionAst = (ast: any): ast is BinaryExpressionAst => {
+export const isBinaryExpressionAst = (ast: unknown): ast is BinaryExpressionAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, operator, children } = ast as Partial<BinaryExpressionAst>;

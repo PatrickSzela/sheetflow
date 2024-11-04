@@ -20,7 +20,7 @@ export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = (
   });
 
 export const isColumnRangeReferenceAst = (
-  ast: any
+  ast: unknown
 ): ast is ColumnRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

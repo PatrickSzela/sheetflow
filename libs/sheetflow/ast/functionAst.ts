@@ -18,7 +18,7 @@ export const buildFunctionAst: BuildFn<FunctionAst> = (args) =>
     ...args,
   });
 
-export const isFunctionAst = (ast: any): ast is FunctionAst => {
+export const isFunctionAst = (ast: unknown): ast is FunctionAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, functionName } = ast as Partial<FunctionAst>;

@@ -10,7 +10,7 @@ export const buildErrorAst: BuildFn<ErrorAst> = (args) =>
     ...args,
   });
 
-export const isErrorAst = (ast: any): ast is ErrorAst => {
+export const isErrorAst = (ast: unknown): ast is ErrorAst => {
   if (!isAst(ast)) return false;
 
   const { type, error } = ast as Partial<ErrorAst>;

@@ -9,7 +9,7 @@ export type NamedExpression = {
 export type NamedExpressions = NamedExpression[];
 
 export const isNamedExpression = (
-  namedExpression: any
+  namedExpression: unknown
 ): namedExpression is NamedExpression => {
   const { expression, name, scope } = namedExpression as NamedExpression;
 

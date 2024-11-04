@@ -2,7 +2,7 @@ import { useCreatePlacedAst } from "@/libs/sheetflow";
 import { ArgTypes } from "@storybook/react";
 import { useEffect, useState } from "react";
 
-export type FormulaControlsProps = {
+export interface FormulaControlsProps {
   formula: string;
   scope: string;
 };

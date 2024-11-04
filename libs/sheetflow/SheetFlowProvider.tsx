@@ -1,6 +1,7 @@
-import { createContext, PropsWithChildren, useContext, useMemo } from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { NamedExpressions } from "./namedExpression";
 import { Sheets } from "./sheet";
+import { SheetFlowContext } from "./SheetFlowContext";
 import { SheetFlowEngine } from "./sheetflowEngine";
 
 export interface SheetFlowProviderProps<T extends typeof SheetFlowEngine> {
@@ -9,8 +10,6 @@ export interface SheetFlowProviderProps<T extends typeof SheetFlowEngine> {
   namedExpressions?: NamedExpressions;
   config?: Parameters<T["build"]>[2];
 }
-
-const SheetFlowContext = createContext<SheetFlowEngine | null>(null);
 
 export const SheetFlowProvider = <T extends typeof SheetFlowEngine>(
   props: PropsWithChildren<SheetFlowProviderProps<T>>
@@ -26,13 +25,4 @@ export const SheetFlowProvider = <T extends typeof SheetFlowEngine>(
       {children}
     </SheetFlowContext.Provider>
   );
-};
-
-export const useSheetFlow = () => {
-  const sheetflow = useContext(SheetFlowContext);
-
-  if (!sheetflow)
-    throw new Error("Failed to get SheetFlow's engine instance from context");
-
-  return sheetflow;
 };

@@ -16,7 +16,7 @@ export const buildParenthesisAst: BuildFn<ParenthesisAst> = (args) =>
     ...args,
   });
 
-export const isParenthesisAst = (ast: any): ast is ParenthesisAst => {
+export const isParenthesisAst = (ast: unknown): ast is ParenthesisAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, children } = ast as Partial<ParenthesisAst>;

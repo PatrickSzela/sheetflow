@@ -20,7 +20,7 @@ export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) =>
     ...args,
   });
 
-export const isUnaryExpressionAst = (ast: any): ast is UnaryExpressionAst => {
+export const isUnaryExpressionAst = (ast: unknown): ast is UnaryExpressionAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, operator, operatorOnRight, children } =

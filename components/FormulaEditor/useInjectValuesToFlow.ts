@@ -19,7 +19,7 @@ export const injectValuesToFlow = (
   let copyNodes: typeof nodes;
   let copyEdges: typeof edges;
 
-  if (nodes && nodes.length) {
+  if (nodes?.length) {
     copyNodes = structuredClone(nodes);
 
     for (const { data } of copyNodes) {
@@ -41,7 +41,7 @@ export const injectValuesToFlow = (
   }
 
   // TODO: finish edges
-  if (edges && edges.length) {
+  if (edges?.length) {
     copyEdges = structuredClone(edges);
 
     for (const edge of copyEdges) {
@@ -56,8 +56,8 @@ export const injectValuesToFlow = (
 
 export const useInjectValuesToFlow = (
   placedAst: PlacedAst,
-  injectToNodes: boolean = true,
-  injectToEdges: boolean = false
+  injectToNodes = true,
+  injectToEdges = false
 ) => {
   const { updateNodeData, updateEdgeData, getNodes, getEdges } =
     useReactFlow<AstNode>();

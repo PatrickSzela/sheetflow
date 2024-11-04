@@ -1,20 +1,10 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import { NamedExpressions, SheetFlowProvider, Sheets } from "@/libs/sheetflow";
-import { groupPrefixedKeys, prefixKeys, PrefixKeys } from "@/libs/utils";
-import { ArgTypes, ReactRenderer } from "@storybook/react";
+import { groupPrefixedKeys } from "@/libs/utils";
+import { ReactRenderer } from "@storybook/react";
 import { DecoratorFunction } from "@storybook/types";
-import * as Languages from "hyperformula/es/i18n/languages";
 import { useMemo } from "react";
-import { preparePrefixedArgTypes } from "./utils";
-
-type Props = {
-  language?: string;
-  sheets?: Sheets;
-  namedExpressions?: NamedExpressions;
-  config?: HyperFormulaConfig;
-};
-
-export type HfEngineProviderProps = PrefixKeys<Props, "sheetflow">;
+import { HfEngineProviderProps } from "./HfEngineProvider.args";
 
 const defaultSheets: Sheets = {};
 const defaultNamedExpressions: NamedExpressions = [];
@@ -22,26 +12,6 @@ const defaultConfig = {
   licenseKey: "gpl-v3",
   language: "enUS",
 } satisfies HyperFormulaConfig;
-
-const argTypes: Partial<ArgTypes<Props>> = {
-  language: {
-    control: "select",
-    options: Object.keys(Languages),
-  },
-  config: { control: { type: "object" } },
-  namedExpressions: { control: { type: "object" } },
-  sheets: { control: { type: "object" } },
-};
-export const HfEngineProviderArgTypes = preparePrefixedArgTypes(
-  argTypes,
-  "sheetflow"
-);
-
-const args: Partial<Props> = {
-  sheets: { Sheet1: [] },
-  namedExpressions: [],
-};
-export const HfEngineProviderArgs = prefixKeys(args, "sheetflow");
 
 export const withHfEngineProvider = (): DecoratorFunction<
   ReactRenderer,

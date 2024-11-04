@@ -20,7 +20,7 @@ export const buildCellReferenceAst: BuildFn<CellReferenceAst> = (args) =>
     ...args,
   });
 
-export const isCellReferenceAst = (ast: any): ast is CellReferenceAst => {
+export const isCellReferenceAst = (ast: unknown): ast is CellReferenceAst => {
   if (!isAst(ast)) return false;
 
   const { type, subtype, reference } = ast as Partial<CellReferenceAst>;

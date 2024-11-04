@@ -8,7 +8,7 @@ export const changeBoxShadowColor = (
   boxShadow: string,
   colorCallback: (decomposedColor: ColorObject) => string
 ): string => {
-  let shadows = boxShadow.split(/,(?![^\(]*\))/g);
+  let shadows = boxShadow.split(/,(?![^(]*\))/g);
 
   shadows = shadows.map((shadow) => {
     const items = shadow.split(/ (?![^(]*\))/g);

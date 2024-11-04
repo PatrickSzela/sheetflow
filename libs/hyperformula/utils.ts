@@ -92,51 +92,45 @@ export const areAddressesEqual = (
 
 export const areAstEqual = (
   hfAst: Ast,
-  sheetflowAst: SheetFlow.Ast,
+  sfAst: SheetFlow.Ast,
   hf: HyperFormula,
   address: SimpleCellAddress,
-  checkChildren: boolean = true
+  checkChildren = true
 ): boolean => {
   const { type } = hfAst;
 
   switch (type) {
-    case AstNodeType.EMPTY:
+    case AstNodeType.EMPTY: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.EMPTY
+        sfAst.type === SheetFlow.AstNodeType.VALUE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.EMPTY
       );
-
-    case AstNodeType.NUMBER:
+    }
+    case AstNodeType.NUMBER: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.NUMBER &&
-        sheetflowAst.value === hfAst.value
+        sfAst.type === SheetFlow.AstNodeType.VALUE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.NUMBER &&
+        sfAst.value === hfAst.value
       );
-
-    case AstNodeType.STRING:
+    }
+    case AstNodeType.STRING: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.STRING &&
-        sheetflowAst.value === hfAst.value
+        sfAst.type === SheetFlow.AstNodeType.VALUE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.STRING &&
+        sfAst.value === hfAst.value
       );
-
+    }
     case AstNodeType.MINUS_UNARY_OP:
     case AstNodeType.PLUS_UNARY_OP:
-    case AstNodeType.PERCENT_OP:
+    case AstNodeType.PERCENT_OP: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.UNARY_EXPRESSION &&
-        sheetflowAst.operator === getOperator(hfAst.type) &&
+        sfAst.type === SheetFlow.AstNodeType.UNARY_EXPRESSION &&
+        sfAst.operator === getOperator(hfAst.type) &&
         (checkChildren
-          ? areAstEqual(
-              hfAst.value,
-              sheetflowAst.children[0],
-              hf,
-              address,
-              false
-            )
+          ? areAstEqual(hfAst.value, sfAst.children[0], hf, address, false)
           : true)
       );
-
+    }
     case AstNodeType.CONCATENATE_OP:
     case AstNodeType.EQUALS_OP:
     case AstNodeType.NOT_EQUAL_OP:
@@ -148,131 +142,109 @@ export const areAstEqual = (
     case AstNodeType.MINUS_OP:
     case AstNodeType.TIMES_OP:
     case AstNodeType.DIV_OP:
-    case AstNodeType.POWER_OP:
+    case AstNodeType.POWER_OP: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.BINARY_EXPRESSION &&
-        sheetflowAst.operator === getOperator(hfAst.type) &&
+        sfAst.type === SheetFlow.AstNodeType.BINARY_EXPRESSION &&
+        sfAst.operator === getOperator(hfAst.type) &&
         (checkChildren
-          ? areAstEqual(
-              hfAst.left,
-              sheetflowAst.children[0],
-              hf,
-              address,
-              false
-            ) &&
-            areAstEqual(
-              hfAst.right,
-              sheetflowAst.children[1],
-              hf,
-              address,
-              false
-            )
+          ? areAstEqual(hfAst.left, sfAst.children[0], hf, address, false) &&
+            areAstEqual(hfAst.right, sfAst.children[1], hf, address, false)
           : true)
       );
-
-    case AstNodeType.FUNCTION_CALL:
+    }
+    case AstNodeType.FUNCTION_CALL: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.FUNCTION &&
-        sheetflowAst.functionName === hfAst.procedureName &&
-        sheetflowAst.children.length === hfAst.args.length &&
+        sfAst.type === SheetFlow.AstNodeType.FUNCTION &&
+        sfAst.functionName === hfAst.procedureName &&
+        sfAst.children.length === hfAst.args.length &&
         (checkChildren
-          ? !sheetflowAst.children
+          ? !sfAst.children
               .map((i, idx) =>
                 areAstEqual(hfAst.args[idx], i, hf, address, false)
               )
               .includes(false)
           : true)
       );
-
-    case AstNodeType.NAMED_EXPRESSION:
+    }
+    case AstNodeType.NAMED_EXPRESSION: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.NAMED_EXPRESSION &&
-        sheetflowAst.expressionName === hfAst.expressionName
+        sfAst.type === SheetFlow.AstNodeType.REFERENCE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.NAMED_EXPRESSION &&
+        sfAst.expressionName === hfAst.expressionName
       );
-
-    case AstNodeType.PARENTHESIS:
+    }
+    case AstNodeType.PARENTHESIS: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.PARENTHESIS &&
+        sfAst.type === SheetFlow.AstNodeType.PARENTHESIS &&
         (checkChildren
-          ? areAstEqual(
-              hfAst.expression,
-              sheetflowAst.children[0],
-              hf,
-              address,
-              false
-            )
+          ? areAstEqual(hfAst.expression, sfAst.children[0], hf, address, false)
           : true)
       );
-
-    case AstNodeType.CELL_REFERENCE:
+    }
+    case AstNodeType.CELL_REFERENCE: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.CELL &&
+        sfAst.type === SheetFlow.AstNodeType.REFERENCE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.CELL &&
         areAddressesEqual(
           hfAst.reference.toSimpleCellAddress(address),
-          sheetflowAst.reference,
+          sfAst.reference,
           hf
         )
       );
-
-    case AstNodeType.CELL_RANGE:
+    }
+    case AstNodeType.CELL_RANGE: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.CELL_RANGE &&
+        sfAst.type === SheetFlow.AstNodeType.REFERENCE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.CELL_RANGE &&
         areAddressesEqual(
           hfAst.start.toSimpleCellAddress(address),
-          sheetflowAst.start,
+          sfAst.start,
           hf
         ) &&
-        areAddressesEqual(
-          hfAst.end.toSimpleCellAddress(address),
-          sheetflowAst.end,
-          hf
-        )
+        areAddressesEqual(hfAst.end.toSimpleCellAddress(address), sfAst.end, hf)
       );
-
-    case AstNodeType.COLUMN_RANGE:
+    }
+    case AstNodeType.COLUMN_RANGE: {
       const cStart = hfAst.start.toSimpleColumnAddress(address);
       const cEnd = hfAst.end.toSimpleColumnAddress(address);
 
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.COLUMN_RANGE &&
-        cStart.col === sheetflowAst.start &&
-        cEnd.col === sheetflowAst.end &&
-        cStart.sheet === getSheetIdWithError(hf, sheetflowAst.sheet)
+        sfAst.type === SheetFlow.AstNodeType.REFERENCE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.COLUMN_RANGE &&
+        cStart.col === sfAst.start &&
+        cEnd.col === sfAst.end &&
+        cStart.sheet === getSheetIdWithError(hf, sfAst.sheet)
       );
-
-    case AstNodeType.ROW_RANGE:
+    }
+    case AstNodeType.ROW_RANGE: {
       const rStart = hfAst.start.toSimpleRowAddress(address);
       const rEnd = hfAst.end.toSimpleRowAddress(address);
 
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.REFERENCE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.ROW_RANGE &&
-        rStart.row === sheetflowAst.start &&
-        rEnd.row === sheetflowAst.end &&
-        rStart.sheet === getSheetIdWithError(hf, sheetflowAst.sheet)
+        sfAst.type === SheetFlow.AstNodeType.REFERENCE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.ROW_RANGE &&
+        rStart.row === sfAst.start &&
+        rEnd.row === sfAst.end &&
+        rStart.sheet === getSheetIdWithError(hf, sfAst.sheet)
       );
-
-    case AstNodeType.ERROR:
+    }
+    case AstNodeType.ERROR: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.ERROR &&
-        hfAst.error.type === sheetflowAst.error
+        sfAst.type === SheetFlow.AstNodeType.ERROR &&
+        (hfAst.error.type as string) === sfAst.error
       );
-
-    case AstNodeType.ERROR_WITH_RAW_INPUT:
+    }
+    case AstNodeType.ERROR_WITH_RAW_INPUT: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.ERROR &&
-        hfAst.error.type === sheetflowAst.error
+        sfAst.type === SheetFlow.AstNodeType.ERROR &&
+        (hfAst.error.type as string) === sfAst.error
       );
-
-    case AstNodeType.ARRAY:
+    }
+    case AstNodeType.ARRAY: {
       return (
-        sheetflowAst.type === SheetFlow.AstNodeType.VALUE &&
-        sheetflowAst.subtype === SheetFlow.AstNodeSubtype.ARRAY &&
-        !sheetflowAst.value
+        sfAst.type === SheetFlow.AstNodeType.VALUE &&
+        sfAst.subtype === SheetFlow.AstNodeSubtype.ARRAY &&
+        !sfAst.value
           .map((i, idx1) =>
             i
               .map((o, idx2) =>
@@ -283,8 +255,6 @@ export const areAstEqual = (
           .flat()
           .includes(false)
       );
-
-    default:
-      throw new Error(`Unknown AST node type \`${type}\``);
+    }
   }
 };

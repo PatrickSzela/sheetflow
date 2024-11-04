@@ -9,7 +9,7 @@ const meta = {
     layout: "fullscreen",
   },
   decorators: [withFullscreen()],
-} satisfies Meta<{}>;
+} satisfies Meta;
 
 type Story = StoryObj<typeof meta>;
 

@@ -124,7 +124,7 @@ export const Main = (props: MainProps) => {
         <ToggleButtonGroup
           size="small"
           value={layoutOptions}
-          onChange={(_, value) => setLayoutOptions(value)}
+          onChange={(_, value: LayoutOptions[]) => setLayoutOptions(value)}
         >
           <ToggleButton value={LayoutOptions.showDependencies}>
             <FormatListNumberedIcon />

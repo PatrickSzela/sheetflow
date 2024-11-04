@@ -25,7 +25,7 @@ export const buildNamedExpressionReferenceAst: BuildFn<
   });
 
 export const isNamedExpressionReferenceAst = (
-  ast: any
+  ast: unknown
 ): ast is NamedExpressionReferenceAst => {
   if (!isAst(ast)) return false;
 

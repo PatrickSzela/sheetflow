@@ -28,9 +28,8 @@ export type PickNotPrefixedKeys<
 export type GroupPrefixedKeys<
   TObject extends Record<string, unknown>,
   TPrefix extends string
-> = PickNotPrefixedKeys<TObject, TPrefix> & {
-  [key in TPrefix]: PickPrefixedKeys<TObject, TPrefix>;
-};
+> = PickNotPrefixedKeys<TObject, TPrefix> &
+  Record<TPrefix, PickPrefixedKeys<TObject, TPrefix>>;
 
 export const prefixKeys = <
   TObject extends Record<string, unknown>,
@@ -55,13 +54,18 @@ export const groupPrefixedKeys = <
   obj: TObject,
   prefix: TPrefix
 ) => {
-  const newObj: Record<string, any> = { [prefix]: {} };
+  const group: Record<string, unknown> = {};
+  const result: Record<string, unknown> = {};
 
   for (const key of Object.keys(obj)) {
-    if (key.startsWith(prefix))
-      newObj[prefix][key.replace(`${prefix}.`, "")] = obj[key];
-    else newObj[key] = obj[key];
+    if (key.startsWith(prefix)) {
+      group[key.replace(`${prefix}.`, "")] = obj[key];
+    } else {
+      result[key] = obj[key];
+    }
   }
 
-  return newObj as GroupPrefixedKeys<TObject, TPrefix>;
+  result[prefix] = group;
+
+  return result as GroupPrefixedKeys<TObject, TPrefix>;
 };

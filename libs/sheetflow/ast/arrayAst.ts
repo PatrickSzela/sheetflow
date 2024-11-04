@@ -18,7 +18,7 @@ export const buildArrayAst: BuildFn<ArrayAst> = (args) =>
     ...args,
   });
 
-export const isArrayAst = (ast: any): ast is ArrayAst => {
+export const isArrayAst = (ast: unknown): ast is ArrayAst => {
   if (!isAstWithValue(ast)) return false;
 
   const { subtype, value } = ast as Partial<ArrayAst>;

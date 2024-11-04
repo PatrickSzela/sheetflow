@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSheetFlow } from "./SheetFlowProvider";
 import { CellContent } from "./cell";
 import { isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
 import { Reference } from "./reference";
+import { useSheetFlow } from "./useSheetFlow";
 
 export const useContent = (
   reference: Reference,

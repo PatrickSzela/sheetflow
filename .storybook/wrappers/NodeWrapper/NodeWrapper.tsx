@@ -1,18 +1,12 @@
 import { CommonNodeData } from "@/components/nodes";
-import { ArgTypes } from "@storybook/react";
-import { Node, NodeTypes, useNodesState } from "@xyflow/react";
+import { Node, useNodesState } from "@xyflow/react";
 import { useMemo, useState } from "react";
-import { ReactFlowWrapper } from "./ReactFlowWrapper";
+import { ReactFlowWrapper } from "../ReactFlowWrapper";
+import { NodeWrapperProps } from "./NodeWrapper.args";
 
 const generateNodesFromNodeData = <T extends CommonNodeData>(
   data: T
 ): Node[] => [{ data, id: "", position: { x: 0, y: 0 }, type: "node" }];
-
-export type NodeWrapperProps = CommonNodeData & { node: NodeTypes[string] };
-
-export const NodeWrapperArgTypes: Partial<ArgTypes<NodeWrapperProps>> = {
-  node: { table: { disable: true } },
-};
 
 export const NodeWrapper = <T extends NodeWrapperProps>(props: T) => {
   const { node } = props;

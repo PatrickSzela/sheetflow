@@ -55,7 +55,7 @@ export abstract class SheetFlowEngine {
   static build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: any
+    config?: unknown
   ): SheetFlowEngine {
     throw new Error("Called `build` function on an abstract class");
   }
@@ -280,7 +280,7 @@ export abstract class SheetFlowEngine {
     return !!changes.find((change) => {
       if ("address" in change) {
         return (
-          change.address.sheet === SpecialSheets.PLACED_ASTS &&
+          change.address.sheet === (SpecialSheets.PLACED_ASTS as string) &&
           change.address.row === address.row
         );
       }
@@ -290,7 +290,7 @@ export abstract class SheetFlowEngine {
   }
 
   isCalculatedValueAnError(value: CellValue["value"]): boolean {
-    const prototype = Object.getPrototypeOf(this)
+    const prototype = (Object.getPrototypeOf(this) as SheetFlowEngine)
       .constructor as typeof SheetFlowEngine;
 
     return (

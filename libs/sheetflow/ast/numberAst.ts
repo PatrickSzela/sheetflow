@@ -17,7 +17,7 @@ export const buildNumberAst: BuildFn<NumberAst> = (args) =>
     ...args,
   });
 
-export const isNumberAst = (ast: any): ast is NumberAst => {
+export const isNumberAst = (ast: unknown): ast is NumberAst => {
   if (!isAstWithValue(ast)) return false;
 
   const { subtype, value } = ast as Partial<NumberAst>;

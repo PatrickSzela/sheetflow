@@ -20,7 +20,7 @@ export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = (
   });
 
 export const isRowRangeReferenceAst = (
-  ast: any
+  ast: unknown
 ): ast is RowRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

@@ -22,7 +22,7 @@ export const buildCellRangeReferenceAst: BuildFn<CellRangeReferenceAst> = (
   });
 
 export const isCellRangeReferenceAst = (
-  ast: any
+  ast: unknown
 ): ast is CellRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

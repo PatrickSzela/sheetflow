@@ -2,7 +2,7 @@ import { useColorScheme } from "@mui/material";
 import { ObjectInspector, chromeDark, chromeLight } from "react-inspector";
 
 export interface ObjectInspectorWrapperProps {
-  data: any;
+  data: unknown;
 }
 
 export const ObjectInspectorWrapper = (props: ObjectInspectorWrapperProps) => {

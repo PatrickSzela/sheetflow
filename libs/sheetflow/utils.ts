@@ -26,22 +26,22 @@ export const getPrecedents = (
     if (ast.type !== AstNodeType.REFERENCE) continue;
 
     switch (ast.subtype) {
-      case AstNodeSubtype.CELL:
+      case AstNodeSubtype.CELL: {
         precedents[sf.cellAddressToString(ast.reference)] = {
           ...ast.reference,
         };
         break;
-
-      case AstNodeSubtype.NAMED_EXPRESSION:
+      }
+      case AstNodeSubtype.NAMED_EXPRESSION: {
         precedents[ast.expressionName] = ast.expressionName;
         break;
-
-      case AstNodeSubtype.CELL_RANGE:
+      }
+      case AstNodeSubtype.CELL_RANGE: {
         const cellRange = buildCellRange(ast.start, ast.end);
         precedents[sf.cellRangeToString(cellRange)] = cellRange;
         break;
-
-      case AstNodeSubtype.COLUMN_RANGE:
+      }
+      case AstNodeSubtype.COLUMN_RANGE: {
         // // TODO: column range to string
         // precedents[ast.rawContent] = buildCellRange(
         //   buildCellAddress(ast.start, 0, ast.sheet),
@@ -49,8 +49,8 @@ export const getPrecedents = (
         // );
         // break;
         throw new Error("Row range not supported");
-
-      case AstNodeSubtype.ROW_RANGE:
+      }
+      case AstNodeSubtype.ROW_RANGE: {
         // // TODO: row range to string
         // precedents[ast.rawContent] = buildCellRange(
         //   buildCellAddress(0, ast.start, ast.sheet),
@@ -58,6 +58,7 @@ export const getPrecedents = (
         // );
         // break;
         throw new Error("Row range not supported");
+      }
     }
   }
 
@@ -68,8 +69,8 @@ export const getMissingSheetsAndNamedExpressions = (
   sf: SheetFlowEngine,
   flatAst: Ast[]
 ): MissingReferences => {
-  const namedExpressions: Set<string> = new Set();
-  const sheets: Set<string> = new Set();
+  const namedExpressions = new Set<string>();
+  const sheets = new Set<string>();
 
   for (const ast of flatAst) {
     if (isErrorAst(ast) && ast.error === "REF") {

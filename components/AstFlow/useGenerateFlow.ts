@@ -1,4 +1,4 @@
-import { AstNode, NODE_SETTINGS } from "@/components/nodes";
+import { AstNode } from "@/components/nodes";
 import { Ast } from "@/libs/sheetflow";
 import { Edge, useReactFlow } from "@xyflow/react";
 import { useEffect } from "react";
@@ -21,7 +21,7 @@ export const useGenerateFlow = (
 
     const initNodes = generateNodes(
       flatAst,
-      NODE_SETTINGS,
+      AstNode.settings,
       skipParenthesis,
       skipValues
     );
@@ -43,7 +43,7 @@ export const useGenerateFlow = (
       setEdges(edges);
     };
 
-    generateLayout();
+    void generateLayout();
 
     return () => {
       ignoreLayout = true;
