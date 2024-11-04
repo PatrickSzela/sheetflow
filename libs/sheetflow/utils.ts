@@ -42,7 +42,7 @@ export const getPrecedents = (
         break;
       }
       case AstNodeSubtype.COLUMN_RANGE: {
-        // // TODO: column range to string
+        // FIXME: column range to string
         // precedents[ast.rawContent] = buildCellRange(
         //   buildCellAddress(ast.start, 0, ast.sheet),
         //   buildCellAddress(ast.start, Infinity, ast.sheet)
@@ -51,7 +51,7 @@ export const getPrecedents = (
         throw new Error("Row range not supported");
       }
       case AstNodeSubtype.ROW_RANGE: {
-        // // TODO: row range to string
+        // FIXME: row range to string
         // precedents[ast.rawContent] = buildCellRange(
         //   buildCellAddress(0, ast.start, ast.sheet),
         //   buildCellAddress(Infinity, ast.start, ast.sheet)

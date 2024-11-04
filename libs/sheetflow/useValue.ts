@@ -13,7 +13,7 @@ export const useValue = (reference: Reference): Value | undefined => {
   const [value, setValue] = useState<Value>();
 
   useEffect(() => {
-    // TODO: implement cell range
+    // FIXME: implement cell range
     if (isCellRange(reference))
       throw new Error("Cell range not yet implemented");
 

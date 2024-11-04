@@ -11,7 +11,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useMemo } from "react";
 import { FormulaEditor, FormulaEditorProps } from "./FormulaEditor";
 
-// TODO: fix changing scope not rerendering component
+// FIXME: fix changing scope not rerendering component
 
 type MetaArgs = { defaultFormula: string } & PrefixKeys<
   Required<FormulaEditorProps>["flowProps"],

@@ -23,7 +23,7 @@ export const useContent = (
       if (isCellAddress(reference)) {
         sf.setCell(reference, content);
       } else if (isCellRange(reference)) {
-        // TODO: implement cell range
+        // FIXME: implement cell range
         throw new Error("Cell range not yet implemented");
       } else {
         sf.setNamedExpression(reference, content, scope);
@@ -38,7 +38,7 @@ export const useContent = (
     if (isCellAddress(reference)) {
       setContent(sf.getCell(reference));
     } else if (isCellRange(reference)) {
-      // TODO: implement cell range
+      // FIXME: implement cell range
       throw new Error("Cell range not yet implemented");
     } else {
       setContent(sf.getNamedExpression(reference, scope).expression);

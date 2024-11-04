@@ -40,7 +40,6 @@ export const injectValuesToFlow = (
     }
   }
 
-  // TODO: finish edges
   if (edges?.length) {
     copyEdges = structuredClone(edges);
 

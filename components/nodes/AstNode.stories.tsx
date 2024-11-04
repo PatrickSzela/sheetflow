@@ -22,7 +22,7 @@ import {
 import type { Meta, StoryObj } from "@storybook/react";
 import { AstNode, AstNodeData } from "./AstNode";
 
-// TODO: figure out why `satisfies Meta<MetaArgs>` causes items from AstNodeData to be ignored. This probably has something to do with AstWithChildren...
+// FIXME: figure out why `satisfies Meta<MetaArgs>` causes items from AstNodeData to be ignored. This probably has something to do with AstWithChildren...
 
 type MetaArgs = AstNodeData & NodeWrapperProps & HfEngineProviderProps;
 

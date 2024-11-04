@@ -11,7 +11,7 @@ import {
 import type { Meta, StoryObj } from "@storybook/react";
 import { BaseNode, BaseNodeData } from "./BaseNode";
 
-// TODO: figure out why `satisfies Meta<MetaArgs>` causes items from BaseNodeData to be ignored...
+// FIXME: figure out why `satisfies Meta<MetaArgs>` causes items from BaseNodeData to be ignored...
 
 type MetaArgs = BaseNodeData & NodeWrapperProps;
 
@@ -25,7 +25,7 @@ const meta: Meta<MetaArgs> = {
   args: { node: BaseNode },
   argTypes: {
     ...NodeWrapperArgTypes,
-    ...MuiThemeColorArgTypes, // TODO: figure out why Storybook doesn't infer it...
+    ...MuiThemeColorArgTypes, // FIXME: figure out why Storybook doesn't infer it...
   },
 };
 

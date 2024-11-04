@@ -50,7 +50,6 @@ export const remapCellValueDetailedType = (
   }
 };
 
-// TODO: figure out a better way to format this monstrosity
 export const remapDetailedCellValue = (
   details: HfCellValueDetails
 ): SheetFlow.CellValue => {

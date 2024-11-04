@@ -78,7 +78,7 @@ export const buildCellValueFromCellContent = (
   } else if (typeof value === "boolean") {
     return buildBooleanCellValue({ value });
   } else if (value instanceof Date) {
-    // TODO: support date
+    // FIXME: support date
     throw new Error("Date is not yet implemented");
   } else {
     return buildEmptyCellValue({ value: null });
