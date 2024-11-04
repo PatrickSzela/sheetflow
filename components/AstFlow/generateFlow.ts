@@ -38,13 +38,13 @@ export const generateNodes = (
     if (isAstWithChildren(ast)) {
       inputs = ast.children.map((child, idx) => ({
         value: buildStringCellValue({ value: child.rawContent }),
-        handleId: skipValues && isAstWithValue(child) ? undefined : `${idx}`,
+        ...((!skipValues || !isAstWithValue(child)) && { handleId: `${idx}` }),
       }));
     }
 
     const output: AstNodeValue = {
       value: buildStringCellValue({ value: ast.rawContent }),
-      handleId: idx ? "0" : undefined,
+      ...(idx && { handleId: "0" }),
     };
 
     return {

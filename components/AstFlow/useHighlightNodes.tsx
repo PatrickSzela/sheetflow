@@ -13,7 +13,7 @@ export const useHighlightNodes = () => {
   const [prevHighlightedAst, setPrevHighlightedAst] = useState<Ast[]>([]);
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
-    ({ edges, nodes: _nodes }) => {
+    ({ nodes: _nodes }) => {
       // `OnSelectionChangeFunc` isn't a generic type
       const nodes = _nodes as AstNode[];
       let arr = prevHighlightedAst;

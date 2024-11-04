@@ -49,7 +49,7 @@ export type NodeSettings = {
 
 export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
   value: printCellValue(input.value),
-  handleId: input.handleId,
+  ...(input.handleId !== undefined && { handleId: input.handleId }),
 });
 
 export const getNodeDataFromAst = (
@@ -60,8 +60,8 @@ export const getNodeDataFromAst = (
 ): BaseNodeData => {
   const nodeData: BaseNodeData = {
     title: "",
-    inputs: inputs?.map(remapNodeValue),
-    output: output ? remapNodeValue(output) : undefined,
+    ...(inputs && { inputs: inputs.map(remapNodeValue) }),
+    ...(output && { output: remapNodeValue(output) }),
   };
 
   let error: Partial<BaseNodeData> = {};

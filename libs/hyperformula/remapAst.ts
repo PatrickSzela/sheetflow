@@ -14,18 +14,20 @@ export const remapAst = (
   ast: Ast,
   address: SimpleCellAddress,
   rootUUID?: string,
-  isArrayFormula?: boolean
+  isArrayFormula: boolean = false
 ): SheetFlow.Ast => {
   // @ts-expect-error we're using protected property here
   const rawContent = hf._unparser.unparse(ast, address).slice(1);
   const { type } = ast;
+
+  const id = rootUUID !== undefined ? { id: rootUUID } : undefined;
 
   switch (type) {
     case AstNodeType.EMPTY:
       return SheetFlow.buildEmptyAst({
         value: null,
         rawContent: "",
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -33,7 +35,7 @@ export const remapAst = (
       return SheetFlow.buildNumberAst({
         value: ast.value,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -41,7 +43,7 @@ export const remapAst = (
       return SheetFlow.buildStringAst({
         value: ast.value,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -53,7 +55,7 @@ export const remapAst = (
         children: [remapAst(hf, ast.value, address, undefined, isArrayFormula)],
         operatorOnRight: ast.type === AstNodeType.PERCENT_OP,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
         requirements: {
           minChildCount: 1,
@@ -80,7 +82,7 @@ export const remapAst = (
           remapAst(hf, ast.right, address, undefined, isArrayFormula),
         ],
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
         requirements: {
           minChildCount: 2,
@@ -101,7 +103,7 @@ export const remapAst = (
           remapAst(hf, i, address, undefined, arrayFormula)
         ),
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula: arrayFormula,
         requirements: {
           minChildCount:
@@ -116,7 +118,7 @@ export const remapAst = (
       return SheetFlow.buildNamedExpressionReferenceAst({
         expressionName: ast.expressionName,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -126,7 +128,7 @@ export const remapAst = (
           remapAst(hf, ast.expression, address, undefined, isArrayFormula),
         ],
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
         requirements: {
           minChildCount: 1,
@@ -141,7 +143,7 @@ export const remapAst = (
           ast.reference.toSimpleCellAddress(address)
         ),
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -153,7 +155,7 @@ export const remapAst = (
           hf.getSheetName(ast.start.toSimpleCellAddress(address).sheet) ??
           "MISSING",
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -165,7 +167,7 @@ export const remapAst = (
           hf.getSheetName(ast.start.toSimpleColumnAddress(address).sheet) ??
           "MISSING",
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -177,7 +179,7 @@ export const remapAst = (
           hf.getSheetName(ast.start.toSimpleRowAddress(address).sheet) ??
           "MISSING",
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -185,7 +187,7 @@ export const remapAst = (
       return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -193,7 +195,7 @@ export const remapAst = (
       return SheetFlow.buildErrorAst({
         error: ast.error.type,
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 
@@ -203,7 +205,7 @@ export const remapAst = (
           a.map((b) => remapAst(hf, b, address, undefined, isArrayFormula))
         ),
         rawContent,
-        id: rootUUID,
+        ...id,
         isArrayFormula,
       });
 

@@ -22,7 +22,7 @@ export const ObjectInspectorWrapper = (props: ObjectInspectorWrapperProps) => {
     <ObjectInspector
       expandLevel={10}
       data={data}
-      theme={theme as any} // workaround for broken types
+      theme={theme as unknown as string} // workaround for broken types
     />
   );
 };

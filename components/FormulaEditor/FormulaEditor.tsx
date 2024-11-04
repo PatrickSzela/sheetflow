@@ -135,7 +135,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
             endAdornment={
               <InputAdornment position="end">
                 <Tooltip title={title}>
-                  <Icon color={state} titleAccess={error} />
+                  <Icon color={state} {...(error && { titleAccess: error })} />
                 </Tooltip>
               </InputAdornment>
             }

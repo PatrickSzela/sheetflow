@@ -213,10 +213,10 @@ export const BaseNode = (props: BaseNodeProps) => {
 
   return (
     <NodeRoot
-      variant={variant}
       color={color}
       elevation={elevation}
-      style={style}
+      {...(variant && { variant })}
+      {...(style && { style })}
     >
       <NodeHeader
         avatar={icon}
@@ -283,7 +283,7 @@ const Value = (props: ValueProps) => {
       {handleId !== undefined ? (
         <Handle
           type={type === "input" ? "target" : "source"}
-          id={type === "input" ? handleId : undefined}
+          {...(type === "input" && { id: handleId })}
           {...HandleProps}
         />
       ) : null}

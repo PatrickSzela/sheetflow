@@ -8,10 +8,12 @@ export const remapNamedExpression = (
 ): SheetFlow.NamedExpression => {
   const { name, expression, scope } = namedExpression;
 
+  const sheetName = scope !== undefined ? hf.getSheetName(scope) : undefined;
+
   return {
     name,
     expression,
-    scope: scope !== undefined ? hf.getSheetName(scope) : undefined,
+    ...(sheetName !== undefined && { scope: sheetName }),
   };
 };
 
@@ -24,6 +26,6 @@ export const unmapNamedExpression = (
   return {
     name,
     expression,
-    scope: scope !== undefined ? getSheetIdWithError(hf, scope) : undefined,
+    ...(scope !== undefined && { scope: getSheetIdWithError(hf, scope) }),
   };
 };

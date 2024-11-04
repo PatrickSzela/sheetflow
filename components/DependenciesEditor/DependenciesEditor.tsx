@@ -88,8 +88,8 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
     ({ name, scope }) => ({
       id: `${name}_${scope}`,
       reference: name,
-      scope,
       label: scope ? `${name} (${scope})` : name,
+      ...(scope !== undefined && { scope }),
     })
   );
 

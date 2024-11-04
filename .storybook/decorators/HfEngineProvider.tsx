@@ -18,10 +18,10 @@ export type HfEngineProviderProps = PrefixKeys<Props, "sheetflow">;
 
 const defaultSheets: Sheets = {};
 const defaultNamedExpressions: NamedExpressions = [];
-const defaultConfig: HyperFormulaConfig = {
+const defaultConfig = {
   licenseKey: "gpl-v3",
   language: "enUS",
-};
+} satisfies HyperFormulaConfig;
 
 const argTypes: Partial<ArgTypes<Props>> = {
   language: {

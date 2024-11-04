@@ -55,14 +55,14 @@ export type HyperFormulaConfig = Partial<ConfigParams>;
 export class HyperFormulaEngine extends SheetFlowEngine {
   protected hf: HyperFormula;
 
-  static VALUE_ERROR_TYPES = {
+  static override VALUE_ERROR_TYPES = {
     ...SheetFlowEngine.VALUE_ERROR_TYPES,
     CYCLE: "#CYCLE!",
     ERROR: "#ERROR!",
     LIC: "#LIC!",
   };
 
-  static build(
+  static override build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
     config?: HyperFormulaConfig
@@ -95,7 +95,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     }
   }
 
-  registerEvents(): void {
+  override registerEvents(): void {
     super.registerEvents();
 
     this.hf.on("namedExpressionAdded", (namedExpression) => {
@@ -274,8 +274,8 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     const serialized: SerializedNamedExpression = {
       name,
       expression: this.hf.getCellSerialized(namedExpression.address),
-      options: namedExpression.options,
-      scope: sheetId,
+      ...(namedExpression.options && { options: namedExpression.options }),
+      ...(sheetId !== undefined && { scope: sheetId }),
     };
 
     return remapNamedExpression(this.hf, serialized);

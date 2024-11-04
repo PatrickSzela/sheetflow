@@ -2,7 +2,6 @@ import {
   outlinedInputClasses,
   OutlinedInputProps,
   PaperProps,
-  svgIconClasses,
 } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 import type {} from "./themeAugmentation.d.ts";

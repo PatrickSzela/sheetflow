@@ -70,7 +70,7 @@ const meta = {
   },
   args: {
     ...HfEngineProviderArgs,
-    flatAst: undefined,
+    flatAst: [],
   },
 } satisfies Meta<MetaArgs>;
 
