@@ -1,21 +1,36 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
 import reactCompiler from "eslint-plugin-react-compiler";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import globals from "globals";
+import tseslint from "typescript-eslint";
+import storybook from "eslint-plugin-storybook";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
-
-// eslint-disable-next-line import/no-anonymous-default-export
-export default [
+export default tseslint.config(
+  // Vite
+  { ignores: ["dist"] },
   {
-    ignores: ["!**/.storybook"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true },
+      ],
+    },
+  },
+
+  // React Compiler
+  {
     plugins: {
       "react-compiler": reactCompiler,
     },
@@ -23,5 +38,10 @@ export default [
       "react-compiler/react-compiler": "error",
     },
   },
-  ...compat.extends("next/core-web-vitals", "plugin:storybook/recommended"),
-];
+
+  // Storybook
+  ...storybook.configs["flat/recommended"],
+  {
+    ignores: ["!**/.storybook", "**/storybook-static"],
+  }
+);

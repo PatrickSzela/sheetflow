@@ -1,9 +1,13 @@
 import * as SheetFlow from "@/libs/sheetflow";
 import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import { Ast, AstNodeType } from "hyperformula/es/parser";
-import { RangeSheetReferenceType } from "hyperformula/es/parser/Ast";
+import { AstNodeType } from "hyperformula/es/parser";
+import { Ast } from "hyperformula/typings/parser/Ast";
 import { remapCellAddress } from "./remapCellAddress";
 import { getOperator } from "./utils";
+
+// WORKAROUND: importing anything from "hyperformula/es/parser/Ast" confuses esbuild
+// https://github.com/vitejs/vite/issues/4245
+// import { AstNodeType, RangeSheetReferenceType } from "hyperformula/es/parser/Ast";
 
 export const remapAst = (
   hf: HyperFormula,
@@ -270,7 +274,8 @@ export const ensureReferencesInAstHaveSheetNames = (
         ast.start = ast.start.withSheet(address.sheet);
       if (ast.end.sheet === undefined)
         ast.end = ast.end.withSheet(address.sheet);
-      ast.sheetReferenceType = RangeSheetReferenceType.BOTH_ABSOLUTE;
+      // WORKAROUND: because of the workaround mentioned at the beginning of the file
+      ast.sheetReferenceType = 2; // RangeSheetReferenceType.BOTH_ABSOLUTE;
       return ast;
 
     case AstNodeType.ARRAY:

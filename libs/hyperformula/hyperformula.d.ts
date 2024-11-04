@@ -1,19 +1,23 @@
 declare module "hyperformula/es/parser" {
   import {
-    Ast,
     AstNodeType,
     buildLexerConfig,
     CellAddress,
     Unparser,
   } from "hyperformula/typings/parser";
 
-  export { Ast, AstNodeType, CellAddress, Unparser, buildLexerConfig };
+  export { AstNodeType, CellAddress, Unparser, buildLexerConfig };
 }
 
 declare module "hyperformula/es/parser/Ast" {
-  import { RangeSheetReferenceType } from "hyperformula/typings/parser/Ast";
+  import type { Ast } from "hyperformula/typings/parser/Ast";
+  import {
+    AstNodeType,
+    RangeSheetReferenceType,
+  } from "hyperformula/typings/parser/Ast";
 
-  export { RangeSheetReferenceType };
+  export { AstNodeType, RangeSheetReferenceType };
+  export type { Ast };
 }
 
 declare module "hyperformula/es/DependencyGraph/FormulaCellVertex" {
