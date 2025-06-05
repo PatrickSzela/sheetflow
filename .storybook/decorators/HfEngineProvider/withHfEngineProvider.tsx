@@ -1,8 +1,8 @@
 import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import { NamedExpressions, SheetFlowProvider, Sheets } from "@/libs/sheetflow";
 import { groupPrefixedKeys } from "@/libs/utils";
-import { ReactRenderer } from "@storybook/react";
-import { DecoratorFunction } from "@storybook/types";
+import { ReactRenderer } from "@storybook/react-vite";
+import { DecoratorFunction } from "storybook/internal/types";
 import { useMemo } from "react";
 import { HfEngineProviderProps } from "./HfEngineProvider.args";
 

@@ -1,5 +1,5 @@
 import { useCreatePlacedAst } from "@/libs/sheetflow";
-import { ArgTypes } from "@storybook/react";
+import { ArgTypes } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
 
 export interface FormulaControlsProps {

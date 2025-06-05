@@ -19,7 +19,7 @@ import {
   buildNumberAst,
   buildStringAst,
 } from "@/libs/sheetflow";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { AstNode, AstNodeData } from "./AstNode";
 
 // FIXME: figure out why `satisfies Meta<MetaArgs>` causes items from AstNodeData to be ignored. This probably has something to do with AstWithChildren...

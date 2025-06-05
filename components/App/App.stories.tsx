@@ -1,5 +1,5 @@
 import { withFullscreen } from "@/.storybook/decorators";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { App } from "./App";
 
 const meta = {

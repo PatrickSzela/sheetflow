@@ -7,7 +7,7 @@ import {
   withReactFlowProvider,
 } from "@/.storybook/decorators";
 import { groupPrefixedKeys, PrefixKeys } from "@/libs/utils";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useMemo } from "react";
 import { FormulaEditor, FormulaEditorProps } from "./FormulaEditor";
 

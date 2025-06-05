@@ -8,7 +8,7 @@ import {
   NodeWrapperArgTypes,
   NodeWrapperProps,
 } from "@/.storybook/wrappers";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import { BaseNode, BaseNodeData } from "./BaseNode";
 
 // FIXME: figure out why `satisfies Meta<MetaArgs>` causes items from BaseNodeData to be ignored...

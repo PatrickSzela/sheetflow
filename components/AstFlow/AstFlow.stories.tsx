@@ -13,7 +13,7 @@ import {
 } from "@/.storybook/helpers";
 import { useInjectValuesToFlow } from "@/components/FormulaEditor";
 import { usePlacedAstData } from "@/libs/sheetflow";
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
 import React from "react";
 import { AstFlow, AstFlowProps } from "./AstFlow";
 
