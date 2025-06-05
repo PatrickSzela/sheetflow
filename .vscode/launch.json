@@ -8,7 +8,7 @@
       "name": "Start Storybook",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm run storybook -- --no-open",
+      "command": "pnpm run storybook --no-open",
       "internalConsoleOptions": "openOnFirstSessionStart",
       // "serverReadyAction": {
       //   "pattern": "Local:.+(https?://[^:]+:[0-9]+)",

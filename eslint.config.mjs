@@ -1,10 +1,9 @@
 import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
-import reactCompiler from "eslint-plugin-react-compiler";
+import storybook from "eslint-plugin-storybook";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import storybook from "eslint-plugin-storybook";
 
 export default tseslint.config(
   // Vite
@@ -44,16 +43,7 @@ export default tseslint.config(
         "error",
         { allowInterfaces: "always" },
       ],
-    },
-  },
-
-  // React Compiler
-  {
-    plugins: {
-      "react-compiler": reactCompiler,
-    },
-    rules: {
-      "react-compiler/react-compiler": "error",
+      "react-hooks/react-compiler": "error",
     },
   },
 

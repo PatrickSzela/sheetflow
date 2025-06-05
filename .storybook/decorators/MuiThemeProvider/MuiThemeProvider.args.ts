@@ -1,5 +1,4 @@
-import { PaletteColorName, theme } from "@/libs/mui";
-import createSimplePaletteValueFilter from "@mui/material/utils/createSimplePaletteValueFilter";
+import { PaletteColorName, simplePaletteValueFilter, theme } from "@/libs/mui";
 import { ArgTypes } from "@storybook/react";
 
 export const MuiThemeColorArgTypes: Partial<
@@ -8,7 +7,7 @@ export const MuiThemeColorArgTypes: Partial<
   color: {
     control: "select",
     options: Object.entries(theme.palette)
-      .filter(createSimplePaletteValueFilter())
+      .filter(simplePaletteValueFilter())
       .map(([color]) => color),
   },
 };

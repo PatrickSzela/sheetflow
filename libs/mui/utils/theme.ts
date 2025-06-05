@@ -2,11 +2,11 @@ import {
   Interpolation,
   Palette,
   PaletteColor,
+  PaletteColorOptions,
   Shadows,
   SupportedColorScheme,
   Theme,
 } from "@mui/material";
-import createSimplePaletteValueFilter from "@mui/material/utils/createSimplePaletteValueFilter";
 import { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
 import { colorizeBoxShadow, generateColorOverlay } from "./css";
 
@@ -22,9 +22,16 @@ export type PaletteOverlays = {
   selected: string;
 };
 
+export const simplePaletteValueFilter =
+  () =>
+  ([, value]: [unknown, PaletteColorOptions]) =>
+    typeof value === "object" &&
+    "main" in value &&
+    typeof value.main === "string";
+
 export const extractPaletteColorNames = (theme: Theme): PaletteColorNames => {
   return Object.entries(theme.palette)
-    .filter(createSimplePaletteValueFilter())
+    .filter(simplePaletteValueFilter())
     .map(([color]) => color) as UnionToTuple<PaletteColorName>;
 };
 
@@ -36,7 +43,7 @@ export const generatePaletteVariants = <TProps>(
   }[]
 ) => {
   return Object.entries(theme.palette)
-    .filter(createSimplePaletteValueFilter())
+    .filter(simplePaletteValueFilter())
     .map(([color]) => mapper(color as PaletteColorName))
     .flat();
 };

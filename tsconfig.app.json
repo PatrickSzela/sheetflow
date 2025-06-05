@@ -17,6 +17,7 @@
 
     /* Linting */
     "strict": true,
+    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "noImplicitOverride": true,
@@ -25,7 +26,7 @@
 
     "paths": {
       "@/*": ["./*"]
-    }
+    },
   },
   "include": ["./", "./.storybook/**/*"]
 }

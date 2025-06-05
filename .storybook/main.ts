@@ -15,12 +15,16 @@ const config: StorybookConfig = {
       strictMode: true,
     },
   },
+  core: {
+    disableTelemetry: true,
+  },
   docs: {},
   staticDirs: ["../public"],
   typescript: {
     // based on https://storybook.js.org/recipes/@mui/material
     reactDocgen: "react-docgen-typescript",
     reactDocgenTypescriptOptions: {
+      EXPERIMENTAL_useWatchProgram: true,
       compilerOptions: {
         allowSyntheticDefaultImports: false,
         esModuleInterop: false,
