@@ -7,11 +7,7 @@ import {
   type SupportedColorScheme,
   type Theme,
 } from "@mui/material";
-import {
-  type ConditionalPick,
-  type Simplify,
-  type UnionToTuple,
-} from "type-fest";
+import type { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
 import { colorizeBoxShadow, generateColorOverlay } from "./css";
 
 export type PaletteColorName = Simplify<

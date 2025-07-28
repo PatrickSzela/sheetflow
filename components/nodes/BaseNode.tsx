@@ -20,7 +20,7 @@ import {
   type Node,
   type NodeProps,
 } from "@xyflow/react";
-import { type SetOptional } from "type-fest";
+import type { SetOptional } from "type-fest";
 import {
   generatePaletteVariants,
   type PaletteColorName,
