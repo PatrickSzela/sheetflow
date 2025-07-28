@@ -1,20 +1,20 @@
 import EventEmitter from "events";
-import TypedEmitter from "typed-emitter";
-import { Ast, isEmptyAst } from "./ast";
-import { CellContent } from "./cell";
-import { buildCellAddress, CellAddress } from "./cellAddress";
-import { CellRange } from "./cellRange";
-import { buildEmptyCellValue, CellValue, Value } from "./cellValue";
-import { Change } from "./change";
+import type TypedEmitter from "typed-emitter";
+import { isEmptyAst, type Ast } from "./ast";
+import { type CellContent } from "./cell";
+import { buildCellAddress, type CellAddress } from "./cellAddress";
+import { type CellRange } from "./cellRange";
+import { buildEmptyCellValue, type CellValue, type Value } from "./cellValue";
+import { type Change } from "./change";
 import { flattenAst } from "./flattenAst";
-import { NamedExpression, NamedExpressions } from "./namedExpression";
+import { type NamedExpression, type NamedExpressions } from "./namedExpression";
 import { PlacedAst } from "./placedAst";
-import { Reference } from "./reference";
-import { Sheet, Sheets } from "./sheet";
+import { type Reference } from "./reference";
+import { type Sheet, type Sheets } from "./sheet";
 import {
+  SpecialSheets,
   getMissingSheetsAndNamedExpressions,
   getPrecedents,
-  SpecialSheets,
 } from "./utils";
 
 export type Events = {
@@ -55,7 +55,7 @@ export abstract class SheetFlowEngine {
   static build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: unknown
+    config?: unknown,
   ): SheetFlowEngine {
     throw new Error("Called `build` function on an abstract class");
   }
@@ -71,7 +71,7 @@ export abstract class SheetFlowEngine {
       for (const uuid of Object.keys(this.placedAsts)) {
         if (this.isPlacedAstPartOfChanges(uuid, changes)) {
           this.placedAsts[uuid].updateValues(
-            this.calculatePlacedAstAsRecord(uuid)
+            this.calculatePlacedAstAsRecord(uuid),
           );
         }
       }
@@ -126,12 +126,12 @@ export abstract class SheetFlowEngine {
   abstract setNamedExpression(
     name: string,
     content: CellContent,
-    scope?: string
+    scope?: string,
   ): void;
   abstract addNamedExpression(
     name: string,
     content?: CellContent,
-    scope?: string
+    scope?: string,
   ): void;
   abstract removeNamedExpression(name: string, scope?: string): void;
   abstract doesNamedExpressionExists(name: string, scope?: string): boolean;
@@ -223,8 +223,8 @@ export abstract class SheetFlowEngine {
         ? buildEmptyCellValue({ value: null })
         : this.calculateFormula(
             this.astToFormula(ast),
-            SpecialSheets.PLACED_ASTS
-          )
+            SpecialSheets.PLACED_ASTS,
+          ),
     );
   }
 
@@ -243,7 +243,7 @@ export abstract class SheetFlowEngine {
   updatePlacedAstWithFormula(
     uuid: string,
     formula: string,
-    scope: string
+    scope: string,
   ): PlacedAst {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
@@ -258,7 +258,7 @@ export abstract class SheetFlowEngine {
     const ast = this.getAstFromFormula(
       crypto.randomUUID(),
       normalizedFormula,
-      scope
+      scope,
     );
     const flatAst = flattenAst(ast);
     const missing = getMissingSheetsAndNamedExpressions(this, flatAst);

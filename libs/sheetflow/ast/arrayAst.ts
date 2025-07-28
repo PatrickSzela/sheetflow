@@ -1,12 +1,12 @@
 import {
-  Ast,
   AstNodeSubtype,
   AstNodeType,
-  AstWithValue,
   buildAst,
-  BuildFn,
   isAst,
   isAstWithValue,
+  type Ast,
+  type AstWithValue,
+  type BuildFn,
 } from "./ast";
 
 export interface ArrayAst extends AstWithValue<AstNodeSubtype.ARRAY, Ast[][]> {}

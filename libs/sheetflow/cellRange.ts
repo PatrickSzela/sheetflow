@@ -1,7 +1,7 @@
 import {
   areCellAddressesEqual,
-  CellAddress,
   isCellAddress,
+  type CellAddress,
 } from "./cellAddress";
 
 export interface CellRange {
@@ -11,7 +11,7 @@ export interface CellRange {
 
 export const buildCellRange = (
   start: CellAddress,
-  end: CellAddress
+  end: CellAddress,
 ): CellRange => ({
   start,
   end,
@@ -24,7 +24,7 @@ export const isCellRange = (range: unknown): range is CellRange => {
 
 export const areCellRangesEqual = (
   range1: CellRange,
-  range2: CellRange
+  range2: CellRange,
 ): boolean => {
   return (
     areCellAddressesEqual(range1.start, range2.start) &&

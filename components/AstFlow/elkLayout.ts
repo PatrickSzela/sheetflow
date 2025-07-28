@@ -1,5 +1,9 @@
-import { Edge, Node } from "@xyflow/react";
-import Elk, { ElkExtendedEdge, ElkNode, LayoutOptions } from "elkjs";
+import { type Edge, type Node } from "@xyflow/react";
+import Elk, {
+  type ElkExtendedEdge,
+  type ElkNode,
+  type LayoutOptions,
+} from "elkjs";
 
 const elk = new Elk();
 
@@ -19,7 +23,7 @@ const elkLayoutOptions: LayoutOptions = {
 };
 
 export const generateElkNodes = <TNode extends Node>(
-  nodes: TNode[]
+  nodes: TNode[],
 ): ElkNode[] => {
   return nodes.map((i) => ({
     id: i.id,
@@ -32,7 +36,7 @@ export const generateElkNodes = <TNode extends Node>(
 };
 
 export const generateElkEdges = <TEdge extends Edge>(
-  edges: TEdge[]
+  edges: TEdge[],
 ): ElkExtendedEdge[] => {
   return edges.map((i) => ({
     id: i.id,
@@ -43,7 +47,7 @@ export const generateElkEdges = <TEdge extends Edge>(
 
 export const generateElkGraph = <TNode extends Node, TEdge extends Edge>(
   nodes: TNode[],
-  edges: TEdge[]
+  edges: TEdge[],
 ): ElkNode => {
   return {
     id: "root",
@@ -55,7 +59,7 @@ export const generateElkGraph = <TNode extends Node, TEdge extends Edge>(
 
 export const generateElkLayout = async <TNode extends Node, TEdge extends Edge>(
   nodes: TNode[],
-  edges: TEdge[]
+  edges: TEdge[],
 ): Promise<TNode[]> => {
   const graph = generateElkGraph(nodes, edges);
 

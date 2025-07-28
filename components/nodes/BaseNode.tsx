@@ -1,28 +1,36 @@
-import { generatePaletteVariants, PaletteColorName } from "@/libs/mui/utils";
+import React, { useMemo } from "react";
 import {
   Box,
   Divider,
-  styled,
   Typography,
+  styled,
   typographyClasses,
   useTheme,
 } from "@mui/material";
-import Card, { CardProps } from "@mui/material/Card";
+import Card, { type CardProps } from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader, {
   cardHeaderClasses,
-  CardHeaderProps,
+  type CardHeaderProps,
 } from "@mui/material/CardHeader";
 import { useDefaultProps } from "@mui/material/DefaultPropsProvider";
-import { HandleProps, Node, NodeProps, Position } from "@xyflow/react";
-import React, { useMemo } from "react";
-import { SetOptional } from "type-fest";
+import {
+  Position,
+  type HandleProps,
+  type Node,
+  type NodeProps,
+} from "@xyflow/react";
+import { type SetOptional } from "type-fest";
+import {
+  generatePaletteVariants,
+  type PaletteColorName,
+} from "@/libs/mui/utils";
 import { Handle } from "./Handle";
 import {
-  CommonNodeData,
-  NodeSettings,
   nodeSettingToCss,
-  NodeValue,
+  type CommonNodeData,
+  type NodeSettings,
+  type NodeValue,
 } from "./utils";
 
 export type BaseNodeData = CommonNodeData & {

@@ -1,9 +1,9 @@
 import EventEmitter from "events";
-import TypedEventEmitter from "typed-emitter";
-import { Ast, buildEmptyAst } from "./ast";
-import { CellAddress } from "./cellAddress";
-import { Value } from "./cellValue";
-import { Reference } from "./reference";
+import type TypedEventEmitter from "typed-emitter";
+import { buildEmptyAst, type Ast } from "./ast";
+import { type CellAddress } from "./cellAddress";
+import { type Value } from "./cellValue";
+import { type Reference } from "./reference";
 
 export type MissingReferences = {
   sheets: string[];
@@ -41,7 +41,7 @@ export class PlacedAst {
     uuid: string,
     address: CellAddress,
     data?: PlacedAstData,
-    values?: PlacedAstValues
+    values?: PlacedAstValues,
   ) {
     this.uuid = uuid;
     this.address = address;

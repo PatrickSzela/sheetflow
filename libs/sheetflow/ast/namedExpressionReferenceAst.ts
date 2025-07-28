@@ -1,10 +1,10 @@
 import {
   AstNodeSubtype,
   AstNodeType,
-  AstWithSubtype,
   buildAst,
-  BuildFn,
   isAst,
+  type AstWithSubtype,
+  type BuildFn,
 } from "./ast";
 
 export interface NamedExpressionReferenceAst
@@ -25,7 +25,7 @@ export const buildNamedExpressionReferenceAst: BuildFn<
   });
 
 export const isNamedExpressionReferenceAst = (
-  ast: unknown
+  ast: unknown,
 ): ast is NamedExpressionReferenceAst => {
   if (!isAst(ast)) return false;
 

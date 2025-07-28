@@ -1,11 +1,11 @@
 import {
-  Ast,
   AstNodeType,
-  AstWithChildren,
+  Operators,
   buildAst,
-  BuildFn,
   isAstWithChildren,
-  Operators
+  type Ast,
+  type AstWithChildren,
+  type BuildFn,
 } from "./ast";
 
 export interface BinaryExpressionAst
@@ -19,7 +19,9 @@ export const buildBinaryExpressionAst: BuildFn<BinaryExpressionAst> = (args) =>
     ...args,
   });
 
-export const isBinaryExpressionAst = (ast: unknown): ast is BinaryExpressionAst => {
+export const isBinaryExpressionAst = (
+  ast: unknown,
+): ast is BinaryExpressionAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, operator, children } = ast as Partial<BinaryExpressionAst>;

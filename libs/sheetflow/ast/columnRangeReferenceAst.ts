@@ -2,16 +2,16 @@ import {
   AstNodeSubtype,
   AstNodeType,
   buildAst,
-  BuildFn,
   isAst,
-  RangeReferenceAst,
+  type BuildFn,
+  type RangeReferenceAst,
 } from "./ast";
 
 export interface ColumnRangeReferenceAst
   extends RangeReferenceAst<AstNodeSubtype.COLUMN_RANGE, number> {}
 
 export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = (
-  args
+  args,
 ) =>
   buildAst({
     type: AstNodeType.REFERENCE,
@@ -20,7 +20,7 @@ export const buildColumnRangeReferenceAst: BuildFn<ColumnRangeReferenceAst> = (
   });
 
 export const isColumnRangeReferenceAst = (
-  ast: unknown
+  ast: unknown,
 ): ast is ColumnRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

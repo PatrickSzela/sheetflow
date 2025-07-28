@@ -1,19 +1,19 @@
-import { CellAddress } from "../cellAddress";
+import { type CellAddress } from "../cellAddress";
 import { isCellRange } from "../cellRange";
 import {
   AstNodeSubtype,
   AstNodeType,
   buildAst,
-  BuildFn,
   isAst,
-  RangeReferenceAst,
+  type BuildFn,
+  type RangeReferenceAst,
 } from "./ast";
 
 export interface CellRangeReferenceAst
   extends RangeReferenceAst<AstNodeSubtype.CELL_RANGE, CellAddress> {}
 
 export const buildCellRangeReferenceAst: BuildFn<CellRangeReferenceAst> = (
-  args
+  args,
 ) =>
   buildAst({
     type: AstNodeType.REFERENCE,
@@ -22,7 +22,7 @@ export const buildCellRangeReferenceAst: BuildFn<CellRangeReferenceAst> = (
   });
 
 export const isCellRangeReferenceAst = (
-  ast: unknown
+  ast: unknown,
 ): ast is CellRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

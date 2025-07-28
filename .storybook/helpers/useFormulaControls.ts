@@ -1,11 +1,11 @@
-import { useCreatePlacedAst } from "@/libs/sheetflow";
-import { ArgTypes } from "@storybook/react-vite";
 import { useEffect, useState } from "react";
+import { type ArgTypes } from "@storybook/react-vite";
+import { useCreatePlacedAst } from "@/libs/sheetflow";
 
 export interface FormulaControlsProps {
   formula: string;
   scope: string;
-};
+}
 
 export const FormulaControlsArgTypes: ArgTypes<FormulaControlsProps> = {
   formula: { type: { name: "string", required: true } },
@@ -20,7 +20,7 @@ export const useFormulaControls = (args: FormulaControlsProps) => {
 
   const { placedAst, updateFormula } = useCreatePlacedAst(
     initFormula,
-    initScope
+    initScope,
   );
 
   useEffect(() => {

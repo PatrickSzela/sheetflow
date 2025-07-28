@@ -6,7 +6,7 @@ import { useSheetFlow } from "./useSheetFlow";
 
 export const useCreatePlacedAst = (
   initialFormula?: string,
-  initialScope?: string
+  initialScope?: string,
 ) => {
   const sf = useSheetFlow();
 

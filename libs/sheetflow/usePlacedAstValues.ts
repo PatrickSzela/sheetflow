@@ -1,5 +1,9 @@
 import { useCallback, useSyncExternalStore } from "react";
-import { PlacedAst, PlacedAstEvents, PlacedAstValues } from "./placedAst";
+import {
+  type PlacedAst,
+  type PlacedAstEvents,
+  type PlacedAstValues,
+} from "./placedAst";
 
 export const usePlacedAstValues = (placedAst: PlacedAst): PlacedAstValues => {
   const subscribe = useCallback(
@@ -10,7 +14,7 @@ export const usePlacedAstValues = (placedAst: PlacedAst): PlacedAstValues => {
         placedAst.off("valuesChanged", listener);
       };
     },
-    [placedAst]
+    [placedAst],
   );
 
   const getSnapshot = useCallback((): PlacedAstValues => {

@@ -1,5 +1,9 @@
-import { PaletteColorName, simplePaletteValueFilter, theme } from "@/libs/mui";
-import { ArgTypes } from "@storybook/react-vite";
+import { type ArgTypes } from "@storybook/react-vite";
+import {
+  simplePaletteValueFilter,
+  theme,
+  type PaletteColorName,
+} from "@/libs/mui";
 
 export const MuiThemeColorArgTypes: Partial<
   ArgTypes<{ color: PaletteColorName }>

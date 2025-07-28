@@ -1,11 +1,11 @@
-import { AstNode } from "@/components/nodes";
-import { Ast, flattenAst } from "@/libs/sheetflow";
+import { useCallback, useState } from "react";
 import {
-  OnSelectionChangeFunc,
   useOnSelectionChange,
   useReactFlow,
+  type OnSelectionChangeFunc,
 } from "@xyflow/react";
-import { useCallback, useState } from "react";
+import { type AstNode } from "@/components/nodes";
+import { flattenAst, type Ast } from "@/libs/sheetflow";
 
 export const useHighlightNodes = () => {
   const { updateNodeData } = useReactFlow<AstNode>();
@@ -36,7 +36,7 @@ export const useHighlightNodes = () => {
 
       setPrevHighlightedAst(arr);
     },
-    [prevHighlightedAst, updateNodeData]
+    [prevHighlightedAst, updateNodeData],
   );
 
   useOnSelectionChange({ onChange: onSelectionChange });

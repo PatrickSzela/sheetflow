@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { CellContent } from "./cell";
+import { type CellContent } from "./cell";
 import { isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
-import { Reference } from "./reference";
+import { type Reference } from "./reference";
 import { useSheetFlow } from "./useSheetFlow";
 
 export const useContent = (
   reference: Reference,
-  scope?: string
+  scope?: string,
 ): {
   content: CellContent | undefined;
   setContent: (content: CellContent) => void;
@@ -29,7 +29,7 @@ export const useContent = (
         sf.setNamedExpression(reference, content, scope);
       }
     },
-    [reference, scope, sf]
+    [reference, scope, sf],
   );
 
   useEffect(() => {

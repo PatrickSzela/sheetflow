@@ -1,10 +1,13 @@
+import {
+  type HyperFormula,
+  type SerializedNamedExpression,
+} from "hyperformula";
 import * as SheetFlow from "@/libs/sheetflow";
-import { HyperFormula, SerializedNamedExpression } from "hyperformula";
 import { getSheetIdWithError } from "./utils";
 
 export const remapNamedExpression = (
   hf: HyperFormula,
-  namedExpression: SerializedNamedExpression
+  namedExpression: SerializedNamedExpression,
 ): SheetFlow.NamedExpression => {
   const { name, expression, scope } = namedExpression;
 
@@ -19,7 +22,7 @@ export const remapNamedExpression = (
 
 export const unmapNamedExpression = (
   hf: HyperFormula,
-  namedExpression: SheetFlow.NamedExpression
+  namedExpression: SheetFlow.NamedExpression,
 ): SerializedNamedExpression => {
   const { name, expression, scope } = namedExpression;
 

@@ -1,4 +1,4 @@
-import { CellContent } from "./cell";
+import { type CellContent } from "./cell";
 
 export enum CellValueType {
   NUMBER = "NUMBER",
@@ -66,7 +66,7 @@ export const buildErrorCellValue: BuildFn<ErrorCellValue> = (args) => ({
 });
 
 export const buildCellValueFromCellContent = (
-  value: CellContent
+  value: CellContent,
 ): CellValue => {
   if (typeof value === "string") {
     return buildStringCellValue({ value });

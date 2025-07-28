@@ -1,10 +1,10 @@
 import {
-  Ast,
   AstNodeType,
-  AstWithChildren,
   buildAst,
-  BuildFn,
   isAstWithChildren,
+  type Ast,
+  type AstWithChildren,
+  type BuildFn,
 } from "./ast";
 
 export interface ParenthesisAst

@@ -1,4 +1,4 @@
-import { Ast, AstNodeType } from "./ast";
+import { AstNodeType, type Ast } from "./ast";
 
 export const flattenAst = (ast: Ast): Ast[] => {
   switch (ast.type) {

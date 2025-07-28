@@ -1,23 +1,23 @@
+import { useState } from "react";
 import Close from "@mui/icons-material/Close";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import {
   Box,
-  BoxProps,
-  capitalize,
   Drawer,
-  DrawerProps,
   IconButton,
   Stack,
-  StackProps,
-  styled,
   ToggleButton,
   ToggleButtonGroup,
   Toolbar,
   Typography,
+  capitalize,
+  styled,
   useMediaQuery,
   useTheme,
+  type BoxProps,
+  type DrawerProps,
+  type StackProps,
 } from "@mui/material";
-import { useState } from "react";
 
 export interface MainProps extends StackProps {
   slotProps?: {
@@ -100,12 +100,12 @@ export const Main = (props: MainProps) => {
   const isNotMobile = useMediaQuery(theme.breakpoints.up("sm"));
 
   const [layoutOptions, setLayoutOptions] = useState<LayoutOptions[]>(
-    isNotMobile ? [LayoutOptions.showDependencies] : []
+    isNotMobile ? [LayoutOptions.showDependencies] : [],
   );
 
   const closeDependencies = () => {
     setLayoutOptions((prev) =>
-      prev.filter((i) => i !== LayoutOptions.showDependencies)
+      prev.filter((i) => i !== LayoutOptions.showDependencies),
     );
   };
 

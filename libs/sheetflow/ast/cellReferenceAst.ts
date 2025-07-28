@@ -1,11 +1,11 @@
-import { CellAddress, isCellAddress } from "../cellAddress";
+import { isCellAddress, type CellAddress } from "../cellAddress";
 import {
   AstNodeSubtype,
   AstNodeType,
-  AstWithSubtype,
   buildAst,
-  BuildFn,
   isAst,
+  type AstWithSubtype,
+  type BuildFn,
 } from "./ast";
 
 export interface CellReferenceAst

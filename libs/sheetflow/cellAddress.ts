@@ -7,7 +7,7 @@ export interface CellAddress {
 export const buildCellAddress = (
   column: number,
   row: number,
-  sheet: string
+  sheet: string,
 ): CellAddress => ({
   column,
   row,
@@ -29,7 +29,7 @@ export const isCellAddress = (address: unknown): address is CellAddress => {
 
 export const areCellAddressesEqual = (
   address1: CellAddress,
-  address2: CellAddress
+  address2: CellAddress,
 ): boolean => {
   return (
     address1.column === address2.column &&
@@ -39,7 +39,7 @@ export const areCellAddressesEqual = (
 };
 
 export const extractDataFromStringAddress = (
-  address: string
+  address: string,
 ): { position: string; sheet: string } => {
   const [position, sheet] = address.split("!").reverse();
   return { position, sheet: (sheet ?? "").replaceAll("'", "") };

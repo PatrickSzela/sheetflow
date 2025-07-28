@@ -1,10 +1,10 @@
 import {
   AstNodeSubtype,
   AstNodeType,
-  AstWithValue,
   buildAst,
-  BuildFn,
   isAstWithValue,
+  type AstWithValue,
+  type BuildFn,
 } from "./ast";
 
 export interface NumberAst

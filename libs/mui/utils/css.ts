@@ -1,4 +1,4 @@
-import { ColorObject, decomposeColor } from "@mui/material";
+import { decomposeColor, type ColorObject } from "@mui/material";
 
 export const changeColorOpacity = (color: string, opacity: number) => {
   return `rgb(from ${color} r g b / ${opacity})`;
@@ -6,7 +6,7 @@ export const changeColorOpacity = (color: string, opacity: number) => {
 
 export const changeBoxShadowColor = (
   boxShadow: string,
-  colorCallback: (decomposedColor: ColorObject) => string
+  colorCallback: (decomposedColor: ColorObject) => string,
 ): string => {
   let shadows = boxShadow.split(/,(?![^(]*\))/g);
 
@@ -36,11 +36,11 @@ export const colorizeBoxShadow = (boxShadow: string, color: string): string => {
 export const colorizeBoxShadowWithCssVar = (
   boxShadow: string,
   color: string,
-  fallback?: string
+  fallback?: string,
 ): string => {
   return colorizeBoxShadow(
     boxShadow,
-    fallback ? `var(${color}, ${fallback})` : `var(${color})`
+    fallback ? `var(${color}, ${fallback})` : `var(${color})`,
   );
 };
 
@@ -52,7 +52,7 @@ export const generateColorOverlay = (color: string, opacity: number) => {
 export const mixColors = (
   color1: string,
   color2: string,
-  percentage: number
+  percentage: number,
 ) => {
   const p1 = `calc(100% - ${percentage} * 100%)`;
   const p2 = `calc(${percentage} * 100%)`;

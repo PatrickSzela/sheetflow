@@ -1,5 +1,5 @@
 import { styled } from "@mui/material";
-import { HandleProps, Handle as RFHandle } from "@xyflow/react";
+import { Handle as RFHandle, type HandleProps } from "@xyflow/react";
 
 const HandleRoot = styled(RFHandle)(() => ({
   backgroundColor: "var(--Node-handleColor)",

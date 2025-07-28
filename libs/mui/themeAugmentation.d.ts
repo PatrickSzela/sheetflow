@@ -1,5 +1,5 @@
 import { Shadows } from "@mui/material";
-import type {} from "@mui/material/themeCssVarsAugmentation";
+import { type } from "@mui/material/themeCssVarsAugmentation";
 import { PaletteColorName, PaletteOverlays } from "./utils";
 
 declare module "@mui/material/styles" {

@@ -1,17 +1,17 @@
-import { ArrayAst } from "./arrayAst";
-import { BinaryExpressionAst } from "./binaryExpressionAst";
-import { CellRangeReferenceAst } from "./cellRangeReferenceAst";
-import { CellReferenceAst } from "./cellReferenceAst";
-import { ColumnRangeReferenceAst } from "./columnRangeReferenceAst";
-import { EmptyAst } from "./emptyAst";
-import { ErrorAst } from "./errorAst";
-import { FunctionAst } from "./functionAst";
-import { NamedExpressionReferenceAst } from "./namedExpressionReferenceAst";
-import { NumberAst } from "./numberAst";
-import { ParenthesisAst } from "./parenthesisAst";
-import { RowRangeReferenceAst } from "./rowRangeReferenceAst";
-import { StringAst } from "./stringAst";
-import { UnaryExpressionAst } from "./unaryExpressionAst";
+import { type ArrayAst } from "./arrayAst";
+import { type BinaryExpressionAst } from "./binaryExpressionAst";
+import { type CellRangeReferenceAst } from "./cellRangeReferenceAst";
+import { type CellReferenceAst } from "./cellReferenceAst";
+import { type ColumnRangeReferenceAst } from "./columnRangeReferenceAst";
+import { type EmptyAst } from "./emptyAst";
+import { type ErrorAst } from "./errorAst";
+import { type FunctionAst } from "./functionAst";
+import { type NamedExpressionReferenceAst } from "./namedExpressionReferenceAst";
+import { type NumberAst } from "./numberAst";
+import { type ParenthesisAst } from "./parenthesisAst";
+import { type RowRangeReferenceAst } from "./rowRangeReferenceAst";
+import { type StringAst } from "./stringAst";
+import { type UnaryExpressionAst } from "./unaryExpressionAst";
 
 export type Ast =
   | EmptyAst
@@ -92,7 +92,7 @@ type BuildBaseAstFnArgs<T extends AstBase> = Omit<T, "id"> &
 
 export const buildAst = <
   T extends AstBase,
-  TArgs extends BuildBaseAstFnArgs<T>
+  TArgs extends BuildBaseAstFnArgs<T>,
 >({
   id,
   ...args
@@ -100,7 +100,7 @@ export const buildAst = <
   ({
     id: id ?? crypto.randomUUID(),
     ...args,
-  } as unknown as T);
+  }) as unknown as T;
 
 export const isAst = (ast: unknown): ast is AstBase => {
   if (typeof ast !== "object") return false;
@@ -118,14 +118,14 @@ export const isAst = (ast: unknown): ast is AstBase => {
 
 export interface AstWithSubtype<
   TType extends AstNodeType,
-  TSubtype extends AstNodeSubtype
+  TSubtype extends AstNodeSubtype,
 > extends AstBase<TType> {
   subtype: TSubtype;
 }
 
 export interface AstWithChildren<
   TType extends AstNodeType,
-  TChild extends Ast[]
+  TChild extends Ast[],
 > extends AstBase<TType> {
   children: TChild;
   requirements: {
@@ -134,7 +134,7 @@ export interface AstWithChildren<
   };
 }
 export const isAstWithChildren = (
-  ast: unknown
+  ast: unknown,
 ): ast is AstWithChildren<AstNodeType, Ast[]> => {
   if (!isAst(ast)) return false;
 
@@ -158,11 +158,13 @@ export interface AstWithValue<TSubtype extends AstNodeSubtype, TValue>
 }
 
 export const isAstWithValue = (
-  ast: unknown
+  ast: unknown,
 ): ast is AstWithValue<AstNodeSubtype, unknown> => {
   if (!isAst(ast)) return false;
 
-  const { type, subtype } = ast as Partial<AstWithValue<AstNodeSubtype, unknown>>;
+  const { type, subtype } = ast as Partial<
+    AstWithValue<AstNodeSubtype, unknown>
+  >;
 
   return (
     type === AstNodeType.VALUE &&

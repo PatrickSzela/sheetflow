@@ -1,18 +1,9 @@
-import { AstFlow, AstFlowProps } from "@/components/AstFlow";
-import { Overlay } from "@/components/Overlay";
-import { PaletteColorName } from "@/libs/mui";
-import {
-  MissingReferences,
-  useCreatePlacedAst,
-  usePlacedAstData,
-  useSheetFlow,
-  useUpdateFormulaDebounced,
-} from "@/libs/sheetflow";
+import { useCallback, useEffect } from "react";
 import {
   CheckCircle,
   Error as ErrorIcon,
   Pending,
-  SvgIconComponent,
+  type SvgIconComponent,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -25,7 +16,16 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect } from "react";
+import { AstFlow, type AstFlowProps } from "@/components/AstFlow";
+import { Overlay } from "@/components/Overlay";
+import { type PaletteColorName } from "@/libs/mui";
+import {
+  useCreatePlacedAst,
+  usePlacedAstData,
+  useSheetFlow,
+  useUpdateFormulaDebounced,
+  type MissingReferences,
+} from "@/libs/sheetflow";
 import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 type State = "success" | "warning" | "error" | "loading";
@@ -41,7 +41,7 @@ const getEditorData = (
   loading: boolean,
   error: string | undefined,
   missing: MissingReferences,
-  addMissing: () => void
+  addMissing: () => void,
 ) => {
   let state: State = "success";
   let color: PaletteColorName;
@@ -127,7 +127,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     loading,
     error,
     missing,
-    addMissing
+    addMissing,
   );
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented

@@ -8,7 +8,7 @@ export const usePlacedAst = (uuid: string) => {
     (formula: string, scope: string) => {
       sf.updatePlacedAstWithFormula(uuid, formula, scope);
     },
-    [sf, uuid]
+    [sf, uuid],
   );
 
   return { updateFormula, placedAst: sf.getPlacedAst(uuid) };

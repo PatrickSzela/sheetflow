@@ -1,9 +1,13 @@
-import { CellContent } from "./cell";
-import { buildCellAddress, CellAddress, isCellAddress } from "./cellAddress";
+import { type CellContent } from "./cell";
+import {
+  buildCellAddress,
+  isCellAddress,
+  type CellAddress,
+} from "./cellAddress";
 import { isCellRange } from "./cellRange";
-import { NamedExpression, NamedExpressions } from "./namedExpression";
-import { Reference } from "./reference";
-import { SheetFlowEngine } from "./sheetflowEngine";
+import { type NamedExpression, type NamedExpressions } from "./namedExpression";
+import { type Reference } from "./reference";
+import { type SheetFlowEngine } from "./sheetflowEngine";
 
 export type Sheet = CellContent[][];
 export type Sheets = Record<string, Sheet>;
@@ -17,7 +21,7 @@ export type GroupedCells = Record<
 
 export const groupReferencesBySheet = (
   sf: SheetFlowEngine,
-  references: Reference[]
+  references: Reference[],
 ): {
   cells: GroupedCells;
   namedExpressions: NamedExpressions;

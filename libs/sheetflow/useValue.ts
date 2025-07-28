@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { areCellAddressesEqual, isCellAddress } from "./cellAddress";
 import { isCellRange } from "./cellRange";
-import { Value } from "./cellValue";
+import { type Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
-import { Reference } from "./reference";
-import { Events } from "./sheetflowEngine";
+import { type Reference } from "./reference";
+import { type Events } from "./sheetflowEngine";
 import { useSheetFlow } from "./useSheetFlow";
 
 export const useValue = (reference: Reference): Value | undefined => {
@@ -40,7 +40,7 @@ export const useValue = (reference: Reference): Value | undefined => {
     setValue(
       isCellAddress(reference)
         ? sf.getCellValue(reference)
-        : sf.getNamedExpressionValue(reference)
+        : sf.getNamedExpressionValue(reference),
     );
 
     sf.on("valuesChanged", onValuesChanged);

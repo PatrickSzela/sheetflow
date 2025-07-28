@@ -1,11 +1,11 @@
 import {
-  Ast,
   AstNodeType,
-  AstWithChildren,
-  buildAst,
-  BuildFn,
-  isAstWithChildren,
   Operators,
+  buildAst,
+  isAstWithChildren,
+  type Ast,
+  type AstWithChildren,
+  type BuildFn,
 } from "./ast";
 
 export interface UnaryExpressionAst
@@ -20,7 +20,9 @@ export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) =>
     ...args,
   });
 
-export const isUnaryExpressionAst = (ast: unknown): ast is UnaryExpressionAst => {
+export const isUnaryExpressionAst = (
+  ast: unknown,
+): ast is UnaryExpressionAst => {
   if (!isAstWithChildren(ast)) return false;
 
   const { type, operator, operatorOnRight, children } =

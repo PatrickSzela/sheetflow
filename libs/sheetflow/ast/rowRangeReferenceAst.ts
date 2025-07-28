@@ -2,16 +2,16 @@ import {
   AstNodeSubtype,
   AstNodeType,
   buildAst,
-  BuildFn,
   isAst,
-  RangeReferenceAst,
+  type BuildFn,
+  type RangeReferenceAst,
 } from "./ast";
 
 export interface RowRangeReferenceAst
   extends RangeReferenceAst<AstNodeSubtype.ROW_RANGE, number> {}
 
 export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = (
-  args
+  args,
 ) =>
   buildAst({
     type: AstNodeType.REFERENCE,
@@ -20,7 +20,7 @@ export const buildRowRangeReferenceAst: BuildFn<RowRangeReferenceAst> = (
   });
 
 export const isRowRangeReferenceAst = (
-  ast: unknown
+  ast: unknown,
 ): ast is RowRangeReferenceAst => {
   if (!isAst(ast)) return false;
 

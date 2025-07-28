@@ -1,10 +1,12 @@
 import {
   outlinedInputClasses,
-  OutlinedInputProps,
-  PaperProps,
+  type OutlinedInputProps,
+  type PaperProps,
 } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
+
 import type {} from "./themeAugmentation.d.ts";
+
 import { enhanceTheme, generatePaletteVariants, mixColors } from "./utils";
 
 const base = createTheme({
@@ -61,7 +63,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
                   backgroundColor: mixColors(
                     "transparent",
                     palette.main,
-                    action.hoverOpacity
+                    action.hoverOpacity,
                   ),
 
                   [`& .${outlinedInputClasses.notchedOutline}`]: {
@@ -73,7 +75,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
                   backgroundColor: mixColors(
                     "transparent",
                     palette.main,
-                    action.focusOpacity
+                    action.focusOpacity,
                   ),
 
                   [`& .${outlinedInputClasses.notchedOutline}`]: {

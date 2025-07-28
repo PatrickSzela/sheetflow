@@ -1,6 +1,6 @@
-import { CellContent, Reference, useContent } from "@/libs/sheetflow";
-import { TextField, TextFieldProps } from "@mui/material";
-import { ChangeEventHandler, useCallback } from "react";
+import { useCallback, type ChangeEventHandler } from "react";
+import { TextField, type TextFieldProps } from "@mui/material";
+import { useContent, type CellContent, type Reference } from "@/libs/sheetflow";
 
 export type ContentTextFieldProps = {
   reference: Reference;
@@ -27,7 +27,7 @@ export const ContentTextField = (props: ContentTextFieldProps) => {
 
       setContent(newValue);
     },
-    [setContent]
+    [setContent],
   );
 
   return <TextField {...restProps} onChange={onChange} value={content ?? ""} />;

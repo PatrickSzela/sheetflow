@@ -1,4 +1,4 @@
-import { CellContent } from "./cell";
+import { type CellContent } from "./cell";
 
 export type NamedExpression = {
   name: string;
@@ -9,7 +9,7 @@ export type NamedExpression = {
 export type NamedExpressions = NamedExpression[];
 
 export const isNamedExpression = (
-  namedExpression: unknown
+  namedExpression: unknown,
 ): namedExpression is NamedExpression => {
   const { expression, name, scope } = namedExpression as NamedExpression;
 

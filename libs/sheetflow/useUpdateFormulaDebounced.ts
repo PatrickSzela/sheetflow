@@ -1,12 +1,12 @@
-import { useSheetFlow } from "@/libs/sheetflow/useSheetFlow";
-import { useDebouncedCallback } from "@mantine/hooks";
 import { useCallback, useRef, useState, useTransition } from "react";
-import { PlacedAst } from "./placedAst";
+import { useDebouncedCallback } from "@mantine/hooks";
+import { useSheetFlow } from "@/libs/sheetflow/useSheetFlow";
+import { type PlacedAst } from "./placedAst";
 import { usePlacedAst } from "./usePlacedAst";
 
 export const useUpdateFormulaDebounced = (
   placedAst: PlacedAst,
-  delay = 300
+  delay = 300,
 ) => {
   const sf = useSheetFlow();
   const { updateFormula } = usePlacedAst(placedAst.uuid);
@@ -51,7 +51,7 @@ export const useUpdateFormulaDebounced = (
       setLoading(true);
       debounce(formula);
     },
-    [debounce, sf]
+    [debounce, sf],
   );
 
   return {

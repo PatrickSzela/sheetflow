@@ -10,7 +10,7 @@ declare module "hyperformula/es/parser" {
 }
 
 declare module "hyperformula/es/parser/Ast" {
-  import type { Ast } from "hyperformula/typings/parser/Ast";
+  import { type Ast } from "hyperformula/typings/parser/Ast";
   import {
     AstNodeType,
     RangeSheetReferenceType,

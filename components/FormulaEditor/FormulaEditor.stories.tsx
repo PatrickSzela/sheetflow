@@ -1,15 +1,15 @@
+import { useMemo } from "react";
+import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
-  HfEngineProviderArgs,
   HfEngineProviderArgTypes,
-  HfEngineProviderProps,
+  HfEngineProviderArgs,
   withFullscreen,
   withHfEngineProvider,
   withReactFlowProvider,
+  type HfEngineProviderProps,
 } from "@/.storybook/decorators";
-import { groupPrefixedKeys, PrefixKeys } from "@/libs/utils";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useMemo } from "react";
-import { FormulaEditor, FormulaEditorProps } from "./FormulaEditor";
+import { groupPrefixedKeys, type PrefixKeys } from "@/libs/utils";
+import { FormulaEditor, type FormulaEditorProps } from "./FormulaEditor";
 
 // FIXME: fix changing scope not rerendering component
 

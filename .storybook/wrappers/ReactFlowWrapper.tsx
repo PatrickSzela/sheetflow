@@ -1,15 +1,16 @@
 import { useColorScheme } from "@mui/material";
 import {
   Background,
-  Edge,
-  Node,
   ReactFlow,
-  ReactFlowProps,
+  type Edge,
+  type Node,
+  type ReactFlowProps,
 } from "@xyflow/react";
+
 import "@xyflow/react/dist/style.css";
 
 export const ReactFlowWrapper = <TNode extends Node, TEdge extends Edge>(
-  props: ReactFlowProps<TNode, TEdge>
+  props: ReactFlowProps<TNode, TEdge>,
 ) => {
   const { children, ...rest } = props;
 

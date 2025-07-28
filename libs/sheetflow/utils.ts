@@ -1,15 +1,15 @@
 import {
-  Ast,
   AstNodeSubtype,
   AstNodeType,
   isErrorAst,
   isNamedExpressionReferenceAst,
+  type Ast,
 } from "./ast";
 import { extractDataFromStringAddress } from "./cellAddress";
 import { buildCellRange } from "./cellRange";
-import { MissingReferences } from "./placedAst";
-import { Reference } from "./reference";
-import { SheetFlowEngine } from "./sheetflowEngine";
+import { type MissingReferences } from "./placedAst";
+import { type Reference } from "./reference";
+import { type SheetFlowEngine } from "./sheetflowEngine";
 
 export enum SpecialSheets {
   PLACED_ASTS = "SheetFlow_Placed_ASTs",
@@ -18,7 +18,7 @@ export enum SpecialSheets {
 // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
 export const getPrecedents = (
   sf: SheetFlowEngine,
-  flatAst: Ast[]
+  flatAst: Ast[],
 ): Reference[] => {
   const precedents: Record<string, Reference> = {};
 
@@ -67,7 +67,7 @@ export const getPrecedents = (
 
 export const getMissingSheetsAndNamedExpressions = (
   sf: SheetFlowEngine,
-  flatAst: Ast[]
+  flatAst: Ast[],
 ): MissingReferences => {
   const namedExpressions = new Set<string>();
   const sheets = new Set<string>();

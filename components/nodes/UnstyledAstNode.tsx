@@ -1,12 +1,12 @@
-import { AstNodeProps } from "@/components/nodes/AstNode";
+import React from "react";
+import { Handle, Position } from "@xyflow/react";
+import { type AstNodeProps } from "@/components/nodes/AstNode";
 import {
   getPossibleChildrenCount,
-  NodeSettings,
   nodeSettingToCss,
+  type NodeSettings,
 } from "@/components/nodes/utils";
 import { printCellValue } from "@/libs/sheetflow";
-import { Handle, Position } from "@xyflow/react";
-import React from "react";
 
 // TODO: remove
 

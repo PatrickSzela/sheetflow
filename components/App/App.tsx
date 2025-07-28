@@ -1,17 +1,22 @@
+import { ReactFlowProvider } from "@xyflow/react";
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaEditor } from "@/components/FormulaEditor";
 import { Main } from "@/components/Main";
-import { HyperFormulaConfig, HyperFormulaEngine } from "@/libs/hyperformula";
 import {
-  groupReferencesBySheet,
+  HyperFormulaEngine,
+  type HyperFormulaConfig,
+} from "@/libs/hyperformula";
+import {
   SheetFlowProvider,
-  Sheets,
+  groupReferencesBySheet,
   usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
+  type Sheets,
 } from "@/libs/sheetflow";
-import { ReactFlowProvider } from "@xyflow/react";
+
 import "@xyflow/react/dist/style.css";
+
 import { useMemo, useState } from "react";
 
 const options: HyperFormulaConfig = {

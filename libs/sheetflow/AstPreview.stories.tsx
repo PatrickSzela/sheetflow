@@ -1,19 +1,19 @@
+import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
   HfEngineProviderArgTypes,
   HfEngineProviderArgs,
-  HfEngineProviderProps,
   withHfEngineProvider,
+  type HfEngineProviderProps,
 } from "@/.storybook/decorators";
 import {
   FormulaControlsArgTypes,
-  FormulaControlsProps,
   useFormulaControls,
+  type FormulaControlsProps,
 } from "@/.storybook/helpers";
 import {
   ObjectInspectorWrapper,
-  ObjectInspectorWrapperProps,
+  type ObjectInspectorWrapperProps,
 } from "@/.storybook/wrappers";
-import type { Meta, StoryObj } from "@storybook/react-vite";
 
 type MetaArgs = FormulaControlsProps &
   ObjectInspectorWrapperProps &

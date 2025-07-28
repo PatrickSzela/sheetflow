@@ -1,8 +1,8 @@
-import { HyperFormulaConfig } from "@/libs/hyperformula";
-import { NamedExpressions, Sheets } from "@/libs/sheetflow";
-import { prefixKeys, PrefixKeys } from "@/libs/utils";
-import { ArgTypes } from "@storybook/react-vite";
+import { type ArgTypes } from "@storybook/react-vite";
 import * as Languages from "hyperformula/i18n/languages";
+import { type HyperFormulaConfig } from "@/libs/hyperformula";
+import { type NamedExpressions, type Sheets } from "@/libs/sheetflow";
+import { prefixKeys, type PrefixKeys } from "@/libs/utils";
 import { preparePrefixedArgTypes } from "../utils";
 
 // args
@@ -35,5 +35,5 @@ const argTypes: Partial<ArgTypes<Props>> = {
 
 export const HfEngineProviderArgTypes = preparePrefixedArgTypes(
   argTypes,
-  "sheetflow"
+  "sheetflow",
 );

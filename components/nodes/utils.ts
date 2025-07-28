@@ -1,12 +1,4 @@
-import { BaseNodeData } from "@/components/nodes/BaseNode";
-import {
-  Ast,
-  AstNodeType,
-  isAstWithChildren,
-  printCellValue,
-  SheetFlowEngine,
-  Value,
-} from "@/libs/sheetflow";
+import React, { type CSSProperties } from "react";
 import Add from "@mui/icons-material/Add";
 import DataArray from "@mui/icons-material/DataArray";
 import FormatShapes from "@mui/icons-material/FormatShapes";
@@ -14,7 +6,15 @@ import Functions from "@mui/icons-material/Functions";
 import PlusOne from "@mui/icons-material/PlusOne";
 import SixtyFps from "@mui/icons-material/SixtyFps";
 import Tag from "@mui/icons-material/Tag";
-import React, { CSSProperties } from "react";
+import { type BaseNodeData } from "@/components/nodes/BaseNode";
+import {
+  AstNodeType,
+  isAstWithChildren,
+  printCellValue,
+  type Ast,
+  type SheetFlowEngine,
+  type Value,
+} from "@/libs/sheetflow";
 
 export type NodeValue = {
   value: string | number | null;
@@ -56,7 +56,7 @@ export const getNodeDataFromAst = (
   sf: SheetFlowEngine,
   ast: Ast,
   inputs?: AstNodeValue[],
-  output?: AstNodeValue
+  output?: AstNodeValue,
 ): BaseNodeData => {
   const nodeData: BaseNodeData = {
     title: "",
@@ -145,7 +145,7 @@ export const getPossibleChildrenCount = (ast: Ast) => {
 };
 
 export const nodeSettingToCss = (
-  setting: NodeSettingsSection
+  setting: NodeSettingsSection,
 ): CSSProperties => {
   const { height, spacing } = setting;
 
@@ -158,7 +158,7 @@ export const nodeSettingToCss = (
 };
 
 export const calculateNodeSettingSection = (
-  setting: NodeSettingsSection
+  setting: NodeSettingsSection,
 ): number => {
   const { height, spacing } = setting;
   return height + spacing.vertical * 2;

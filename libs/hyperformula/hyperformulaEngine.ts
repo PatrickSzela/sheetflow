@@ -1,29 +1,29 @@
 import {
-  Ast,
-  buildCellAddress,
-  CellAddress,
-  CellContent,
-  CellRange,
-  CellValue,
-  extractDataFromStringAddress,
-  NamedExpression,
-  NamedExpressions,
-  Sheet,
-  SheetFlowEngine,
-  Sheets,
-  SpecialSheets,
-  Value,
-} from "@/libs/sheetflow";
-import {
-  ConfigParams,
-  CellValue as HfCellValue,
   HyperFormula,
   NoRelativeAddressesAllowedError,
-  SerializedNamedExpression,
+  type ConfigParams,
+  type CellValue as HfCellValue,
+  type SerializedNamedExpression,
 } from "hyperformula";
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
 import * as Languages from "hyperformula/i18n/languages";
-import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
+import { type ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
+import {
+  SheetFlowEngine,
+  SpecialSheets,
+  buildCellAddress,
+  extractDataFromStringAddress,
+  type Ast,
+  type CellAddress,
+  type CellContent,
+  type CellRange,
+  type CellValue,
+  type NamedExpression,
+  type NamedExpressions,
+  type Sheet,
+  type Sheets,
+  type Value,
+} from "@/libs/sheetflow";
 import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
   remapCellAddress,
@@ -59,7 +59,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   static override build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: HyperFormulaConfig
+    config?: HyperFormulaConfig,
   ): HyperFormulaEngine {
     const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
     engine.registerEvents();
@@ -69,20 +69,20 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   constructor(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: HyperFormulaConfig
+    config?: HyperFormulaConfig,
   ) {
     super();
 
     this.hf = HyperFormula.buildFromSheets(
       { ...sheets, [SpecialSheets.PLACED_ASTS]: [] },
-      config
+      config,
     );
 
     if (namedExpressions) {
       for (const namedExpression of namedExpressions) {
         const { name, expression, scope } = unmapNamedExpression(
           this.hf,
-          namedExpression
+          namedExpression,
         );
         this.hf.addNamedExpression(name, expression, scope);
       }
@@ -108,7 +108,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     this.hf.on("valuesUpdated", (changes) => {
       this.eventEmitter.emit(
         "valuesChanged",
-        remapChanges(this, this.hf, changes)
+        remapChanges(this, this.hf, changes),
       );
     });
   }
@@ -149,7 +149,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
 
     if (!string)
       throw new Error(
-        `Failed to convert address \`${JSON.stringify(addr)}\` to string`
+        `Failed to convert address \`${JSON.stringify(addr)}\` to string`,
       );
 
     return string;
@@ -163,7 +163,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
 
     if (!string)
       throw new Error(
-        `Failed to convert address \`${JSON.stringify(hfRange)}\` to string`
+        `Failed to convert address \`${JSON.stringify(hfRange)}\` to string`,
       );
 
     return string;
@@ -182,7 +182,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
 
   getCellValue(address: CellAddress): CellValue {
     return remapDetailedCellValue(
-      getCellValueDetails(this.hf, unmapCellAddress(this.hf, address))
+      getCellValueDetails(this.hf, unmapCellAddress(this.hf, address)),
     );
   }
 
@@ -268,12 +268,12 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     const namedExpression =
       this.hf.dependencyGraph.namedExpressions.namedExpressionForScope(
         name,
-        sheetId
+        sheetId,
       );
 
     if (!namedExpression)
       throw new Error(
-        `Named expression \`${name}\` (scope \`${scope}\`) doesn't exists`
+        `Named expression \`${name}\` (scope \`${scope}\`) doesn't exists`,
       );
 
     const serialized: SerializedNamedExpression = {
@@ -302,7 +302,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   addNamedExpression(
     name: string,
     content?: CellContent,
-    scope?: string
+    scope?: string,
   ): void {
     const sheetId = getOptionalSheetIdWithError(this.hf, scope);
     this.hf.addNamedExpression(name, content, sheetId);
@@ -371,8 +371,8 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     if (!hfAst) {
       throw new Error(
         `Failed to retrieve AST from cell \`${this.cellAddressToString(
-          address
-        )}\``
+          address,
+        )}\``,
       );
     }
 
@@ -388,7 +388,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     const { ast } = this.hf._parser.parse(formula, hfAddress) as ParsingResult;
     const astWithSheetNames = ensureReferencesInAstHaveSheetNames(
       ast,
-      hfAddress
+      hfAddress,
     );
 
     return remapAst(this.hf, astWithSheetNames, hfAddress, uuid);

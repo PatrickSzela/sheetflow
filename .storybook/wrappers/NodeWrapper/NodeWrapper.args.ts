@@ -1,6 +1,6 @@
-import { CommonNodeData } from "@/components/nodes";
-import { ArgTypes } from "@storybook/react-vite";
-import { NodeTypes } from "@xyflow/react";
+import { type ArgTypes } from "@storybook/react-vite";
+import { type NodeTypes } from "@xyflow/react";
+import { type CommonNodeData } from "@/components/nodes";
 
 export type NodeWrapperProps = CommonNodeData & { node: NodeTypes[string] };
 

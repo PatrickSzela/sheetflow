@@ -1,18 +1,18 @@
-import * as SheetFlow from "@/libs/sheetflow";
 import {
   HyperFormula,
-  RawTranslationPackage,
-  SimpleCellAddress,
+  type RawTranslationPackage,
+  type SimpleCellAddress,
 } from "hyperformula";
 import { AstNodeType } from "hyperformula/es/parser";
 import * as Languages from "hyperformula/i18n/languages";
-import { Ast } from "hyperformula/typings/parser";
+import { type Ast } from "hyperformula/typings/parser";
+import * as SheetFlow from "@/libs/sheetflow";
 
 export const registerAllLanguages = () => {
   const langs = HyperFormula.getRegisteredLanguagesCodes();
 
   for (const [lang, pack] of Object.entries(Languages).filter(
-    ([lang]) => !langs.includes(lang)
+    ([lang]) => !langs.includes(lang),
   )) {
     HyperFormula.registerLanguage(lang, pack as RawTranslationPackage);
   }
@@ -65,7 +65,7 @@ export const getSheetIdWithError = (hf: HyperFormula, sheetName: string) => {
 
 export const getOptionalSheetIdWithError = (
   hf: HyperFormula,
-  sheetName?: string
+  sheetName?: string,
 ) => {
   return sheetName === undefined
     ? undefined
@@ -74,7 +74,7 @@ export const getOptionalSheetIdWithError = (
 
 export const areHfAddressesEqual = (
   hfAddress1: SimpleCellAddress,
-  hfAddress2: SimpleCellAddress
+  hfAddress2: SimpleCellAddress,
 ) =>
   hfAddress1.col === hfAddress2.col &&
   hfAddress1.row === hfAddress2.row &&
@@ -83,7 +83,7 @@ export const areHfAddressesEqual = (
 export const areAddressesEqual = (
   hfAddress: SimpleCellAddress,
   sheetflowAddress: SheetFlow.CellAddress,
-  hf: HyperFormula
+  hf: HyperFormula,
 ) => {
   const sheetId = getSheetIdWithError(hf, sheetflowAddress.sheet);
 
@@ -99,7 +99,7 @@ export const areAstEqual = (
   sfAst: SheetFlow.Ast,
   hf: HyperFormula,
   address: SimpleCellAddress,
-  checkChildren = true
+  checkChildren = true,
 ): boolean => {
   const { type } = hfAst;
 
@@ -164,7 +164,7 @@ export const areAstEqual = (
         (checkChildren
           ? !sfAst.children
               .map((i, idx) =>
-                areAstEqual(hfAst.args[idx], i, hf, address, false)
+                areAstEqual(hfAst.args[idx], i, hf, address, false),
               )
               .includes(false)
           : true)
@@ -192,7 +192,7 @@ export const areAstEqual = (
         areAddressesEqual(
           hfAst.reference.toSimpleCellAddress(address),
           sfAst.reference,
-          hf
+          hf,
         )
       );
     }
@@ -203,7 +203,7 @@ export const areAstEqual = (
         areAddressesEqual(
           hfAst.start.toSimpleCellAddress(address),
           sfAst.start,
-          hf
+          hf,
         ) &&
         areAddressesEqual(hfAst.end.toSimpleCellAddress(address), sfAst.end, hf)
       );
@@ -252,9 +252,9 @@ export const areAstEqual = (
           .map((i, idx1) =>
             i
               .map((o, idx2) =>
-                areAstEqual(hfAst.args[idx1][idx2], o, hf, address, false)
+                areAstEqual(hfAst.args[idx1][idx2], o, hf, address, false),
               )
-              .flat()
+              .flat(),
           )
           .flat()
           .includes(false)

@@ -1,11 +1,11 @@
-import { CommonNodeData } from "@/components/nodes";
-import { Node, useNodesState } from "@xyflow/react";
 import { useMemo, useState } from "react";
+import { useNodesState, type Node } from "@xyflow/react";
+import { type CommonNodeData } from "@/components/nodes";
 import { ReactFlowWrapper } from "../ReactFlowWrapper";
-import { NodeWrapperProps } from "./NodeWrapper.args";
+import { type NodeWrapperProps } from "./NodeWrapper.args";
 
 const generateNodesFromNodeData = <T extends CommonNodeData>(
-  data: T
+  data: T,
 ): Node[] => [{ data, id: "", position: { x: 0, y: 0 }, type: "node" }];
 
 export const NodeWrapper = <T extends NodeWrapperProps>(props: T) => {
@@ -15,7 +15,7 @@ export const NodeWrapper = <T extends NodeWrapperProps>(props: T) => {
 
   const initialNodes = useMemo<Node[]>(
     () => generateNodesFromNodeData(props),
-    [props]
+    [props],
   );
 
   const [prevProps, setPrevProps] = useState<T>(props);

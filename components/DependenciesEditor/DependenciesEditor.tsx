@@ -1,12 +1,4 @@
-import {
-  ContentTextField,
-  ContentTextFieldProps,
-} from "@/components/ContentTextField";
-import {
-  GroupedCells,
-  NamedExpressions,
-  extractDataFromStringAddress,
-} from "@/libs/sheetflow";
+import React from "react";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import {
   Accordion,
@@ -16,7 +8,15 @@ import {
   InputLabel,
   Typography,
 } from "@mui/material";
-import React from "react";
+import {
+  ContentTextField,
+  type ContentTextFieldProps,
+} from "@/components/ContentTextField";
+import {
+  extractDataFromStringAddress,
+  type GroupedCells,
+  type NamedExpressions,
+} from "@/libs/sheetflow";
 
 export interface DependenciesEditorProps {
   cells?: GroupedCells;
@@ -90,7 +90,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
       reference: name,
       label: scope ? `${name} (${scope})` : name,
       ...(scope !== undefined && { scope }),
-    })
+    }),
   );
 
   return (
@@ -105,7 +105,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
               reference: address,
               label: position,
             };
-          }
+          },
         );
 
         return (

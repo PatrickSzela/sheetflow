@@ -1,7 +1,7 @@
-import { AstNode } from "@/components/nodes";
-import { Ast } from "@/libs/sheetflow";
-import { Edge, useReactFlow } from "@xyflow/react";
 import { useEffect } from "react";
+import { useReactFlow, type Edge } from "@xyflow/react";
+import { AstNode } from "@/components/nodes";
+import { type Ast } from "@/libs/sheetflow";
 import { generateElkLayout } from "./elkLayout";
 import { generateEdges, generateNodes } from "./generateFlow";
 
@@ -11,8 +11,8 @@ export const useGenerateFlow = (
   skipValues?: boolean,
   enhanceGeneratedFlow?: (
     nodes: AstNode[],
-    edges: Edge[]
-  ) => { nodes: AstNode[]; edges: Edge[] }
+    edges: Edge[],
+  ) => { nodes: AstNode[]; edges: Edge[] },
 ): void => {
   const { setEdges, setNodes } = useReactFlow<AstNode>();
 
@@ -23,7 +23,7 @@ export const useGenerateFlow = (
       flatAst,
       AstNode.settings,
       skipParenthesis,
-      skipValues
+      skipValues,
     );
     const initEdges = generateEdges(flatAst, skipParenthesis, skipValues);
 

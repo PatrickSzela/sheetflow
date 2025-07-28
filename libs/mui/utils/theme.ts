@@ -1,13 +1,17 @@
 import {
-  Interpolation,
-  Palette,
-  PaletteColor,
-  PaletteColorOptions,
-  Shadows,
-  SupportedColorScheme,
-  Theme,
+  type Interpolation,
+  type Palette,
+  type PaletteColor,
+  type PaletteColorOptions,
+  type Shadows,
+  type SupportedColorScheme,
+  type Theme,
 } from "@mui/material";
-import { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
+import {
+  type ConditionalPick,
+  type Simplify,
+  type UnionToTuple,
+} from "type-fest";
 import { colorizeBoxShadow, generateColorOverlay } from "./css";
 
 export type PaletteColorName = Simplify<
@@ -40,7 +44,7 @@ export const generatePaletteVariants = <TProps>(
   mapper: (color: PaletteColorName) => {
     props: Partial<TProps>;
     style: Interpolation<{ theme: Theme }>;
-  }[]
+  }[],
 ) => {
   return Object.entries(theme.palette)
     .filter(simplePaletteValueFilter())
@@ -56,7 +60,7 @@ export const injectShadowsToColorSchemes = (theme: Theme): Theme => {
     for (const color of colorNames) {
       const palette = colorSchemes[scheme]!.palette[color];
       palette.shadows = theme.shadows.map((shadow) =>
-        colorizeBoxShadow(shadow, palette.main)
+        colorizeBoxShadow(shadow, palette.main),
       ) as Shadows;
     }
   }

@@ -1,20 +1,20 @@
-import { AstNode } from "@/components/nodes";
+import { useCallback, useEffect } from "react";
+import { useReactFlow, type Edge } from "@xyflow/react";
+import { type AstNode } from "@/components/nodes";
 import {
   isAstWithChildren,
-  PlacedAst,
-  PlacedAstEvents,
   printCellValue,
-  Value,
+  type PlacedAst,
+  type PlacedAstEvents,
+  type Value,
 } from "@/libs/sheetflow";
-import { Edge, useReactFlow } from "@xyflow/react";
-import { useCallback, useEffect } from "react";
 
 // TODO: simplify
 
 export const injectValuesToFlow = (
   values: Record<string, Value>,
   nodes?: AstNode[],
-  edges?: Edge[]
+  edges?: Edge[],
 ): [AstNode[] | undefined, Edge[] | undefined] => {
   let copyNodes: typeof nodes;
   let copyEdges: typeof edges;
@@ -56,7 +56,7 @@ export const injectValuesToFlow = (
 export const useInjectValuesToFlow = (
   placedAst: PlacedAst,
   injectToNodes = true,
-  injectToEdges = false
+  injectToEdges = false,
 ) => {
   const { updateNodeData, updateEdgeData, getNodes, getEdges } =
     useReactFlow<AstNode>();
@@ -68,12 +68,12 @@ export const useInjectValuesToFlow = (
       [nodes = nodes, edges = edges] = injectValuesToFlow(
         values,
         injectToNodes ? nodes : undefined,
-        injectToEdges ? edges : undefined
+        injectToEdges ? edges : undefined,
       );
 
       return { nodes, edges };
     },
-    [injectToEdges, injectToNodes, placedAst]
+    [injectToEdges, injectToNodes, placedAst],
   );
 
   useEffect(() => {

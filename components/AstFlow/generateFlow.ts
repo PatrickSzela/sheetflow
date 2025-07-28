@@ -1,24 +1,24 @@
+import { type Edge } from "@xyflow/react";
 import {
-  AstNode,
-  AstNodeValue,
   calculateNodeSize,
-  NodeSettings,
+  type AstNode,
+  type AstNodeValue,
+  type NodeSettings,
 } from "@/components/nodes";
 import {
-  Ast,
   AstNodeType,
   buildStringCellValue,
   isAstWithChildren,
   isAstWithValue,
   isParenthesisAst,
+  type Ast,
 } from "@/libs/sheetflow";
-import { Edge } from "@xyflow/react";
 
 export const generateNodes = (
   flatAst: Ast[],
   nodeSettings: NodeSettings,
   skipParenthesis = false,
-  skipValues = false
+  skipValues = false,
 ): AstNode[] => {
   let flat = flatAst;
 
@@ -69,7 +69,7 @@ const findNearestNonParenthesisChild = (ast: Ast) => {
 export const generateEdges = (
   flatAst: Ast[],
   skipParenthesis = false,
-  skipValues = false
+  skipValues = false,
 ): Edge[] => {
   const arr: Edge[] = [];
 
@@ -97,6 +97,6 @@ export const generateEdges = (
   return arr.sort(
     (a, b) =>
       flatAst.findIndex((ast) => ast.id === a.source) -
-      flatAst.findIndex((ast) => ast.id === b.source)
+      flatAst.findIndex((ast) => ast.id === b.source),
   );
 };

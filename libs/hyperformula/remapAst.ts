@@ -1,7 +1,7 @@
-import * as SheetFlow from "@/libs/sheetflow";
-import { HyperFormula, SimpleCellAddress } from "hyperformula";
+import { type HyperFormula, type SimpleCellAddress } from "hyperformula";
 import { AstNodeType } from "hyperformula/es/parser";
-import { Ast } from "hyperformula/typings/parser/Ast";
+import { type Ast } from "hyperformula/typings/parser/Ast";
+import * as SheetFlow from "@/libs/sheetflow";
 import { remapCellAddress } from "./remapCellAddress";
 import { getOperator } from "./utils";
 
@@ -14,7 +14,7 @@ export const remapAst = (
   ast: Ast,
   address: SimpleCellAddress,
   rootUUID?: string,
-  isArrayFormula = false
+  isArrayFormula = false,
 ): SheetFlow.Ast => {
   // @ts-expect-error we're using protected property here
   // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -101,7 +101,7 @@ export const remapAst = (
       return SheetFlow.buildFunctionAst({
         functionName: ast.procedureName,
         children: ast.args.map((i) =>
-          remapAst(hf, i, address, undefined, arrayFormula)
+          remapAst(hf, i, address, undefined, arrayFormula),
         ),
         rawContent,
         ...id,
@@ -109,7 +109,7 @@ export const remapAst = (
         requirements: {
           minChildCount:
             hfFunction?.parameters?.filter(
-              (i) => typeof i.defaultValue === "undefined"
+              (i) => typeof i.defaultValue === "undefined",
             ).length ?? 0,
           maxChildCount: hfFunction?.parameters?.length ?? 0,
         },
@@ -141,7 +141,7 @@ export const remapAst = (
       return SheetFlow.buildCellReferenceAst({
         reference: remapCellAddress(
           hf,
-          ast.reference.toSimpleCellAddress(address)
+          ast.reference.toSimpleCellAddress(address),
         ),
         rawContent,
         ...id,
@@ -203,7 +203,7 @@ export const remapAst = (
     case AstNodeType.ARRAY: {
       return SheetFlow.buildArrayAst({
         value: ast.args.map((a) =>
-          a.map((b) => remapAst(hf, b, address, undefined, isArrayFormula))
+          a.map((b) => remapAst(hf, b, address, undefined, isArrayFormula)),
         ),
         rawContent,
         ...id,
@@ -215,7 +215,7 @@ export const remapAst = (
 
 export const ensureReferencesInAstHaveSheetNames = (
   ast: Ast,
-  address: SimpleCellAddress
+  address: SimpleCellAddress,
 ) => {
   const { type } = ast;
 
@@ -252,14 +252,14 @@ export const ensureReferencesInAstHaveSheetNames = (
     }
     case AstNodeType.FUNCTION_CALL: {
       ast.args = ast.args.map((ast) =>
-        ensureReferencesInAstHaveSheetNames(ast, address)
+        ensureReferencesInAstHaveSheetNames(ast, address),
       );
       return ast;
     }
     case AstNodeType.PARENTHESIS: {
       ast.expression = ensureReferencesInAstHaveSheetNames(
         ast.expression,
-        address
+        address,
       );
       return ast;
     }
@@ -281,7 +281,7 @@ export const ensureReferencesInAstHaveSheetNames = (
     }
     case AstNodeType.ARRAY: {
       ast.args = ast.args.map((row) =>
-        row.map((col) => ensureReferencesInAstHaveSheetNames(col, address))
+        row.map((col) => ensureReferencesInAstHaveSheetNames(col, address)),
       );
       return ast;
     }

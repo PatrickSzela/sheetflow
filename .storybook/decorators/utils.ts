@@ -1,12 +1,12 @@
-import { PrefixKeys } from "@/libs/utils";
-import { ArgTypes } from "@storybook/react-vite";
+import { type ArgTypes } from "@storybook/react-vite";
+import { type PrefixKeys } from "@/libs/utils";
 
 export const preparePrefixedArgTypes = <
   TArgs extends ArgTypes<Record<string, unknown>>,
-  TPrefix extends string
+  TPrefix extends string,
 >(
   argTypes: TArgs,
-  prefix: TPrefix
+  prefix: TPrefix,
 ) => {
   const obj: Record<string, unknown> = {};
 

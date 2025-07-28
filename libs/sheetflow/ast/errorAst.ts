@@ -1,4 +1,10 @@
-import { AstBase, AstNodeType, buildAst, BuildFn, isAst } from "./ast";
+import {
+  AstNodeType,
+  buildAst,
+  isAst,
+  type AstBase,
+  type BuildFn,
+} from "./ast";
 
 // TODO: add types for errors, based on `ErrorType` from hyperformula
 

@@ -1,14 +1,14 @@
-import { AstNode } from "@/components/nodes";
-import { Ast } from "@/libs/sheetflow";
 import { useColorScheme } from "@mui/material";
 import {
   Background,
   Controls,
-  Edge,
-  FitViewOptions,
   ReactFlow,
-  ReactFlowProps,
+  type Edge,
+  type FitViewOptions,
+  type ReactFlowProps,
 } from "@xyflow/react";
+import { AstNode } from "@/components/nodes";
+import { type Ast } from "@/libs/sheetflow";
 import { useGenerateFlow } from "./useGenerateFlow";
 import { useHighlightNodes } from "./useHighlightNodes";
 
@@ -22,14 +22,14 @@ const nodeTypes = {
 
 export interface AstFlowProps<
   TNode extends AstNode = AstNode,
-  TEdge extends Edge = Edge
+  TEdge extends Edge = Edge,
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
   flatAst: Ast[];
   skipParenthesis?: boolean;
   skipValues?: boolean;
   enhanceGeneratedFlow?: (
     nodes: AstNode[],
-    edges: Edge[]
+    edges: Edge[],
   ) => { nodes: AstNode[]; edges: Edge[] };
 }
 

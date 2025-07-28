@@ -9,7 +9,7 @@
       "type": "node-terminal",
       "request": "launch",
       "command": "pnpm run storybook --no-open",
-      "internalConsoleOptions": "openOnFirstSessionStart",
+      "internalConsoleOptions": "openOnFirstSessionStart"
       // "serverReadyAction": {
       //   "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
       //   "uriFormat": "%s",

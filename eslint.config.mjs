@@ -51,5 +51,5 @@ export default tseslint.config(
   ...storybook.configs["flat/recommended"],
   {
     ignores: ["!**/.storybook", "**/storybook-static"],
-  }
+  },
 );

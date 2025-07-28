@@ -1,6 +1,6 @@
 export type PrefixKeys<
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 > = {
   [key in keyof TObject as key extends string
     ? `${TPrefix}.${key}`
@@ -9,7 +9,7 @@ export type PrefixKeys<
 
 export type PickPrefixedKeys<
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 > = {
   [key in keyof TObject as key extends `${TPrefix}.${infer TRest}`
     ? TRest
@@ -18,7 +18,7 @@ export type PickPrefixedKeys<
 
 export type PickNotPrefixedKeys<
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 > = {
   [key in keyof TObject as key extends `${TPrefix}.${string}`
     ? never
@@ -27,16 +27,16 @@ export type PickNotPrefixedKeys<
 
 export type GroupPrefixedKeys<
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 > = PickNotPrefixedKeys<TObject, TPrefix> &
   Record<TPrefix, PickPrefixedKeys<TObject, TPrefix>>;
 
 export const prefixKeys = <
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 >(
   obj: TObject,
-  prefix: TPrefix
+  prefix: TPrefix,
 ): PrefixKeys<TObject, TPrefix> => {
   const newObj: Record<string, unknown> = {};
 
@@ -49,10 +49,10 @@ export const prefixKeys = <
 
 export const groupPrefixedKeys = <
   TObject extends Record<string, unknown>,
-  TPrefix extends string
+  TPrefix extends string,
 >(
   obj: TObject,
-  prefix: TPrefix
+  prefix: TPrefix,
 ) => {
   const group: Record<string, unknown> = {};
   const result: Record<string, unknown> = {};

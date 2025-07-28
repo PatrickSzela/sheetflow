@@ -1,3 +1,4 @@
+import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
   MuiThemeColorArgTypes,
   withFullscreen,
@@ -6,10 +7,9 @@ import {
 import {
   NodeWrapper,
   NodeWrapperArgTypes,
-  NodeWrapperProps,
+  type NodeWrapperProps,
 } from "@/.storybook/wrappers";
-import type { Meta, StoryObj } from "@storybook/react-vite";
-import { BaseNode, BaseNodeData } from "./BaseNode";
+import { BaseNode, type BaseNodeData } from "./BaseNode";
 
 // FIXME: figure out why `satisfies Meta<MetaArgs>` causes items from BaseNodeData to be ignored...
 

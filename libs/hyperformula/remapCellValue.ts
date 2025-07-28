@@ -1,12 +1,12 @@
-import * as SheetFlow from "@/libs/sheetflow";
 import {
-  CellValue,
   CellValueDetailedType,
   CellValueType,
   DetailedCellError,
-  HyperFormula,
-  SimpleCellAddress,
+  type CellValue,
+  type HyperFormula,
+  type SimpleCellAddress,
 } from "hyperformula";
+import * as SheetFlow from "@/libs/sheetflow";
 
 export interface HfCellValueDetails {
   value: CellValue;
@@ -16,7 +16,7 @@ export interface HfCellValueDetails {
 
 export const getCellValueDetails = (
   hf: HyperFormula,
-  address: SimpleCellAddress
+  address: SimpleCellAddress,
 ): HfCellValueDetails => ({
   value: hf.getCellValue(address),
   type: hf.getCellValueType(address),
@@ -24,7 +24,7 @@ export const getCellValueDetails = (
 });
 
 export const remapCellValueDetailedType = (
-  subtype: CellValueDetailedType
+  subtype: CellValueDetailedType,
 ): SheetFlow.CellValueSubtype => {
   switch (subtype) {
     case CellValueDetailedType.NUMBER_CURRENCY:
@@ -51,7 +51,7 @@ export const remapCellValueDetailedType = (
 };
 
 export const remapDetailedCellValue = (
-  details: HfCellValueDetails
+  details: HfCellValueDetails,
 ): SheetFlow.CellValue => {
   if (
     details.type === CellValueType.BOOLEAN &&
@@ -85,8 +85,8 @@ export const remapDetailedCellValue = (
   } else {
     throw new Error(
       `Cannot remap type \`${details.type}\` with value \`${JSON.stringify(
-        details.value
-      )}\``
+        details.value,
+      )}\``,
     );
   }
 };
@@ -104,7 +104,7 @@ const remapCellValueHelper = (value: CellValue): SheetFlow.CellValue => {
 };
 
 export const remapCellValue = (
-  value: CellValue | CellValue[][]
+  value: CellValue | CellValue[][],
 ): SheetFlow.Value => {
   if (Array.isArray(value)) {
     return value.map((row) => row.map((cell) => remapCellValueHelper(cell)));

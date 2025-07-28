@@ -1,7 +1,11 @@
-import { Ast, useSheetFlow } from "@/libs/sheetflow";
-import { Node, NodeProps } from "@xyflow/react";
+import { type Node, type NodeProps } from "@xyflow/react";
+import { useSheetFlow, type Ast } from "@/libs/sheetflow";
 import { BaseNode } from "./BaseNode";
-import { AstNodeValue, CommonNodeData, getNodeDataFromAst } from "./utils";
+import {
+  getNodeDataFromAst,
+  type AstNodeValue,
+  type CommonNodeData,
+} from "./utils";
 
 export type AstNodeData = CommonNodeData & {
   ast: Ast;
