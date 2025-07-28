@@ -25,8 +25,8 @@
     "elkjs": "^0.10.0",
     "events": "^3.3.0",
     "hyperformula": "^3.0.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
     "react-inspector": "^6.0.2",
     "type-fest": "^4.41.0"
   },
