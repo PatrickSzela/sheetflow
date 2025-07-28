@@ -42,7 +42,7 @@ export const groupReferencesBySheet = (
         continue;
       }
 
-      if (cells[sheet] === undefined) cells[sheet] = {};
+      cells[sheet] ??= {};
 
       const stringAddress = sf.cellAddressToString(ref);
 
@@ -59,7 +59,7 @@ export const groupReferencesBySheet = (
         continue;
       }
 
-      if (cells[sheet] === undefined) cells[sheet] = {};
+      cells[sheet] ??= {};
 
       for (let row = start.row; row <= end.row; row++) {
         for (let col = start.column; col <= end.column; col++) {

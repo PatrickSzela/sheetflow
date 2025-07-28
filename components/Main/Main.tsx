@@ -109,7 +109,7 @@ export const Main = (props: MainProps) => {
     );
   };
 
-  if (drawer.anchor === undefined) drawer.anchor = "left";
+  drawer.anchor ??= "left";
   drawer.open = layoutOptions.includes(LayoutOptions.showDependencies);
 
   const child = (
