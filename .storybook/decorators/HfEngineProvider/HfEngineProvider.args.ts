@@ -2,7 +2,7 @@ import { HyperFormulaConfig } from "@/libs/hyperformula";
 import { NamedExpressions, Sheets } from "@/libs/sheetflow";
 import { prefixKeys, PrefixKeys } from "@/libs/utils";
 import { ArgTypes } from "@storybook/react-vite";
-import * as Languages from "hyperformula/es/i18n/languages";
+import * as Languages from "hyperformula/i18n/languages";
 import { preparePrefixedArgTypes } from "../utils";
 
 // args

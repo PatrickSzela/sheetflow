@@ -31,8 +31,3 @@ declare module "hyperformula/es/Config" {
 
   export { Config };
 }
-
-declare module "hyperformula/es/i18n/languages" {
-  import * as Packs from "hyperformula/typings/i18n/languages";
-  export = Packs;
-}

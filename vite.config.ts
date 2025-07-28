@@ -7,9 +7,14 @@ export default defineConfig({
   plugins: [react()],
 
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./"),
-    },
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "./") },
+      /* Special cases for extracting internal parts of HyperFormula */
+      {
+        find: /^hyperformula\/(es|typings)/,
+        replacement: path.resolve(__dirname, "./node_modules/hyperformula/es"),
+      },
+    ],
   },
 
   // match Next.js locations

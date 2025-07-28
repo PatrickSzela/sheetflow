@@ -25,7 +25,10 @@
     "noPropertyAccessFromIndexSignature": true,
 
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      /* Special cases for extracting internal parts of HyperFormula */
+      "hyperformula/typings/*": ["./node_modules/hyperformula/typings/*"],
+      "hyperformula/es/*": ["./node_modules/hyperformula/typings/*"]
     },
   },
   "include": ["./", "./.storybook/**/*"]

@@ -22,7 +22,7 @@ import {
   SerializedNamedExpression,
 } from "hyperformula";
 import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
-import * as Languages from "hyperformula/es/i18n/languages";
+import * as Languages from "hyperformula/i18n/languages";
 import { ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
 import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
@@ -89,7 +89,9 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     }
 
     this.valueErrorTypes =
-      Languages[this.hf.getConfig().language as keyof typeof Languages].errors;
+      Languages[
+        this.hf.getConfig().language as keyof Omit<typeof Languages, "default">
+      ].errors;
   }
 
   override registerEvents(): void {

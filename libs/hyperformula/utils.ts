@@ -1,7 +1,11 @@
 import * as SheetFlow from "@/libs/sheetflow";
-import { HyperFormula, SimpleCellAddress } from "hyperformula";
-import * as Languages from "hyperformula/es/i18n/languages";
+import {
+  HyperFormula,
+  RawTranslationPackage,
+  SimpleCellAddress,
+} from "hyperformula";
 import { AstNodeType } from "hyperformula/es/parser";
+import * as Languages from "hyperformula/i18n/languages";
 import { Ast } from "hyperformula/typings/parser";
 
 export const registerAllLanguages = () => {
@@ -10,7 +14,7 @@ export const registerAllLanguages = () => {
   for (const [lang, pack] of Object.entries(Languages).filter(
     ([lang]) => !langs.includes(lang)
   )) {
-    HyperFormula.registerLanguage(lang, pack);
+    HyperFormula.registerLanguage(lang, pack as RawTranslationPackage);
   }
 };
 
