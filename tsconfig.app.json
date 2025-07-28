@@ -6,6 +6,9 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
 
     /* Bundler mode */
     "moduleResolution": "Bundler",
@@ -17,8 +20,11 @@
 
     /* Linting */
     "strict": true,
-    "erasableSyntaxOnly": true,
+    // TODO: reenable once enums are replaced with objects
+    // "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
+    // TODO: reenable once all errors are handled
+    // "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "noImplicitOverride": true,
     "exactOptionalPropertyTypes": true,
@@ -29,7 +35,7 @@
       /* Special cases for extracting internal parts of HyperFormula */
       "hyperformula/typings/*": ["./node_modules/hyperformula/typings/*"],
       "hyperformula/es/*": ["./node_modules/hyperformula/typings/*"]
-    },
+    }
   },
   "include": ["./", "./.storybook/**/*"]
 }
