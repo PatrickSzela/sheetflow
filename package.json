@@ -53,9 +53,14 @@
     "web-worker": "^1.5.0"
   },
   "engines": {
-    "node": ">=22.12"
+    "node": ">=22.12",
+    "pnpm": ">=10"
   },
   "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": ">=22.12"
+    },
     "packageManager": {
       "name": "pnpm",
       "onFail": "warn",
