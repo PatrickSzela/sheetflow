@@ -1,10 +1,17 @@
 import path from "node:path";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    cloudflare({
+      // WORKAROUND: the Cloudflare vite plugin looks for `wrangler.jsonc` file under `root` directory that's set to `./app` lower
+      configPath: path.resolve(__dirname, "./wrangler.jsonc"),
+    }),
+  ],
 
   resolve: {
     alias: [

@@ -1,0 +1,16 @@
+{
+  "name": "sheetflow",
+  "compatibility_date": "2025-08-05",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+  "env": {
+    "storybook": {
+      "name": "sheetflow-storybook",
+      "assets": {
+        "directory": "./storybook-static",
+        "not_found_handling": "single-page-application"
+      }
+    }
+  }
+}
