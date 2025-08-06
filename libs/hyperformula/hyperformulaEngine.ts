@@ -5,9 +5,7 @@ import {
   type CellValue as HfCellValue,
   type SerializedNamedExpression,
 } from "hyperformula";
-import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
 import * as Languages from "hyperformula/i18n/languages";
-import { type ParsingResult } from "hyperformula/typings/parser/ParserWithCaching";
 import {
   SheetFlowEngine,
   SpecialSheets,
@@ -43,13 +41,16 @@ import {
 } from "./remapNamedExpression";
 import { remapSheet, remapSheets } from "./remapSheet";
 import {
+  FormulaVertex,
   areHfAddressesEqual,
+  enhancePrototype,
   getOptionalSheetIdWithError,
   getSheetIdWithError,
   registerAllLanguages,
 } from "./utils";
 
 registerAllLanguages();
+enhancePrototype();
 
 export type HyperFormulaConfig = Partial<ConfigParams>;
 
@@ -383,9 +384,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     const address = buildCellAddress(-1, -1, scope);
     const hfAddress = unmapCellAddress(this.hf, address);
 
-    // @ts-expect-error we're using private property here
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    const { ast } = this.hf._parser.parse(formula, hfAddress) as ParsingResult;
+    const { ast } = this.hf.parser.parse(formula, hfAddress);
     const astWithSheetNames = ensureReferencesInAstHaveSheetNames(
       ast,
       hfAddress,

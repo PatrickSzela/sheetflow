@@ -3,10 +3,12 @@ import {
   type RawTranslationPackage,
   type SimpleCellAddress,
 } from "hyperformula";
-import { AstNodeType } from "hyperformula/es/parser";
+import { FormulaVertex } from "hyperformula/es/DependencyGraph/FormulaCellVertex";
+import { AstNodeType, type Ast } from "hyperformula/es/parser";
 import * as Languages from "hyperformula/i18n/languages";
-import { type Ast } from "hyperformula/typings/parser";
 import * as SheetFlow from "@/libs/sheetflow";
+
+export { AstNodeType, FormulaVertex, type Ast };
 
 export const registerAllLanguages = () => {
   const langs = HyperFormula.getRegisteredLanguagesCodes();
@@ -15,6 +17,20 @@ export const registerAllLanguages = () => {
     ([lang]) => !langs.includes(lang),
   )) {
     HyperFormula.registerLanguage(lang, pack as RawTranslationPackage);
+  }
+};
+
+// this is a bit hacky, but it beats having to specify the type and satisfy TS & eslint every time we access these private properties
+export const enhancePrototype = () => {
+  for (const key of ["parser", "unparser"]) {
+    if (!Object.prototype.hasOwnProperty.call(HyperFormula.prototype, key)) {
+      Object.defineProperty(HyperFormula.prototype, key, {
+        get: function () {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+          return this[`_${key}`];
+        },
+      });
+    }
   }
 };
 

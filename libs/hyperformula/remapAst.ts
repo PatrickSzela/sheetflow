@@ -1,13 +1,7 @@
 import { type HyperFormula, type SimpleCellAddress } from "hyperformula";
-import { AstNodeType } from "hyperformula/es/parser";
-import { type Ast } from "hyperformula/typings/parser/Ast";
 import * as SheetFlow from "@/libs/sheetflow";
 import { remapCellAddress } from "./remapCellAddress";
-import { getOperator } from "./utils";
-
-// WORKAROUND: importing anything from "hyperformula/es/parser/Ast" confuses esbuild
-// https://github.com/vitejs/vite/issues/4245
-// import { AstNodeType, RangeSheetReferenceType } from "hyperformula/es/parser/Ast";
+import { AstNodeType, getOperator, type Ast } from "./utils";
 
 export const remapAst = (
   hf: HyperFormula,
@@ -16,9 +10,7 @@ export const remapAst = (
   rootUUID?: string,
   isArrayFormula = false,
 ): SheetFlow.Ast => {
-  // @ts-expect-error we're using protected property here
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-  const rawContent = (hf._unparser.unparse(ast, address) as string).slice(1);
+  const rawContent = hf.unparser.unparse(ast, address).slice(1);
   const { type } = ast;
 
   const id = rootUUID !== undefined ? { id: rootUUID } : undefined;
@@ -275,7 +267,8 @@ export const ensureReferencesInAstHaveSheetNames = (
         ast.start = ast.start.withSheet(address.sheet);
       if (ast.end.sheet === undefined)
         ast.end = ast.end.withSheet(address.sheet);
-      // WORKAROUND: because of the workaround mentioned at the beginning of the file
+      // WORKAROUND: importing anything that's not a type from "hyperformula/es/parser/Ast" confuses esbuild
+      // https://github.com/evanw/esbuild/issues/1433
       ast.sheetReferenceType = 2; // RangeSheetReferenceType.BOTH_ABSOLUTE;
       return ast;
     }
