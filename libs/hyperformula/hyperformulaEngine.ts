@@ -73,7 +73,10 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     super();
 
     this.hf = HyperFormula.buildFromSheets(
-      { ...sheets, [SpecialSheets.PLACED_ASTS]: [] },
+      {
+        ...Object.fromEntries(Object.values(SpecialSheets).map((i) => [i, []])),
+        ...sheets,
+      },
       config,
     );
 

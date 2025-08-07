@@ -11,9 +11,9 @@ import { type MissingReferences } from "./placedAst";
 import { type Reference } from "./reference";
 import { type SheetFlowEngine } from "./sheetflowEngine";
 
-export enum SpecialSheets {
-  PLACED_ASTS = "SheetFlow_Placed_ASTs",
-}
+export const SpecialSheets = {
+  PLACED_ASTS: "SheetFlow_Placed_ASTs",
+} as const;
 
 // HyperFormula's `getCellPrecedents` doesn't like non-existing named expressions and it won't return the names of them
 export const getPrecedents = (
