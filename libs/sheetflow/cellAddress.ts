@@ -40,7 +40,8 @@ export const areCellAddressesEqual = (
 export const extractDataFromStringAddress = (
   address: string,
 ): { position: string; sheet: string } => {
-  const [position, sheet] = address.split("!").reverse();
-  // TODO: only remove `'` from beginning and end of the sheet's name
-  return { position, sheet: (sheet ?? "").replaceAll("'", "") };
+  const [position, sheet] = address.trim().split("!").reverse();
+  // remove `'` from beginning and end of the sheet's name
+  const sheetName = (sheet ?? "").replace(/^'+|'+$/g, "");
+  return { position, sheet: sheetName };
 };
