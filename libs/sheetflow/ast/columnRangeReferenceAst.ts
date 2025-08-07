@@ -1,3 +1,4 @@
+import { isValidPartOfAddress } from "../cellAddress";
 import {
   AstNodeSubtype,
   AstNodeType,
@@ -31,11 +32,6 @@ export const isColumnRangeReferenceAst = (
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.COLUMN_RANGE &&
     // TODO: move to isColumnRange
-    typeof start === "number" &&
-    start >= 0 &&
-    typeof end === "number" &&
-    end >= 0 &&
-    typeof sheet === "string" &&
-    sheet.length > 0
+    [start, end, sheet].every(isValidPartOfAddress)
   );
 };

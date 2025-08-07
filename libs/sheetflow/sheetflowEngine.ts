@@ -2,7 +2,11 @@ import EventEmitter from "events";
 import type TypedEmitter from "typed-emitter";
 import { isEmptyAst, type Ast } from "./ast";
 import { type CellContent } from "./cell";
-import { buildCellAddress, type CellAddress } from "./cellAddress";
+import {
+  buildCellAddress,
+  isValidPartOfAddress,
+  type CellAddress,
+} from "./cellAddress";
 import { type CellRange } from "./cellRange";
 import { buildEmptyCellValue, type CellValue, type Value } from "./cellValue";
 import { type Change } from "./change";
@@ -111,42 +115,47 @@ export abstract class SheetFlowEngine {
   abstract getArrayCellValue(address: CellAddress): Value;
 
   // sheet
-  abstract getSheet(name: string): Sheet;
-  abstract setSheet(name: string, content: Sheet): void;
+  abstract getSheetId(name: string): number | undefined;
+  abstract getSheetIdWithError(name: string): number;
+  abstract getSheetName(id: number): string | undefined;
+  abstract getSheetNameWithError(id: number): string;
+  abstract getSheet(id: number): Sheet;
+  abstract setSheet(id: number, content: Sheet): void;
   abstract addSheet(name: string, content?: Sheet): void;
-  abstract renameSheet(name: string, newName: string): void;
-  abstract removeSheet(name: string): void;
+  abstract renameSheet(id: number, newName: string): void;
+  abstract removeSheet(id: number): void;
   abstract doesSheetExists(name: string): boolean;
+  abstract doesSheetWithIdExists(id: number): boolean;
   abstract getAllSheets(): Sheets;
   abstract getAllSheetNames(): string[];
-  abstract clearRow(sheet: string, index: number): void;
+  abstract clearRow(sheet: number, index: number): void;
 
   // named expression
-  abstract getNamedExpression(name: string, scope?: string): NamedExpression;
+  abstract getNamedExpression(name: string, scope?: number): NamedExpression;
   abstract setNamedExpression(
     name: string,
     content: CellContent,
-    scope?: string,
+    scope?: number,
   ): void;
   abstract addNamedExpression(
     name: string,
     content?: CellContent,
-    scope?: string,
+    scope?: number,
   ): void;
-  abstract removeNamedExpression(name: string, scope?: string): void;
-  abstract doesNamedExpressionExists(name: string, scope?: string): boolean;
-  abstract getNamedExpressionValue(name: string, scope?: string): Value;
+  abstract removeNamedExpression(name: string, scope?: number): void;
+  abstract doesNamedExpressionExists(name: string, scope?: number): boolean;
+  abstract getNamedExpressionValue(name: string, scope?: number): Value;
   abstract getAllNamedExpressions(): NamedExpressions;
   abstract getAllNamedExpressionNames(): string[];
 
   // formula
   abstract isFormulaValid(formula: string): boolean;
   abstract normalizeFormula(formula: string): string;
-  abstract calculateFormula(formula: string, sheet: string): Value;
+  abstract calculateFormula(formula: string, sheetId: number): Value;
 
   // formula AST
   abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
-  abstract getAstFromFormula(uuid: string, formula: string, scope: string): Ast;
+  abstract getAstFromFormula(uuid: string, formula: string, scope: number): Ast;
   abstract astToFormula(ast: Ast): string;
 
   // evaluation
@@ -183,16 +192,17 @@ export abstract class SheetFlowEngine {
     return this.placedAsts[uuid];
   }
 
-  createPlacedAst(formula?: string, scope?: string): PlacedAst {
+  createPlacedAst(formula?: string, scope?: number): PlacedAst {
     const uuid = crypto.randomUUID();
     const row = this.getFirstAvailableRowForPlaceableAst();
-    const address = buildCellAddress(0, row, SpecialSheets.PLACED_ASTS);
+    const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
+    const address = buildCellAddress(0, row, sheetId);
 
     const placedAst = new PlacedAst(uuid, address);
     this.placedAsts[uuid] = placedAst;
 
     // TODO: warning when one of the args is passed but the other isn't
-    if (formula && scope) {
+    if (formula && isValidPartOfAddress(scope)) {
       this.updatePlacedAstWithFormula(uuid, formula, scope);
     }
 
@@ -202,16 +212,19 @@ export abstract class SheetFlowEngine {
   placeAst(uuid: string): void {
     const { address, data } = this.getPlacedAst(uuid);
     const { row } = address;
+    const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
     data.flatAst.forEach((ast, idx) => {
-      const address = buildCellAddress(idx, row, SpecialSheets.PLACED_ASTS);
+      const address = buildCellAddress(idx, row, sheetId);
       this.setCell(address, this.astToFormula(ast));
     });
   }
 
   removePlacedAst(uuid: string): void {
     const placedAst = this.getPlacedAst(uuid);
-    this.clearRow(SpecialSheets.PLACED_ASTS, placedAst.address.row);
+    const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
+
+    this.clearRow(sheetId, placedAst.address.row);
     delete this.placedAsts[uuid];
   }
 
@@ -223,7 +236,7 @@ export abstract class SheetFlowEngine {
         ? buildEmptyCellValue({ value: null })
         : this.calculateFormula(
             this.astToFormula(ast),
-            SpecialSheets.PLACED_ASTS,
+            this.getSheetIdWithError(SpecialSheets.PLACED_ASTS),
           ),
     );
   }
@@ -243,13 +256,13 @@ export abstract class SheetFlowEngine {
   updatePlacedAstWithFormula(
     uuid: string,
     formula: string,
-    scope: string,
+    scope: number,
   ): PlacedAst {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
-    if (!this.doesSheetExists(scope))
-      throw new Error(`Sheet \`${scope}\` doesn't exists`);
+    if (!this.doesSheetWithIdExists(scope))
+      throw new Error(`Sheet with ID \`${scope}\` doesn't exists`);
 
     const placedAst = this.getPlacedAst(uuid);
     const normalizedFormula = this.normalizeFormula(formula);
@@ -276,12 +289,12 @@ export abstract class SheetFlowEngine {
 
   isPlacedAstPartOfChanges(uuid: string, changes: Change[]): boolean {
     const { address } = this.getPlacedAst(uuid);
+    const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
     return !!changes.find((change) => {
       if ("address" in change) {
         return (
-          change.address.sheet === (SpecialSheets.PLACED_ASTS as string) &&
-          change.address.row === address.row
+          change.address.sheet === sheetId && change.address.row === address.row
         );
       }
 
@@ -300,9 +313,9 @@ export abstract class SheetFlowEngine {
     );
   }
 
-  getNonEmptyCellsFromSheet(sheetName: string): Reference[] {
+  getNonEmptyCellsFromSheet(sheetId: number): Reference[] {
     const list: Reference[] = [];
-    const sheet = this.getSheet(sheetName);
+    const sheet = this.getSheet(sheetId);
 
     for (let row = 0; row < sheet.length; row++) {
       for (let col = 0; col < sheet[row].length; col++) {
@@ -313,7 +326,7 @@ export abstract class SheetFlowEngine {
           continue;
         }
 
-        const address = buildCellAddress(col, row, sheetName);
+        const address = buildCellAddress(col, row, sheetId);
         list.push(address);
       }
     }
@@ -325,7 +338,10 @@ export abstract class SheetFlowEngine {
     let list: Reference[] = [];
 
     for (const sheetName of this.getAllSheetNames()) {
-      list = [...list, ...this.getNonEmptyCellsFromSheet(sheetName)];
+      list = [
+        ...list,
+        ...this.getNonEmptyCellsFromSheet(this.getSheetIdWithError(sheetName)),
+      ];
     }
 
     return list;

@@ -7,7 +7,7 @@ import { useSheetFlow } from "./useSheetFlow";
 
 export const useContent = (
   reference: Reference,
-  scope?: string,
+  scope?: number,
 ): {
   content: CellContent | undefined;
   setContent: (content: CellContent) => void;

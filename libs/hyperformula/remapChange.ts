@@ -1,8 +1,4 @@
-import {
-  ExportedCellChange,
-  type ExportedChange,
-  type HyperFormula,
-} from "hyperformula";
+import { ExportedCellChange, type ExportedChange } from "hyperformula";
 import { type Change } from "@/libs/sheetflow";
 import { type HyperFormulaEngine } from "./hyperformulaEngine";
 import { remapCellAddress } from "./remapCellAddress";
@@ -10,11 +6,10 @@ import { remapCellValue } from "./remapCellValue";
 
 export const remapChange = (
   engine: HyperFormulaEngine,
-  hf: HyperFormula,
   change: ExportedChange,
 ): Change => {
   if (change instanceof ExportedCellChange) {
-    const address = remapCellAddress(hf, change.address);
+    const address = remapCellAddress(change.address);
 
     return {
       address,
@@ -30,8 +25,7 @@ export const remapChange = (
 
 export const remapChanges = (
   engine: HyperFormulaEngine,
-  hf: HyperFormula,
   changes: ExportedChange[],
 ) => {
-  return changes.map((change) => remapChange(engine, hf, change));
+  return changes.map((change) => remapChange(engine, change));
 };

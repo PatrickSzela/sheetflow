@@ -131,10 +131,7 @@ export const remapAst = (
     }
     case AstNodeType.CELL_REFERENCE: {
       return SheetFlow.buildCellReferenceAst({
-        reference: remapCellAddress(
-          hf,
-          ast.reference.toSimpleCellAddress(address),
-        ),
+        reference: remapCellAddress(ast.reference.toSimpleCellAddress(address)),
         rawContent,
         ...id,
         isArrayFormula,
@@ -142,11 +139,9 @@ export const remapAst = (
     }
     case AstNodeType.CELL_RANGE: {
       return SheetFlow.buildCellRangeReferenceAst({
-        start: remapCellAddress(hf, ast.start.toSimpleCellAddress(address)),
-        end: remapCellAddress(hf, ast.end.toSimpleCellAddress(address)),
-        sheet:
-          hf.getSheetName(ast.start.toSimpleCellAddress(address).sheet) ??
-          "MISSING",
+        start: remapCellAddress(ast.start.toSimpleCellAddress(address)),
+        end: remapCellAddress(ast.end.toSimpleCellAddress(address)),
+        sheet: ast.start.toSimpleCellAddress(address).sheet,
         rawContent,
         ...id,
         isArrayFormula,
@@ -156,9 +151,7 @@ export const remapAst = (
       return SheetFlow.buildColumnRangeReferenceAst({
         start: ast.start.col,
         end: ast.end.col,
-        sheet:
-          hf.getSheetName(ast.start.toSimpleColumnAddress(address).sheet) ??
-          "MISSING",
+        sheet: ast.start.toSimpleColumnAddress(address).sheet,
         rawContent,
         ...id,
         isArrayFormula,
@@ -168,9 +161,7 @@ export const remapAst = (
       return SheetFlow.buildRowRangeReferenceAst({
         start: ast.start.row,
         end: ast.end.row,
-        sheet:
-          hf.getSheetName(ast.start.toSimpleRowAddress(address).sheet) ??
-          "MISSING",
+        sheet: ast.start.toSimpleRowAddress(address).sheet,
         rawContent,
         ...id,
         isArrayFormula,

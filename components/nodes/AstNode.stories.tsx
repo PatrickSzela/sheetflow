@@ -83,7 +83,7 @@ export const StringNodeStory: Story = {
 };
 
 const cellReferenceNodeStoryAst = buildCellReferenceAst({
-  reference: buildCellAddress(0, 0, "Sheet1"),
+  reference: buildCellAddress(0, 0, 0),
   rawContent: "Sheet1!A1",
 });
 export const CellReferenceNodeStory: Story = {

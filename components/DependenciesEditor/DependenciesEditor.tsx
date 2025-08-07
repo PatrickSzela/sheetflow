@@ -14,6 +14,7 @@ import {
 } from "@/components/ContentTextField";
 import {
   extractDataFromStringAddress,
+  useSheetFlow,
   type GroupedCells,
   type NamedExpressions,
 } from "@/libs/sheetflow";
@@ -82,7 +83,9 @@ const DependencyAccordion = (props: DependencyAccordion) => {
 };
 
 export const DependenciesEditor = (props: DependenciesEditorProps) => {
-  const { cells = {}, namedExpressions = [] } = props;
+  const { cells = [], namedExpressions = [] } = props;
+
+  const sf = useSheetFlow();
 
   const namedExpressionData: DependencyAccordion["data"] = namedExpressions.map(
     ({ name, scope }) => ({
@@ -95,7 +98,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
 
   return (
     <Box>
-      {Object.entries(cells).map(([sheet, cells]) => {
+      {cells.map((cells, sheet) => {
         const data: DependencyAccordion["data"] = cells.map(
           ({ stringAddress, address }) => {
             const { position } = extractDataFromStringAddress(stringAddress);
@@ -111,7 +114,7 @@ export const DependenciesEditor = (props: DependenciesEditorProps) => {
         return (
           <DependencyAccordion
             key={sheet}
-            title={sheet}
+            title={sf.getSheetName(sheet) ?? `${sheet}`}
             data={data}
             variant="addresses"
           />

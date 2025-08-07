@@ -1,4 +1,4 @@
-import { type CellAddress } from "../cellAddress";
+import { isValidPartOfAddress, type CellAddress } from "../cellAddress";
 import { isCellRange } from "../cellRange";
 import {
   AstNodeSubtype,
@@ -33,7 +33,6 @@ export const isCellRangeReferenceAst = (
     type === AstNodeType.REFERENCE &&
     subtype === AstNodeSubtype.CELL_RANGE &&
     isCellRange({ start, end }) &&
-    typeof sheet === "string" &&
-    sheet.length > 0
+    isValidPartOfAddress(sheet)
   );
 };

@@ -3,7 +3,7 @@ import { type CellContent } from "./cell";
 export type NamedExpression = {
   name: string;
   expression: CellContent;
-  scope?: string;
+  scope?: number;
 };
 
 export type NamedExpressions = NamedExpression[];
@@ -16,6 +16,6 @@ export const isNamedExpression = (
   return (
     typeof expression === "string" &&
     typeof name === "string" &&
-    (typeof scope === "string" || scope === undefined)
+    (typeof scope === "number" || scope === undefined)
   );
 };

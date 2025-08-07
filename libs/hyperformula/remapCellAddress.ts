@@ -1,44 +1,33 @@
-import {
-  type HyperFormula,
-  type SimpleCellAddress,
-  type SimpleCellRange,
-} from "hyperformula";
+import { type SimpleCellAddress, type SimpleCellRange } from "hyperformula";
 import * as SheetFlow from "@/libs/sheetflow";
-import { getSheetIdWithError } from "./utils";
 
-export const remapCellAddress = (
-  hf: HyperFormula,
-  { row, col, sheet }: SimpleCellAddress,
-): SheetFlow.CellAddress =>
-  SheetFlow.buildCellAddress(
-    col,
-    row,
-    // TODO: store as ID like hyperformula?
-    hf.getSheetName(sheet) ?? "MISSING",
-  );
+export const remapCellAddress = ({
+  row,
+  col,
+  sheet,
+}: SimpleCellAddress): SheetFlow.CellAddress =>
+  SheetFlow.buildCellAddress(col, row, sheet);
 
-export const unmapCellAddress = (
-  hf: HyperFormula,
-  { column, row, sheet }: SheetFlow.CellAddress,
-): SimpleCellAddress => ({
+export const unmapCellAddress = ({
+  column,
+  row,
+  sheet,
+}: SheetFlow.CellAddress): SimpleCellAddress => ({
   col: column,
   row,
-  sheet: getSheetIdWithError(hf, sheet),
+  sheet,
 });
 
-export const remapCellRange = (
-  hf: HyperFormula,
-  { start, end }: SimpleCellRange,
-): SheetFlow.CellRange =>
-  SheetFlow.buildCellRange(
-    remapCellAddress(hf, start),
-    remapCellAddress(hf, end),
-  );
+export const remapCellRange = ({
+  start,
+  end,
+}: SimpleCellRange): SheetFlow.CellRange =>
+  SheetFlow.buildCellRange(remapCellAddress(start), remapCellAddress(end));
 
-export const unmapCellRange = (
-  hf: HyperFormula,
-  { start, end }: SheetFlow.CellRange,
-): SimpleCellRange => ({
-  start: unmapCellAddress(hf, start),
-  end: unmapCellAddress(hf, end),
+export const unmapCellRange = ({
+  start,
+  end,
+}: SheetFlow.CellRange): SimpleCellRange => ({
+  start: unmapCellAddress(start),
+  end: unmapCellAddress(end),
 });

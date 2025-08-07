@@ -1,30 +1,29 @@
 export interface CellAddress {
   column: number;
   row: number;
-  sheet: string;
+  sheet: number;
 }
 
 export const buildCellAddress = (
   column: number,
   row: number,
-  sheet: string,
+  sheet: number,
 ): CellAddress => ({
   column,
   row,
   sheet,
 });
 
+export const isValidPartOfAddress = (number: unknown): number is number => {
+  return (
+    typeof number === "number" && Number.isSafeInteger(number) && number >= 0
+  );
+};
+
 export const isCellAddress = (address: unknown): address is CellAddress => {
   const { column, row, sheet } = (address ?? {}) as CellAddress;
 
-  return (
-    typeof column === "number" &&
-    column >= 0 &&
-    typeof row === "number" &&
-    row >= 0 &&
-    typeof sheet === "string" &&
-    sheet.length > 0
-  );
+  return [column, row, sheet].every(isValidPartOfAddress);
 };
 
 export const areCellAddressesEqual = (
@@ -42,5 +41,6 @@ export const extractDataFromStringAddress = (
   address: string,
 ): { position: string; sheet: string } => {
   const [position, sheet] = address.split("!").reverse();
+  // TODO: only remove `'` from beginning and end of the sheet's name
   return { position, sheet: (sheet ?? "").replaceAll("'", "") };
 };

@@ -178,5 +178,5 @@ export interface RangeReferenceAst<TSubtype extends AstNodeSubtype, TStartEnd>
   extends AstWithSubtype<AstNodeType.REFERENCE, TSubtype> {
   start: TStartEnd;
   end: TStartEnd;
-  sheet: string;
+  sheet: number;
 }

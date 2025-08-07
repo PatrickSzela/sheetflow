@@ -14,10 +14,11 @@ export type Sheets = Record<string, Sheet>;
 
 // TODO: support row/column ranges
 
-export type GroupedCells = Record<
-  string,
-  { address: CellAddress; stringAddress: string; content: CellContent }[]
->;
+export type GroupedCells = {
+  address: CellAddress;
+  stringAddress: string;
+  content: CellContent;
+}[][];
 
 export const groupReferencesBySheet = (
   sf: SheetFlowEngine,
@@ -26,10 +27,7 @@ export const groupReferencesBySheet = (
   cells: GroupedCells;
   namedExpressions: NamedExpressions;
 } => {
-  const cells: Record<
-    string,
-    Record<string, GroupedCells[string][number]>
-  > = {};
+  const cells: Record<string, GroupedCells[number][number]>[] = [];
   const namedExpressions: Record<string, NamedExpression> = {};
 
   for (const ref of references) {
@@ -42,7 +40,7 @@ export const groupReferencesBySheet = (
     } else if (isCellAddress(ref)) {
       const { sheet } = ref;
 
-      if (!sf.doesSheetExists(sheet)) {
+      if (!sf.doesSheetWithIdExists(sheet)) {
         continue;
       }
 
@@ -59,7 +57,7 @@ export const groupReferencesBySheet = (
       const { start, end } = ref;
       const { sheet } = start;
 
-      if (!sf.doesSheetExists(sheet)) {
+      if (!sf.doesSheetWithIdExists(sheet)) {
         continue;
       }
 
@@ -80,10 +78,10 @@ export const groupReferencesBySheet = (
     }
   }
 
-  const finalCells: GroupedCells = {};
-  for (const key of Object.keys(cells)) {
-    finalCells[key] = Object.values(cells[key]);
-  }
+  const finalCells: GroupedCells = [];
+  cells.forEach((data, id) => {
+    finalCells[id] = Object.values(data);
+  });
 
   return {
     cells: finalCells,

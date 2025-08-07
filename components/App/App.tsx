@@ -81,7 +81,7 @@ const AppInner = () => {
     >
       <ReactFlowProvider>
         <FormulaEditor
-          defaultScope="Sheet1"
+          defaultScope={sf.getSheetIdWithError("Sheet1")}
           onFocus={setSelectedEditor}
           defaultFormula="=A1+A2*A3"
         />

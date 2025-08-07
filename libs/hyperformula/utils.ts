@@ -69,25 +69,6 @@ export const getOperator = (type: AstNodeType): SheetFlow.Operator => {
   }
 };
 
-export const getSheetIdWithError = (hf: HyperFormula, sheetName: string) => {
-  const id = hf.getSheetId(sheetName);
-
-  if (typeof id === "undefined") {
-    throw new Error(`The sheet \`${sheetName}\` doesn't exists`);
-  }
-
-  return id;
-};
-
-export const getOptionalSheetIdWithError = (
-  hf: HyperFormula,
-  sheetName?: string,
-) => {
-  return sheetName === undefined
-    ? undefined
-    : getSheetIdWithError(hf, sheetName);
-};
-
 export const areHfAddressesEqual = (
   hfAddress1: SimpleCellAddress,
   hfAddress2: SimpleCellAddress,
@@ -98,17 +79,11 @@ export const areHfAddressesEqual = (
 
 export const areAddressesEqual = (
   hfAddress: SimpleCellAddress,
-  sheetflowAddress: SheetFlow.CellAddress,
-  hf: HyperFormula,
-) => {
-  const sheetId = getSheetIdWithError(hf, sheetflowAddress.sheet);
-
-  return (
-    hfAddress.col === sheetflowAddress.column &&
-    hfAddress.row === sheetflowAddress.row &&
-    hfAddress.sheet === sheetId
-  );
-};
+  sfAddress: SheetFlow.CellAddress,
+) =>
+  hfAddress.col === sfAddress.column &&
+  hfAddress.row === sfAddress.row &&
+  hfAddress.sheet === sfAddress.sheet;
 
 export const areAstEqual = (
   hfAst: Ast,
@@ -208,7 +183,6 @@ export const areAstEqual = (
         areAddressesEqual(
           hfAst.reference.toSimpleCellAddress(address),
           sfAst.reference,
-          hf,
         )
       );
     }
@@ -219,9 +193,8 @@ export const areAstEqual = (
         areAddressesEqual(
           hfAst.start.toSimpleCellAddress(address),
           sfAst.start,
-          hf,
         ) &&
-        areAddressesEqual(hfAst.end.toSimpleCellAddress(address), sfAst.end, hf)
+        areAddressesEqual(hfAst.end.toSimpleCellAddress(address), sfAst.end)
       );
     }
     case AstNodeType.COLUMN_RANGE: {
@@ -233,7 +206,7 @@ export const areAstEqual = (
         sfAst.subtype === SheetFlow.AstNodeSubtype.COLUMN_RANGE &&
         cStart.col === sfAst.start &&
         cEnd.col === sfAst.end &&
-        cStart.sheet === getSheetIdWithError(hf, sfAst.sheet)
+        cStart.sheet === sfAst.sheet
       );
     }
     case AstNodeType.ROW_RANGE: {
@@ -245,7 +218,7 @@ export const areAstEqual = (
         sfAst.subtype === SheetFlow.AstNodeSubtype.ROW_RANGE &&
         rStart.row === sfAst.start &&
         rEnd.row === sfAst.end &&
-        rStart.sheet === getSheetIdWithError(hf, sfAst.sheet)
+        rStart.sheet === sfAst.sheet
       );
     }
     case AstNodeType.ERROR: {

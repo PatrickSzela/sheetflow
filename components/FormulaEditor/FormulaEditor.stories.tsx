@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
   HfEngineProviderArgTypes,
@@ -8,27 +8,39 @@ import {
   withReactFlowProvider,
   type HfEngineProviderProps,
 } from "@/.storybook/decorators";
+import { useSheetFlow } from "@/libs/sheetflow";
 import { groupPrefixedKeys, type PrefixKeys } from "@/libs/utils";
 import { FormulaEditor, type FormulaEditorProps } from "./FormulaEditor";
 
-// FIXME: fix changing scope not rerendering component
-
-type MetaArgs = { defaultFormula: string } & PrefixKeys<
+type MetaArgs = { defaultScope: string } & PrefixKeys<
   Required<FormulaEditorProps>["flowProps"],
   "flowProps"
 > &
-  FormulaEditorProps &
+  Omit<FormulaEditorProps, "defaultScope"> &
   HfEngineProviderProps;
+
+const FormulaEditorWrapper = (props: MetaArgs) => {
+  const { defaultScope, ...rest } = props;
+
+  const sf = useSheetFlow();
+
+  return (
+    <FormulaEditor
+      defaultScope={sf.getSheetIdWithError(defaultScope)}
+      {...rest}
+    />
+  );
+};
 
 const meta = {
   title: "Components/Formula",
-  component: FormulaEditor,
+  component: FormulaEditorWrapper,
   render: ({ flowProps: _, ...args }) => {
     const { flowProps, ...rest } = useMemo(() => {
       return groupPrefixedKeys(args, "flowProps");
     }, [args]);
 
-    return <FormulaEditor flowProps={flowProps} {...rest} />;
+    return <FormulaEditorWrapper flowProps={flowProps} {...rest} />;
   },
   parameters: {
     layout: "fullscreen",

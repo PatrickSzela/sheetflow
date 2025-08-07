@@ -13,7 +13,7 @@ export type MissingReferences = {
 export type PlacedAstValues = Record<string, Value>;
 export type PlacedAstData = {
   formula: string;
-  scope: string;
+  scope: number;
   ast: Ast;
   flatAst: Ast[];
   precedents: Reference[];
@@ -48,7 +48,7 @@ export class PlacedAst {
     this.values = values ?? {};
     this.data = data ?? {
       formula: "",
-      scope: "",
+      scope: -1,
       ast: buildEmptyAst({ value: null, rawContent: "" }),
       flatAst: [],
       precedents: [],

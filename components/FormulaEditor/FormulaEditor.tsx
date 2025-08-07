@@ -31,7 +31,7 @@ import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 type State = "success" | "warning" | "error" | "loading";
 
 export interface FormulaEditorProps {
-  defaultScope: string;
+  defaultScope: number;
   defaultFormula?: string;
   flowProps?: Omit<AstFlowProps, "flatAst">;
   onFocus?: (uuid: string) => void;

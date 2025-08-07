@@ -4,7 +4,7 @@ import { useContent, type CellContent, type Reference } from "@/libs/sheetflow";
 
 export type ContentTextFieldProps = {
   reference: Reference;
-  scope?: string;
+  scope?: number;
 } & Omit<TextFieldProps, "value" | "defaultValue">;
 
 export const ContentTextField = (props: ContentTextFieldProps) => {
