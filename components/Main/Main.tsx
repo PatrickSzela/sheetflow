@@ -132,38 +132,40 @@ export const Main = (props: MainProps) => {
   return (
     <Stack {...restProps}>
       <Toolbar variant="dense">
-        <ToggleButtonGroup
-          size="small"
-          value={layoutOptions}
-          onChange={(_, value: LayoutOptions[]) => setLayoutOptions(value)}
-        >
-          <ToggleButton value={LayoutOptions.showDependencies}>
-            <FormatListNumberedIcon />
-          </ToggleButton>
-        </ToggleButtonGroup>
-
-        <FormControl>
-          <InputLabel id="language">Language</InputLabel>
-          <Select
-            labelId="language"
-            value={config.language}
+        <Stack direction="row" spacing={1}>
+          <ToggleButtonGroup
             size="small"
-            label="Language"
-            onChange={(e) => {
-              sf.setLanguage(e.target.value);
-            }}
+            value={layoutOptions}
+            onChange={(_, value: LayoutOptions[]) => setLayoutOptions(value)}
           >
-            {Object.entries(
-              (
-                sf.constructor as typeof SheetFlowEngine
-              ).getAllPrettyLanguages(),
-            ).map(([code, lang]) => (
-              <MenuItem key={code} value={code}>
-                {lang}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <ToggleButton
+              title="Toggle Dependencies sidebar"
+              value={LayoutOptions.showDependencies}
+            >
+              <FormatListNumberedIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
+
+          <FormControl>
+            <Select
+              value={config.language}
+              size="small"
+              onChange={(e) => {
+                sf.setLanguage(e.target.value);
+              }}
+            >
+              {Object.entries(
+                (
+                  sf.constructor as typeof SheetFlowEngine
+                ).getAllPrettyLanguages(),
+              ).map(([code, lang]) => (
+                <MenuItem key={code} value={code}>
+                  {lang}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Stack>
       </Toolbar>
 
       <Stack direction="row" flex={1}>
