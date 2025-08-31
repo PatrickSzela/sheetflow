@@ -18,7 +18,7 @@ import {
 import "@xyflow/react/dist/style.css";
 
 const sheets: Sheets = {
-  Sheet1: [],
+  Sheet1: [[1], [2], [3]],
 };
 
 export const App = () => {
