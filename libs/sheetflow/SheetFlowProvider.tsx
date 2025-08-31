@@ -1,4 +1,4 @@
-import { useMemo, type PropsWithChildren } from "react";
+import { useRef, type PropsWithChildren } from "react";
 import { SheetFlowContext } from "./SheetFlowContext";
 import { type NamedExpressions } from "./namedExpression";
 import { type Sheets } from "./sheet";
@@ -16,12 +16,11 @@ export const SheetFlowProvider = <T extends typeof SheetFlowEngine>(
 ) => {
   const { engine, sheets, namedExpressions, config, children } = props;
 
-  const engineInstance = useMemo(() => {
-    return engine.build(sheets, namedExpressions, config);
-  }, [config, engine, namedExpressions, sheets]);
+  const engineInstance = useRef<SheetFlowEngine>(null);
+  engineInstance.current ??= engine.build(sheets, namedExpressions, config);
 
   return (
-    <SheetFlowContext.Provider value={engineInstance}>
+    <SheetFlowContext.Provider value={engineInstance.current}>
       {children}
     </SheetFlowContext.Provider>
   );

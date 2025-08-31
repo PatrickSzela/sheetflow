@@ -19,9 +19,11 @@ import {
   type NamedExpression,
   type NamedExpressions,
   type Sheet,
+  type SheetFlowConfig,
   type Sheets,
   type Value,
 } from "@/libs/sheetflow";
+import { remapLanguageCode, unmapConfig } from "./config";
 import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
 import {
   remapCellAddress,
@@ -58,7 +60,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   static override build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: HyperFormulaConfig,
+    config?: Partial<SheetFlowConfig>,
   ): HyperFormulaEngine {
     const engine = new HyperFormulaEngine(sheets, namedExpressions, config);
     engine.registerEvents();
@@ -68,16 +70,17 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   constructor(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: HyperFormulaConfig,
+    config?: Partial<SheetFlowConfig>,
   ) {
-    super();
+    super(sheets, namedExpressions, config);
 
     this.hf = HyperFormula.buildFromSheets(
       {
         ...Object.fromEntries(Object.values(SpecialSheets).map((i) => [i, []])),
         ...sheets,
       },
-      config,
+      // TODO: move license key to .env file
+      { ...unmapConfig(this.config), licenseKey: "gpl-v3" },
     );
 
     if (namedExpressions) {
@@ -111,8 +114,19 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   }
 
   // #region engine
-  updateConfig(config: HyperFormulaConfig): void {
-    this.hf.updateConfig(config);
+  override updateConfig(config: SheetFlowConfig): void {
+    this.hf.updateConfig(unmapConfig(config));
+
+    super.updateConfig(config);
+
+    // when HyperFormula ends up rebuilding its entire instance because of a config change, it won't trigger `valuesUpdated` event even when calculated values in sheets change
+    this.recalculateEverything();
+  }
+
+  static override getAllLanguages(): string[] {
+    return HyperFormula.getRegisteredLanguagesCodes()
+      .map(remapLanguageCode)
+      .sort();
   }
   // #endregion
 

@@ -1,13 +1,11 @@
 import { useMemo } from "react";
 import { type ReactRenderer } from "@storybook/react-vite";
 import { type DecoratorFunction } from "storybook/internal/types";
-import {
-  HyperFormulaEngine,
-  type HyperFormulaConfig,
-} from "@/libs/hyperformula";
+import { HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   SheetFlowProvider,
   type NamedExpressions,
+  type SheetFlowConfig,
   type Sheets,
 } from "@/libs/sheetflow";
 import { groupPrefixedKeys } from "@/libs/utils";
@@ -15,10 +13,7 @@ import { type HfEngineProviderProps } from "./HfEngineProvider.args";
 
 const defaultSheets: Sheets = {};
 const defaultNamedExpressions: NamedExpressions = [];
-const defaultConfig = {
-  licenseKey: "gpl-v3",
-  language: "enUS",
-} satisfies HyperFormulaConfig;
+const defaultConfig: Partial<SheetFlowConfig> = {};
 
 export const withHfEngineProvider = (): DecoratorFunction<
   ReactRenderer,
@@ -38,14 +33,13 @@ export const withHfEngineProvider = (): DecoratorFunction<
         ...defaultNamedExpressions,
         ...(sf.namedExpressions ?? []),
       ];
-      const config: HyperFormulaConfig = {
+      const config: Partial<SheetFlowConfig> = {
         ...defaultConfig,
         ...sf.config,
-        language: sf.language ?? defaultConfig.language,
       };
 
       return [sheets, namedExpressions, config];
-    }, [sf.config, sf.language, sf.namedExpressions, sf.sheets]);
+    }, [sf.config, sf.namedExpressions, sf.sheets]);
 
     return (
       <SheetFlowProvider

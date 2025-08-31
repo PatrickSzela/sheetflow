@@ -91,7 +91,8 @@ export const remapAst = (
         isArrayFormula || hfFunction?.method === "arrayformula";
 
       return SheetFlow.buildFunctionAst({
-        functionName: ast.procedureName,
+        // `rawContent` contains the translated function name, while `ast.procedureName` is always in English
+        functionName: rawContent.split("(")[0],
         children: ast.args.map((i) =>
           remapAst(hf, i, address, undefined, arrayFormula),
         ),

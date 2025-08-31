@@ -4,7 +4,7 @@ import { isCellRange } from "./cellRange";
 import { type Value } from "./cellValue";
 import { isCellChange, isNamedExpressionChange } from "./change";
 import { type Reference } from "./reference";
-import { type Events } from "./sheetflowEngine";
+import { type SheetFlowEvents } from "./sheetflowEngine";
 import { useSheetFlow } from "./useSheetFlow";
 
 export const useValue = (reference: Reference): Value | undefined => {
@@ -17,7 +17,7 @@ export const useValue = (reference: Reference): Value | undefined => {
     if (isCellRange(reference))
       throw new Error("Cell range not yet implemented");
 
-    const onValuesChanged: Events["valuesChanged"] = (changes) => {
+    const onValuesChanged: SheetFlowEvents["valuesChanged"] = (changes) => {
       for (const change of changes) {
         if (
           isCellAddress(reference) &&

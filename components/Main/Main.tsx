@@ -4,7 +4,11 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import {
   Box,
   Drawer,
+  FormControl,
   IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   ToggleButton,
   ToggleButtonGroup,
@@ -18,6 +22,11 @@ import {
   type DrawerProps,
   type StackProps,
 } from "@mui/material";
+import {
+  SheetFlowEngine,
+  useSheetFlow,
+  useSheetFlowConfig,
+} from "@/libs/sheetflow";
 
 export interface MainProps extends StackProps {
   slotProps?: {
@@ -96,6 +105,8 @@ export const Main = (props: MainProps) => {
   const { drawer: _drawer = {} } = slotProps ?? {};
   const drawer = { ..._drawer };
 
+  const sf = useSheetFlow();
+  const config = useSheetFlowConfig();
   const theme = useTheme();
   const isNotMobile = useMediaQuery(theme.breakpoints.up("sm"));
 
@@ -130,6 +141,29 @@ export const Main = (props: MainProps) => {
             <FormatListNumberedIcon />
           </ToggleButton>
         </ToggleButtonGroup>
+
+        <FormControl>
+          <InputLabel id="language">Language</InputLabel>
+          <Select
+            labelId="language"
+            value={config.language}
+            size="small"
+            label="Language"
+            onChange={(e) => {
+              sf.setLanguage(e.target.value);
+            }}
+          >
+            {Object.entries(
+              (
+                sf.constructor as typeof SheetFlowEngine
+              ).getAllPrettyLanguages(),
+            ).map(([code, lang]) => (
+              <MenuItem key={code} value={code}>
+                {lang}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Toolbar>
 
       <Stack direction="row" flex={1}>

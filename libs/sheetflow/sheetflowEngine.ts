@@ -10,6 +10,7 @@ import {
 import { type CellRange } from "./cellRange";
 import { buildEmptyCellValue, type CellValue, type Value } from "./cellValue";
 import { type Change } from "./change";
+import { getPrettyLanguage } from "./config";
 import { flattenAst } from "./flattenAst";
 import { type NamedExpression, type NamedExpressions } from "./namedExpression";
 import { PlacedAst } from "./placedAst";
@@ -21,13 +22,18 @@ import {
   getPrecedents,
 } from "./utils";
 
-export type Events = {
+export type SheetFlowConfig = {
+  language: string;
+};
+
+export type SheetFlowEvents = {
   // TODO: removed sheet & named expression
+  configChanged: (config: SheetFlowConfig) => void;
   sheetAdded: (sheet: string) => void;
   namedExpressionAdded: (name: string) => void;
   valuesChanged: (changes: Change[]) => void;
 };
-export type SheetFlowEventEmitter = TypedEmitter<Events>;
+export type SheetFlowEventEmitter = TypedEmitter<SheetFlowEvents>;
 
 // TODO: move rest of the helpers in here
 // TODO: row/column range to string and from string
@@ -42,6 +48,10 @@ export type SheetFlowEventEmitter = TypedEmitter<Events>;
 // - nodes from getNodes() contain address instead of named expression's name and no scope
 
 export abstract class SheetFlowEngine {
+  static readonly DEFAULT_CONFIG = {
+    language: "en-US",
+  } satisfies SheetFlowConfig;
+
   protected valueErrorTypes: Record<string, string> = {
     "DIV/0": "#DIV/0!",
     "N/A": "#N/A",
@@ -52,6 +62,7 @@ export abstract class SheetFlowEngine {
     VALUE: "#VALUE!",
   };
 
+  protected config: SheetFlowConfig;
   protected placedAsts: Record<string, PlacedAst> = {};
   protected eventEmitter: SheetFlowEventEmitter =
     new EventEmitter() as SheetFlowEventEmitter;
@@ -59,19 +70,27 @@ export abstract class SheetFlowEngine {
   static build(
     sheets?: Sheets,
     namedExpressions?: NamedExpressions,
-    config?: unknown,
+    config?: Partial<SheetFlowConfig>,
   ): SheetFlowEngine {
     throw new Error("Called `build` function on an abstract class");
   }
 
-  constructor() {
+  constructor(
+    sheets?: Sheets,
+    namedExpressions?: NamedExpressions,
+    config?: Partial<SheetFlowConfig>,
+  ) {
+    this.config = { ...SheetFlowEngine.DEFAULT_CONFIG, ...config };
+
     // TODO: remove
     // @ts-expect-error make HF instance available in browser's console
     window.sf = this;
   }
 
   registerEvents(): void {
-    const astValuesChangedListener: Events["valuesChanged"] = (changes) => {
+    const astValuesChangedListener: SheetFlowEvents["valuesChanged"] = (
+      changes,
+    ) => {
       for (const uuid of Object.keys(this.placedAsts)) {
         if (this.isPlacedAstPartOfChanges(uuid, changes)) {
           this.placedAsts[uuid].updateValues(
@@ -81,7 +100,7 @@ export abstract class SheetFlowEngine {
       }
     };
 
-    const sheetNamedExpressionAdded: Events["sheetAdded"] = (name) => {
+    const sheetNamedExpressionAdded: SheetFlowEvents["sheetAdded"] = (name) => {
       for (const uuid of Object.keys(this.placedAsts)) {
         const { data } = this.placedAsts[uuid];
         const { formula, scope } = data;
@@ -100,7 +119,6 @@ export abstract class SheetFlowEngine {
 
   // #region abstract methods
   // engine
-  abstract updateConfig(config: Record<string, unknown>): void;
 
   // conversion
   abstract stringToCellAddress(address: string): CellAddress;
@@ -179,6 +197,33 @@ export abstract class SheetFlowEngine {
 
     if (empty === undefined) return items.length + 1;
     return empty - 1;
+  }
+
+  getConfig(): Readonly<SheetFlowConfig> {
+    return this.config;
+  }
+
+  updateConfig(config: Partial<SheetFlowConfig>): void {
+    this.config = { ...this.config, ...config };
+    this.eventEmitter.emit("configChanged", this.config);
+  }
+
+  getLanguage(): string {
+    return this.config.language;
+  }
+
+  setLanguage(languageCode: string): void {
+    this.updateConfig({ language: languageCode });
+  }
+
+  static getAllLanguages(): string[] {
+    return [];
+  }
+
+  static getAllPrettyLanguages(): Record<string, string> {
+    return Object.fromEntries(
+      this.getAllLanguages().map((v, _, arr) => [v, getPrettyLanguage(v, arr)]),
+    );
   }
 
   isAstPlaced(uuid: string): boolean {
@@ -300,6 +345,13 @@ export abstract class SheetFlowEngine {
 
       return false;
     });
+  }
+
+  recalculateEverything(): void {
+    for (const uuid of Object.keys(this.placedAsts)) {
+      const { formula, scope } = this.placedAsts[uuid].data;
+      this.updatePlacedAstWithFormula(uuid, formula, scope);
+    }
   }
 
   isErrorType(error: string): boolean {

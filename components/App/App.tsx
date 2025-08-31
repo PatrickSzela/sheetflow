@@ -1,34 +1,36 @@
+import { useMemo, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import { FormulaEditor } from "@/components/FormulaEditor";
 import { Main } from "@/components/Main";
-import {
-  HyperFormulaEngine,
-  type HyperFormulaConfig,
-} from "@/libs/hyperformula";
+import { HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   SheetFlowProvider,
+  findMostSimilarLanguage,
   groupReferencesBySheet,
   usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
+  type SheetFlowConfig,
   type Sheets,
 } from "@/libs/sheetflow";
 
 import "@xyflow/react/dist/style.css";
-
-import { useMemo, useState } from "react";
-
-const options: HyperFormulaConfig = {
-  licenseKey: "gpl-v3",
-  language: "enUS",
-};
 
 const sheets: Sheets = {
   Sheet1: [],
 };
 
 export const App = () => {
+  const options: SheetFlowConfig = useMemo(() => {
+    return {
+      language: findMostSimilarLanguage(
+        [...navigator.languages],
+        HyperFormulaEngine.getAllLanguages(),
+      ),
+    };
+  }, []);
+
   return (
     <SheetFlowProvider
       engine={HyperFormulaEngine}

@@ -1,3 +1,4 @@
+export * from "./config";
 export * from "./hyperformulaEngine";
 export * from "./remapAst";
 export * from "./remapCellAddress";
