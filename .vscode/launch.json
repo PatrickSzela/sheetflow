@@ -10,11 +10,30 @@
       "request": "launch",
       "command": "pnpm run storybook --no-open",
       "internalConsoleOptions": "openOnFirstSessionStart"
-      // "serverReadyAction": {
-      //   "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
-      //   "uriFormat": "%s",
-      //   "action": "debugWithChrome",
-      // }
+    },
+    {
+      "name": "Start Storybook in Firefox",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run storybook --no-open",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "serverReadyAction": {
+        "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Firefox against Storybook"
+      }
+    },
+    {
+      "name": "Start Storybook in Chrome",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run storybook --no-open",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "serverReadyAction": {
+        "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome"
+      }
     },
     {
       "name": "Launch Firefox against Storybook",
@@ -31,18 +50,12 @@
           "path": "${workspaceFolder}"
         }
       ]
-    }
-  ],
-  "compounds": [
+    },
     {
-      "name": "Debug Storybook in Firefox",
-      "configurations": ["Start Storybook", "Launch Firefox against Storybook"],
-      "stopAll": true,
-      "presentation": {
-        "hidden": false,
-        "group": "Storybook",
-        "order": 2
-      }
+      "name": "Launch Chrome against Storybook",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:6006"
     }
   ]
 }
