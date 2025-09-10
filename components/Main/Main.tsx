@@ -150,6 +150,7 @@ export const Main = (props: MainProps) => {
             <Select
               value={config.language}
               size="small"
+              title="Engine language"
               onChange={(e) => {
                 sf.setLanguage(e.target.value);
               }}
