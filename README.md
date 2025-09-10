@@ -1,50 +1,36 @@
-# React + TypeScript + Vite
+# SheetFlow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Visualize spreadsheet formulas (and, in the future, entire spreadsheets) as interactive graphs and calculate the value at each step.
 
-Currently, two official plugins are available:
+> [!NOTE]
+> This application is in the early stages of development.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+While SheetFlow isn't officially released yet, you can check the current state of the project here:
+- [Main App](https://sheetflow-storybook.patrickszela.workers.dev/iframe?viewMode=story&id=main--app-story)
+- [Storybook](https://sheetflow-storybook.patrickszela.workers.dev/)
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- Formula Visualization - visualize spreadsheet formulas as interactive graphs
+- Step-by-Step Calculation - see the calculated value for every part of the formula
+- Live Dependency Editing - automatically detects all formula dependencies and allows you to change their values on the fly
+- Fully Private - all calculations and data processing happen directly in your browser; no data ever leaves your device
+- Light and Dark Mode
+- Open Source
 
-- Configure the top-level `parserOptions` property like this:
+## Roadmap
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+While there's still much to implement, here's a list of key planned features:
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+- Visualize multiple formulas in a tile- and tab-based interface
+- Improve compatibility with popular spreadsheet applications
+- Load and visualize entire spreadsheet files
+- Integrate different calculation engines
+- Construct formulas using the graph interface
+- Implement as an add-on for popular spreadsheet applications
+- Add support for internationalization
+- And much more!
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## License
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+SheetFlow is an open source software currently released under GPLv3 (GNU General Public License v3.0). The long-term plan is to re-license the core application under the MIT license, while the calculation engines will retain their respective licenses.
