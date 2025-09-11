@@ -1,55 +1,60 @@
 import { type HyperFormula, type SimpleCellAddress } from "hyperformula";
+import { ArrayPlugin } from "hyperformula/es/interpreter/plugin/ArrayPlugin";
 import * as SheetFlow from "@/libs/sheetflow";
 import { remapCellAddress } from "./remapCellAddress";
 import { AstNodeType, getOperator, type Ast } from "./utils";
+
+export type AstEngineData = {
+  isPartOfArrayFormula: boolean;
+};
 
 export const remapAst = (
   hf: HyperFormula,
   ast: Ast,
   address: SimpleCellAddress,
   rootUUID?: string,
-  isArrayFormula = false,
+  isPartOfArrayFormula = false,
 ): SheetFlow.Ast => {
   const rawContent = hf.unparser.unparse(ast, address).slice(1);
   const { type } = ast;
 
-  const id = rootUUID !== undefined ? { id: rootUUID } : undefined;
+  const baseData = {
+    ...(rootUUID !== undefined ? { id: rootUUID } : undefined),
+    rawContent: type === AstNodeType.EMPTY ? "" : rawContent,
+    engineData: {
+      isPartOfArrayFormula,
+    },
+  } satisfies Partial<SheetFlow.Ast>;
 
   switch (type) {
     case AstNodeType.EMPTY: {
       return SheetFlow.buildEmptyAst({
+        ...baseData,
         value: null,
-        rawContent: "",
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.NUMBER: {
       return SheetFlow.buildNumberAst({
+        ...baseData,
         value: ast.value,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.STRING: {
       return SheetFlow.buildStringAst({
+        ...baseData,
         value: ast.value,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.MINUS_UNARY_OP:
     case AstNodeType.PLUS_UNARY_OP:
     case AstNodeType.PERCENT_OP: {
       return SheetFlow.buildUnaryExpressionAst({
+        ...baseData,
         operator: getOperator(ast.type),
-        children: [remapAst(hf, ast.value, address, undefined, isArrayFormula)],
+        children: [
+          remapAst(hf, ast.value, address, undefined, isPartOfArrayFormula),
+        ],
         operatorOnRight: ast.type === AstNodeType.PERCENT_OP,
-        rawContent,
-        ...id,
-        isArrayFormula,
         requirements: {
           minChildCount: 1,
           maxChildCount: 1,
@@ -69,14 +74,12 @@ export const remapAst = (
     case AstNodeType.DIV_OP:
     case AstNodeType.POWER_OP: {
       return SheetFlow.buildBinaryExpressionAst({
+        ...baseData,
         operator: getOperator(ast.type),
         children: [
-          remapAst(hf, ast.left, address, undefined, isArrayFormula),
-          remapAst(hf, ast.right, address, undefined, isArrayFormula),
+          remapAst(hf, ast.left, address, undefined, isPartOfArrayFormula),
+          remapAst(hf, ast.right, address, undefined, isPartOfArrayFormula),
         ],
-        rawContent,
-        ...id,
-        isArrayFormula,
         requirements: {
           minChildCount: 2,
           maxChildCount: 2,
@@ -88,17 +91,17 @@ export const remapAst = (
         ?.implementedFunctions[ast.procedureName];
 
       const arrayFormula =
-        isArrayFormula || hfFunction?.method === "arrayformula";
+        isPartOfArrayFormula ||
+        hfFunction?.method ===
+          ArrayPlugin.implementedFunctions["ARRAYFORMULA"].method;
 
       return SheetFlow.buildFunctionAst({
+        ...baseData,
         // `rawContent` contains the translated function name, while `ast.procedureName` is always in English
         functionName: rawContent.split("(")[0],
         children: ast.args.map((i) =>
           remapAst(hf, i, address, undefined, arrayFormula),
         ),
-        rawContent,
-        ...id,
-        isArrayFormula: arrayFormula,
         requirements: {
           minChildCount:
             hfFunction?.parameters?.filter(
@@ -110,20 +113,22 @@ export const remapAst = (
     }
     case AstNodeType.NAMED_EXPRESSION: {
       return SheetFlow.buildNamedExpressionReferenceAst({
+        ...baseData,
         expressionName: ast.expressionName,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.PARENTHESIS: {
       return SheetFlow.buildParenthesisAst({
+        ...baseData,
         children: [
-          remapAst(hf, ast.expression, address, undefined, isArrayFormula),
+          remapAst(
+            hf,
+            ast.expression,
+            address,
+            undefined,
+            isPartOfArrayFormula,
+          ),
         ],
-        rawContent,
-        ...id,
-        isArrayFormula,
         requirements: {
           minChildCount: 1,
           maxChildCount: 1,
@@ -132,66 +137,54 @@ export const remapAst = (
     }
     case AstNodeType.CELL_REFERENCE: {
       return SheetFlow.buildCellReferenceAst({
+        ...baseData,
         reference: remapCellAddress(ast.reference.toSimpleCellAddress(address)),
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.CELL_RANGE: {
       return SheetFlow.buildCellRangeReferenceAst({
+        ...baseData,
         start: remapCellAddress(ast.start.toSimpleCellAddress(address)),
         end: remapCellAddress(ast.end.toSimpleCellAddress(address)),
         sheet: ast.start.toSimpleCellAddress(address).sheet,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.COLUMN_RANGE: {
       return SheetFlow.buildColumnRangeReferenceAst({
+        ...baseData,
         start: ast.start.col,
         end: ast.end.col,
         sheet: ast.start.toSimpleColumnAddress(address).sheet,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.ROW_RANGE: {
       return SheetFlow.buildRowRangeReferenceAst({
+        ...baseData,
         start: ast.start.row,
         end: ast.end.row,
         sheet: ast.start.toSimpleRowAddress(address).sheet,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.ERROR: {
       return SheetFlow.buildErrorAst({
+        ...baseData,
         error: ast.error.type,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.ERROR_WITH_RAW_INPUT: {
       return SheetFlow.buildErrorAst({
+        ...baseData,
         error: ast.error.type,
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
     case AstNodeType.ARRAY: {
       return SheetFlow.buildArrayAst({
+        ...baseData,
         value: ast.args.map((a) =>
-          a.map((b) => remapAst(hf, b, address, undefined, isArrayFormula)),
+          a.map((b) =>
+            remapAst(hf, b, address, undefined, isPartOfArrayFormula),
+          ),
         ),
-        rawContent,
-        ...id,
-        isArrayFormula,
       });
     }
   }

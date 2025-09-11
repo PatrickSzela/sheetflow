@@ -174,7 +174,6 @@ export abstract class SheetFlowEngine {
   // formula AST
   abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
   abstract getAstFromFormula(uuid: string, formula: string, scope: number): Ast;
-  abstract astToFormula(ast: Ast): string;
 
   // evaluation
   abstract pauseEvaluation(): void;
@@ -224,6 +223,10 @@ export abstract class SheetFlowEngine {
     return Object.fromEntries(
       this.getAllLanguages().map((v, _, arr) => [v, getPrettyLanguage(v, arr)]),
     );
+  }
+
+  astToFormula(ast: Ast): string {
+    return `=${ast.rawContent}`;
   }
 
   isAstPlaced(uuid: string): boolean {

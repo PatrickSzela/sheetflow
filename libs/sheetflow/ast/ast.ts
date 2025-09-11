@@ -84,7 +84,7 @@ export interface AstBase<TType extends AstNodeType = AstNodeType> {
   type: TType;
   id: string;
   rawContent: string;
-  isArrayFormula?: boolean;
+  engineData?: Record<string, any>;
 }
 
 type BuildBaseAstFnArgs<T extends AstBase> = Omit<T, "id"> &
@@ -105,14 +105,14 @@ export const buildAst = <
 export const isAst = (ast: unknown): ast is AstBase => {
   if (typeof ast !== "object") return false;
 
-  const { type, id, rawContent, isArrayFormula } = ast as Partial<AstBase>;
+  const { type, id, rawContent, engineData } = ast as Partial<AstBase>;
 
   return (
     type !== undefined &&
     type in AstNodeType &&
     typeof id === "string" &&
     typeof rawContent === "string" &&
-    (typeof isArrayFormula === "boolean" || isArrayFormula === undefined)
+    ["undefined", "object"].includes(typeof engineData)
   );
 };
 

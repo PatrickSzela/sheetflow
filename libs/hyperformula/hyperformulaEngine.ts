@@ -23,8 +23,12 @@ import {
   type Sheets,
   type Value,
 } from "@/libs/sheetflow";
-import { remapLanguageCode, unmapConfig } from "./config";
-import { ensureReferencesInAstHaveSheetNames, remapAst } from "./remapAst";
+import { remapLanguageCode, unmapConfig, unmapLanguageCode } from "./config";
+import {
+  ensureReferencesInAstHaveSheetNames,
+  remapAst,
+  type AstEngineData,
+} from "./remapAst";
 import {
   remapCellAddress,
   remapCellRange,
@@ -416,11 +420,22 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     return remapAst(this.hf, astWithSheetNames, hfAddress, uuid);
   }
 
-  astToFormula(ast: Ast): string {
-    // every language supported by HyperFormula doesn't translate `ARRAYFORMULA` function name, so this should theoretically always work
-    return ast.isArrayFormula
-      ? `=ARRAYFORMULA(${ast.rawContent})`
-      : `=${ast.rawContent}`;
+  override astToFormula(ast: Ast): string {
+    // wrap formula in `ARRAYFORMULA()` function so we can properly calculate each part of the formula when one of its ancestors is an `ARRAYFORMULA` function
+    // this is only necessary when HF's `useArrayArithmetic` mode is disabled, since when enabled HF handles this stuff automatically
+    if (
+      "engineData" in ast &&
+      !this.hf.getConfig().useArrayArithmetic &&
+      (ast.engineData as AstEngineData).isPartOfArrayFormula
+    ) {
+      const arrayFormulaFnName =
+        Languages[unmapLanguageCode(this.getLanguage())].functions[
+          "ARRAYFORMULA"
+        ];
+      return `=${arrayFormulaFnName}(${ast.rawContent})`;
+    }
+
+    return super.astToFormula(ast);
   }
   // #endregion
 
