@@ -84,7 +84,11 @@ export class HyperFormulaEngine extends SheetFlowEngine {
         ...sheets,
       },
       // TODO: move license key to .env file
-      { ...unmapConfig(this.config), licenseKey: "gpl-v3" },
+      {
+        ...unmapConfig(this.config),
+        licenseKey: "gpl-v3",
+        useArrayArithmetic: true,
+      },
     );
 
     if (namedExpressions) {
