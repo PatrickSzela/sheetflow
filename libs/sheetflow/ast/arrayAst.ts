@@ -9,6 +9,7 @@ import {
   type BuildFn,
 } from "./ast";
 
+// array constants (e.g. `{1,2,3;4,5,6}`) can be up to 2 dimensions
 export interface ArrayAst extends AstWithValue<AstNodeSubtype.ARRAY, Ast[][]> {}
 
 export const buildArrayAst: BuildFn<ArrayAst> = (args) =>

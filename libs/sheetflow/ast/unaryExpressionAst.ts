@@ -11,7 +11,7 @@ import {
 export interface UnaryExpressionAst
   extends AstWithChildren<AstNodeType.UNARY_EXPRESSION, [Ast]> {
   operator: string;
-  operatorOnRight: boolean;
+  operatorOnRight: boolean; // for % operator
 }
 
 export const buildUnaryExpressionAst: BuildFn<UnaryExpressionAst> = (args) =>
