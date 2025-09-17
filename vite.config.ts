@@ -34,6 +34,8 @@ export default defineConfig({
     root: path.resolve(__dirname),
     coverage: {
       exclude: ["./storybook-static"],
+      // disable generation of coverage reports
+      reporter: ["text"],
     },
   },
 });
