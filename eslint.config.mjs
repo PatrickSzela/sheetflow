@@ -43,7 +43,6 @@ export default tseslint.config(
         "error",
         { allowInterfaces: "always" },
       ],
-      "react-hooks/react-compiler": "error",
     },
   },
 
