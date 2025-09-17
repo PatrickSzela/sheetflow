@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import path from "node:path";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import react from "@vitejs/plugin-react-swc";
@@ -27,4 +29,11 @@ export default defineConfig({
   // match Next.js locations
   root: path.resolve(__dirname, "./app"),
   publicDir: path.resolve(__dirname, "./public"),
+
+  test: {
+    root: path.resolve(__dirname),
+    coverage: {
+      exclude: ["./storybook-static"],
+    },
+  },
 });
