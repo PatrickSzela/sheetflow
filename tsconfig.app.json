@@ -9,6 +9,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
+    "incremental": true,
 
     /* Bundler mode */
     "moduleResolution": "Bundler",

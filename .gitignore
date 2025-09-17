@@ -35,6 +35,9 @@ dist-ssr
 *storybook.log
 storybook-static/
 
+# ESLint
+.eslintcache
+
 # Cloudflare
 .wrangler
 .dev.vars*
