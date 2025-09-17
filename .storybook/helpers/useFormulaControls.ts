@@ -28,6 +28,7 @@ export const useFormulaControls = (args: FormulaControlsProps) => {
   useEffect(() => {
     try {
       updateFormula(formula, sf.getSheetIdWithError(scope));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(undefined);
     } catch (e) {
       if (e instanceof Error) setError(e);

@@ -36,6 +36,7 @@ export const useContent = (
     // TODO: create `ContentChanged` event in SheetFlow
 
     if (isCellAddress(reference)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setContent(sf.getCell(reference));
     } else if (isCellRange(reference)) {
       // FIXME: implement cell range

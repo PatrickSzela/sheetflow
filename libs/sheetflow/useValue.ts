@@ -37,6 +37,7 @@ export const useValue = (reference: Reference): Value | undefined => {
       }
     };
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(
       isCellAddress(reference)
         ? sf.getCellValue(reference)
