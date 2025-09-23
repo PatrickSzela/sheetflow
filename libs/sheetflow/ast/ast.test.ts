@@ -145,8 +145,9 @@ const allIsFns = new Set(
   Object.values(astTestData).flatMap(({ isFn }) => isFn),
 ).difference(new Set([Ast.isAstWithChildren, Ast.isAstWithValue, Ast.isAst]));
 
-Object.entries(astTestData).forEach(([name, { buildFn, isFn, data }]) => {
-  describe(`${name} AST`, () => {
+describe.for(Object.entries(astTestData))(
+  "%s AST",
+  ([name, { buildFn, isFn, data }]) => {
     const ast = (buildFn as (d: typeof data) => ReturnType<typeof buildFn>)(
       data,
     );
@@ -190,5 +191,5 @@ Object.entries(astTestData).forEach(([name, { buildFn, isFn, data }]) => {
       expect(isFn([1, 2, 3])).toEqual(false);
       expect(isFn({ test: 1 })).toEqual(false);
     });
-  });
-});
+  },
+);
