@@ -18,7 +18,9 @@ export const unmapLanguageCode = (languageCode: string) => {
   return lang as keyof Omit<typeof Languages, "default">;
 };
 
-export const remapConfig = (config: HyperFormulaConfig): SheetFlowConfig => {
+export const remapConfig = (
+  config: HyperFormulaConfig,
+): Partial<SheetFlowConfig> => {
   return {
     language: remapLanguageCode(config.language ?? "enGB"),
   };

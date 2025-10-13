@@ -22,7 +22,7 @@ const sheets: Sheets = {
 };
 
 export const App = () => {
-  const options: SheetFlowConfig = useMemo(() => {
+  const options = useMemo<Partial<SheetFlowConfig>>(() => {
     return {
       language: findMostSimilarLanguage(
         [...navigator.languages],

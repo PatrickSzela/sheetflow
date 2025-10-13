@@ -122,8 +122,8 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   }
 
   // #region engine
-  override updateConfig(config: SheetFlowConfig): void {
-    this.hf.updateConfig(unmapConfig(config));
+  override updateConfig(config: Partial<SheetFlowConfig>): void {
+    this.hf.updateConfig(unmapConfig({ ...this.config, ...config }));
 
     super.updateConfig(config);
 
