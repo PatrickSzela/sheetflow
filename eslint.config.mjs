@@ -2,17 +2,21 @@ import js from "@eslint/js";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import storybook from "eslint-plugin-storybook";
+import { defineConfig, globalIgnores } from "eslint/config";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
-export default tseslint.config(
+export default defineConfig([
   // Vite
-  { ignores: ["dist"] },
+  globalIgnores(["dist"]),
   {
+    files: ["**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommendedTypeChecked,
-      ...tseslint.configs.stylisticTypeChecked,
+      tseslint.configs.recommendedTypeChecked,
+      tseslint.configs.stylisticTypeChecked,
+      reactHooks.configs.flat["recommended-latest"],
+      reactRefresh.configs.vite,
       {
         languageOptions: {
           parserOptions: {
@@ -22,17 +26,11 @@ export default tseslint.config(
         },
       },
     ],
-    files: ["**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
     },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
     rules: {
-      ...reactHooks.configs.recommended.rules,
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/consistent-type-definitions": "off",
       "react-refresh/only-export-components": [
@@ -51,4 +49,4 @@ export default tseslint.config(
   {
     ignores: ["!**/.storybook", "**/storybook-static"],
   },
-);
+]);
