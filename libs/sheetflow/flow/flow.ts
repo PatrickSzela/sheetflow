@@ -14,6 +14,20 @@ import {
 } from "../ast";
 import { buildStringCellValue, printCellValue, type Value } from "../cellValue";
 
+const findNearestChild = (
+  ast: Ast,
+  allowParenthesis = true,
+  allowValues = true,
+) => {
+  if (allowParenthesis && allowValues) return ast;
+
+  if (!allowParenthesis && ast.type === AstNodeType.PARENTHESIS)
+    return findNearestChild(ast.children[0], allowParenthesis, allowValues);
+  else if (!allowValues && ast.type === AstNodeType.VALUE) return null;
+
+  return ast;
+};
+
 export const generateNodes = (
   flatAst: Ast[],
   nodeSettings: NodeSettings,
@@ -38,7 +52,7 @@ export const generateNodes = (
     if (isAstWithChildren(ast)) {
       inputs = ast.children.map((child, idx) => ({
         value: buildStringCellValue({ value: child.rawContent }),
-        ...((generateValues || !isAstWithValue(child)) && {
+        ...(findNearestChild(child, generateParenthesis, generateValues) && {
           handleId: `${idx}`,
         }),
       }));
@@ -61,13 +75,6 @@ export const generateNodes = (
   return nodes;
 };
 
-const findNearestNonParenthesisChild = (ast: Ast) => {
-  if (ast.type === AstNodeType.PARENTHESIS)
-    return findNearestNonParenthesisChild(ast.children[0]);
-
-  return ast;
-};
-
 export const generateEdges = (
   flatAst: Ast[],
   generateParenthesis = true,
@@ -82,16 +89,20 @@ export const generateEdges = (
     ast.children.forEach((inner, idx) => {
       if (!generateValues && isAstWithValue(inner)) return;
 
-      const child = !generateParenthesis
-        ? findNearestNonParenthesisChild(inner)
-        : inner;
+      const child = findNearestChild(
+        inner,
+        generateParenthesis,
+        generateValues,
+      );
 
-      arr.push({
-        id: `${child.id} - ${ast.id}`,
-        source: child.id,
-        target: ast.id,
-        targetHandle: `${idx}`,
-      });
+      if (child) {
+        arr.push({
+          id: `${child.id} - ${ast.id}`,
+          source: child.id,
+          target: ast.id,
+          targetHandle: `${idx}`,
+        });
+      }
     });
   }
 
