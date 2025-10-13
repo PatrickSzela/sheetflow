@@ -17,16 +17,16 @@ import { buildStringCellValue, printCellValue, type Value } from "../cellValue";
 export const generateNodes = (
   flatAst: Ast[],
   nodeSettings: NodeSettings,
-  skipParenthesis = false,
-  skipValues = false,
+  generateParenthesis = true,
+  generateValues = true,
 ): AstNode[] => {
   let flat = flatAst;
 
-  if (skipParenthesis && flat.length > 1) {
+  if (!generateParenthesis && flat.length > 1) {
     flat = flat.filter((i) => !isParenthesisAst(i));
   }
 
-  if (skipValues && flat.length > 1) {
+  if (!generateValues && flat.length > 1) {
     flat = flat.filter((i) => !isAstWithValue(i));
   }
 
@@ -38,7 +38,9 @@ export const generateNodes = (
     if (isAstWithChildren(ast)) {
       inputs = ast.children.map((child, idx) => ({
         value: buildStringCellValue({ value: child.rawContent }),
-        ...((!skipValues || !isAstWithValue(child)) && { handleId: `${idx}` }),
+        ...((generateValues || !isAstWithValue(child)) && {
+          handleId: `${idx}`,
+        }),
       }));
     }
 
@@ -68,19 +70,19 @@ const findNearestNonParenthesisChild = (ast: Ast) => {
 
 export const generateEdges = (
   flatAst: Ast[],
-  skipParenthesis = false,
-  skipValues = false,
+  generateParenthesis = true,
+  generateValues = true,
 ): Edge[] => {
   const arr: Edge[] = [];
 
   for (const ast of flatAst) {
     if (!isAstWithChildren(ast)) continue;
-    if (skipParenthesis && isParenthesisAst(ast)) continue;
+    if (!generateParenthesis && isParenthesisAst(ast)) continue;
 
     ast.children.forEach((inner, idx) => {
-      if (skipValues && isAstWithValue(inner)) return;
+      if (!generateValues && isAstWithValue(inner)) return;
 
-      const child = skipParenthesis
+      const child = !generateParenthesis
         ? findNearestNonParenthesisChild(inner)
         : inner;
 

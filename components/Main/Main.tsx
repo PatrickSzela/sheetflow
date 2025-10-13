@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Close from "@mui/icons-material/Close";
+import DataArrayIcon from "@mui/icons-material/DataArray";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import SixtyFpsIcon from "@mui/icons-material/SixtyFps";
 import Box, { type BoxProps } from "@mui/material/Box";
 import Drawer, { type DrawerProps } from "@mui/material/Drawer";
 import FormControl from "@mui/material/FormControl";
@@ -89,8 +91,10 @@ const MainRoot = styled(Box, {
   };
 });
 
-enum LayoutOptions {
+enum Settings {
   showDependencies = "showDependencies",
+  generateParenthesis = "generateParenthesis",
+  generateValues = "generateValues",
 }
 
 export const Main = (props: MainProps) => {
@@ -103,18 +107,18 @@ export const Main = (props: MainProps) => {
   const theme = useTheme();
   const isNotMobile = useMediaQuery(theme.breakpoints.up("sm"));
 
-  const [layoutOptions, setLayoutOptions] = useState<LayoutOptions[]>(
-    isNotMobile ? [LayoutOptions.showDependencies] : [],
-  );
+  const [settings, setSettings] = useState<Settings[]>([
+    ...(isNotMobile ? [Settings.showDependencies] : []),
+    ...(config.flow.generateParenthesis ? [Settings.generateParenthesis] : []),
+    ...(config.flow.generateValues ? [Settings.generateValues] : []),
+  ]);
 
   const closeDependencies = () => {
-    setLayoutOptions((prev) =>
-      prev.filter((i) => i !== LayoutOptions.showDependencies),
-    );
+    setSettings((prev) => prev.filter((i) => i !== Settings.showDependencies));
   };
 
   drawer.anchor ??= "left";
-  drawer.open = layoutOptions.includes(LayoutOptions.showDependencies);
+  drawer.open = settings.includes(Settings.showDependencies);
 
   const child = (
     <MainRoot drawerAnchor={drawer.anchor ?? "left"} drawerOpen={drawer.open}>
@@ -128,14 +132,38 @@ export const Main = (props: MainProps) => {
         <Stack direction="row" spacing={1}>
           <ToggleButtonGroup
             size="small"
-            value={layoutOptions}
-            onChange={(_, value: LayoutOptions[]) => setLayoutOptions(value)}
+            value={settings}
+            onChange={(_, value: Settings[]) => {
+              const generateParenthesis = value.includes(
+                Settings.generateParenthesis,
+              );
+              const generateValues = value.includes(Settings.generateValues);
+
+              sf.updateConfig({
+                flow: { generateParenthesis, generateValues },
+              });
+              setSettings(value);
+            }}
           >
             <ToggleButton
               title="Toggle Dependencies sidebar"
-              value={LayoutOptions.showDependencies}
+              value={Settings.showDependencies}
             >
               <FormatListNumberedIcon />
+            </ToggleButton>
+
+            <ToggleButton
+              title="Generate Value nodes"
+              value={Settings.generateValues}
+            >
+              <SixtyFpsIcon />
+            </ToggleButton>
+
+            <ToggleButton
+              title="Generate Parenthesis nodes"
+              value={Settings.generateParenthesis}
+            >
+              <DataArrayIcon />
             </ToggleButton>
           </ToggleButtonGroup>
 

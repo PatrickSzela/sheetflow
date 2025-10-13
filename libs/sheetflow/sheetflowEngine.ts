@@ -53,8 +53,8 @@ export abstract class SheetFlowEngine {
   static readonly DEFAULT_CONFIG = {
     language: "en-US",
     flow: {
-      skipParenthesis: true,
-      skipValues: false,
+      generateParenthesis: false,
+      generateValues: true,
     },
   } satisfies SheetFlowConfig;
 

@@ -28,8 +28,8 @@ export type PlacedAstData = {
   missing: MissingReferences;
 };
 export type PlacedAstFlowSettings = {
-  skipParenthesis: boolean;
-  skipValues: boolean;
+  generateParenthesis: boolean;
+  generateValues: boolean;
 };
 export type PlacedAstFlow = {
   nodes: AstNode[];
@@ -70,8 +70,8 @@ export class PlacedAst {
       nodes: [],
       edges: [],
       id: "",
-      skipParenthesis: false,
-      skipValues: false,
+      generateParenthesis: false,
+      generateValues: false,
       ...flowSettings,
     };
     this.values = values ?? {};
@@ -104,15 +104,15 @@ export class PlacedAst {
 
   async generateFlow() {
     const { flatAst } = this.data;
-    const { skipParenthesis, skipValues } = this.flow;
+    const { generateParenthesis, generateValues } = this.flow;
 
-    const edges = generateEdges(flatAst, skipParenthesis, skipValues);
+    const edges = generateEdges(flatAst, generateParenthesis, generateValues);
 
     const initNodes = generateNodes(
       flatAst,
       AstNode.settings,
-      skipParenthesis,
-      skipValues,
+      generateParenthesis,
+      generateValues,
     );
 
     const id = crypto.randomUUID();
