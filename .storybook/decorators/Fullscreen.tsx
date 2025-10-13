@@ -1,5 +1,5 @@
 import { type ReactRenderer } from "@storybook/react-vite";
-import { type DecoratorFunction } from "storybook/internal/types";
+import { type DecoratorFunction } from "storybook/internal/csf";
 
 export const withFullscreen = (): DecoratorFunction<ReactRenderer> => {
   return function FullscreenDecorator(Story) {

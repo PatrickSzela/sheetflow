@@ -1,6 +1,6 @@
 import { type ReactRenderer } from "@storybook/react-vite";
 import { ReactFlowProvider } from "@xyflow/react";
-import { type DecoratorFunction } from "storybook/internal/types";
+import { type DecoratorFunction } from "storybook/internal/csf";
 
 export const withReactFlowProvider = (): DecoratorFunction<ReactRenderer> => {
   return function ReactFlowProviderDecorator(Story) {

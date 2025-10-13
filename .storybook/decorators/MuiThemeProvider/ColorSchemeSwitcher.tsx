@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useColorScheme } from "@mui/material";
 import { type ReactRenderer } from "@storybook/react-vite";
-import { type StoryContext } from "storybook/internal/types";
+import { type StoryContext } from "storybook/internal/csf";
 
 export type Theme = "system" | "light" | "dark";
 

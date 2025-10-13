@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { type ReactRenderer } from "@storybook/react-vite";
-import { type DecoratorFunction } from "storybook/internal/types";
+import type { DecoratorFunction } from "storybook/internal/csf";
 import { HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   SheetFlowProvider,
