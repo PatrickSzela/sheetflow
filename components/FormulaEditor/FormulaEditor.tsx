@@ -139,6 +139,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
       <Overlay>
         <Paper elevation={4} sx={{ gridArea: "top", borderRadius: 40 }}>
           <OutlinedInput
+            className="FormulaInput"
             value={formula}
             onChange={(e) => {
               updateFormula(e.target.value);

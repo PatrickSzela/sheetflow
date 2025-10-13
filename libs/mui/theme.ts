@@ -1,13 +1,12 @@
-import { createTheme } from "@mui/material/styles";
-
-import type {} from "./themeAugmentation.d.ts";
-
 import {
   outlinedInputClasses,
   type OutlinedInputProps,
 } from "@mui/material/OutlinedInput";
 import type { PaperProps } from "@mui/material/Paper";
+import { createTheme } from "@mui/material/styles";
 import { enhanceTheme, generatePaletteVariants, mixColors } from "./utils";
+
+import type {} from "./themeAugmentation.d.ts";
 
 const base = createTheme({
   colorSchemes: {
@@ -28,6 +27,10 @@ const tokens: Parameters<typeof createTheme>[0] = {
     MuiOutlinedInput: {
       styleOverrides: {
         root: ({ theme }) => ({
+          [`&.FormulaInput .${outlinedInputClasses.notchedOutline}`]: {
+            borderWidth: 2,
+          },
+
           transition: theme.transitions.create(["background-color"], {
             duration: theme.transitions.duration.shortest,
           }),
@@ -37,8 +40,6 @@ const tokens: Parameters<typeof createTheme>[0] = {
           paddingRight: theme.spacing(1),
         }),
         notchedOutline: ({ theme }) => ({
-          borderWidth: 2,
-
           transition: theme.transitions.create(["border-color"], {
             duration: theme.transitions.duration.shortest,
           }),
@@ -55,7 +56,7 @@ const tokens: Parameters<typeof createTheme>[0] = {
               const action = (theme.vars || theme).palette.action;
 
               return {
-                [`& .${outlinedInputClasses.notchedOutline}`]: {
+                [`&.FormulaInput .${outlinedInputClasses.notchedOutline}`]: {
                   borderColor: palette.main,
                 },
 
