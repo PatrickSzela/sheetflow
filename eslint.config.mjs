@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import vitest from "@vitest/eslint-plugin";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import storybook from "eslint-plugin-storybook";
@@ -17,6 +18,7 @@ export default defineConfig([
       tseslint.configs.stylisticTypeChecked,
       reactHooks.configs.flat["recommended-latest"],
       reactRefresh.configs.vite,
+      vitest.configs.recommended,
       {
         languageOptions: {
           parserOptions: {
