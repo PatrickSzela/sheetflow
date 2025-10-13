@@ -27,14 +27,16 @@ export const useFormulaControls = (args: FormulaControlsProps) => {
 
   useEffect(() => {
     try {
-      updateFormula(formula, sf.getSheetIdWithError(scope));
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setError(undefined);
+      if (placedAst.data.formula !== formula) {
+        updateFormula(formula, sf.getSheetIdWithError(scope));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setError(undefined);
+      }
     } catch (e) {
       if (e instanceof Error) setError(e);
       else throw e;
     }
-  }, [formula, scope, sf, updateFormula]);
+  }, [formula, placedAst.data.formula, scope, sf, updateFormula]);
 
   return { placedAst, error };
 };

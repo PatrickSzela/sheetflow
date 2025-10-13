@@ -13,48 +13,43 @@ import {
   useFormulaControls,
   type FormulaControlsProps,
 } from "@/.storybook/helpers";
-import { useInjectValuesToFlow } from "@/components/FormulaEditor";
-import { usePlacedAstData } from "@/libs/sheetflow";
 import { AstFlow, type AstFlowProps } from "./AstFlow";
 
-type MetaArgs = FormulaControlsProps & AstFlowProps & HfEngineProviderProps;
+type MetaArgs = FormulaControlsProps &
+  Omit<AstFlowProps, "placedAst"> &
+  HfEngineProviderProps;
+
+const AstFlowWrapper = (props: MetaArgs) => {
+  const { formula, scope, ...rest } = props;
+
+  const { placedAst, error } = useFormulaControls(props);
+
+  return (
+    <React.Fragment>
+      <AstFlow {...rest} placedAst={placedAst} />
+
+      {error ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.85)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            color: "white",
+          }}
+        >
+          {error.message}
+        </div>
+      ) : null}
+    </React.Fragment>
+  );
+};
 
 const meta = {
   title: "Components/Formula",
-  component: AstFlow,
-  render: (args) => {
-    const { formula, scope, ...rest } = args;
-
-    const { placedAst, error } = useFormulaControls(args);
-    const { flatAst } = usePlacedAstData(placedAst);
-    const { injectValues } = useInjectValuesToFlow(placedAst);
-
-    return (
-      <React.Fragment>
-        <AstFlow
-          {...rest}
-          enhanceGeneratedFlow={injectValues}
-          flatAst={flatAst}
-        />
-
-        {error ? (
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              backgroundColor: "rgba(0,0,0,0.85)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "white",
-            }}
-          >
-            {error.message}
-          </div>
-        ) : null}
-      </React.Fragment>
-    );
-  },
+  component: AstFlowWrapper,
   parameters: {
     layout: "fullscreen",
   },
@@ -66,11 +61,9 @@ const meta = {
   argTypes: {
     ...HfEngineProviderArgTypes,
     ...FormulaControlsArgTypes,
-    flatAst: { table: { disable: true } },
   },
   args: {
     ...HfEngineProviderArgs,
-    flatAst: [],
   },
 } satisfies Meta<MetaArgs>;
 

@@ -23,14 +23,13 @@ import {
   useUpdateFormulaDebounced,
   type MissingReferences,
 } from "@/libs/sheetflow";
-import { useInjectValuesToFlow } from "./useInjectValuesToFlow";
 
 type State = "success" | "warning" | "error" | "loading";
 
 export interface FormulaEditorProps {
   defaultScope: number;
   defaultFormula?: string;
-  flowProps?: Omit<AstFlowProps, "flatAst">;
+  flowProps?: Omit<AstFlowProps, "placedAst">;
   onFocus?: (uuid: string) => void;
 }
 
@@ -98,8 +97,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   const sf = useSheetFlow();
 
   const { placedAst } = useCreatePlacedAst(defaultFormula, defaultScope);
-  const { flatAst, missing } = usePlacedAstData(placedAst);
-  const { injectValues } = useInjectValuesToFlow(placedAst);
+  const { missing } = usePlacedAstData(placedAst);
 
   const { formula, updateFormula, error, loading } =
     useUpdateFormulaDebounced(placedAst);
@@ -135,11 +133,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
   return (
     <Box position="relative" width="100%" height="100%">
       <Box position="absolute" sx={{ inset: 0 }}>
-        <AstFlow
-          flatAst={flatAst}
-          enhanceGeneratedFlow={injectValues}
-          {...flowProps}
-        />
+        <AstFlow placedAst={placedAst} {...flowProps} />
       </Box>
 
       <Overlay>

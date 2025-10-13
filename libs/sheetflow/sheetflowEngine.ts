@@ -1,4 +1,5 @@
 import EventEmitter from "events";
+import equal from "fast-deep-equal";
 import type TypedEmitter from "typed-emitter";
 import { isEmptyAst, type Ast } from "./ast";
 import { type CellContent } from "./cell";
@@ -13,7 +14,7 @@ import { type Change } from "./change";
 import { getPrettyLanguage } from "./config";
 import { flattenAst } from "./flattenAst";
 import { type NamedExpression, type NamedExpressions } from "./namedExpression";
-import { PlacedAst } from "./placedAst";
+import { PlacedAst, type PlacedAstFlowSettings } from "./placedAst";
 import { type Reference } from "./reference";
 import { type Sheet, type Sheets } from "./sheet";
 import {
@@ -24,6 +25,7 @@ import {
 
 export type SheetFlowConfig = {
   language: string;
+  flow: PlacedAstFlowSettings;
 };
 
 export type SheetFlowEvents = {
@@ -50,6 +52,10 @@ export type SheetFlowEventEmitter = TypedEmitter<SheetFlowEvents>;
 export abstract class SheetFlowEngine {
   static readonly DEFAULT_CONFIG = {
     language: "en-US",
+    flow: {
+      skipParenthesis: true,
+      skipValues: false,
+    },
   } satisfies SheetFlowConfig;
 
   protected valueErrorTypes: Record<string, string> = {
@@ -93,9 +99,9 @@ export abstract class SheetFlowEngine {
     ) => {
       for (const uuid of Object.keys(this.placedAsts)) {
         if (this.isPlacedAstPartOfChanges(uuid, changes)) {
-          this.placedAsts[uuid].updateValues(
-            this.calculatePlacedAstAsRecord(uuid),
-          );
+          const placedAst = this.placedAsts[uuid];
+          placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
+          placedAst.injectValues();
         }
       }
     };
@@ -203,8 +209,18 @@ export abstract class SheetFlowEngine {
   }
 
   updateConfig(config: Partial<SheetFlowConfig>): void {
+    const regenerateFlows =
+      config.flow &&
+      !equal({ ...this.config.flow, ...config.flow }, this.config.flow);
+
     this.config = { ...this.config, ...config };
     this.eventEmitter.emit("configChanged", this.config);
+
+    if (regenerateFlows) {
+      for (const placedAst of Object.values(this.placedAsts)) {
+        placedAst.updateFlowSettings(config.flow!);
+      }
+    }
   }
 
   getLanguage(): string {
@@ -246,7 +262,13 @@ export abstract class SheetFlowEngine {
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
     const address = buildCellAddress(0, row, sheetId);
 
-    const placedAst = new PlacedAst(uuid, address);
+    const placedAst = new PlacedAst(
+      uuid,
+      address,
+      undefined,
+      undefined,
+      this.config.flow,
+    );
     this.placedAsts[uuid] = placedAst;
 
     // TODO: warning when one of the args is passed but the other isn't
@@ -326,6 +348,7 @@ export abstract class SheetFlowEngine {
     const precedents = getPrecedents(this, flatAst);
 
     placedAst.updateData({ formula, scope, ast, flatAst, precedents, missing });
+    void placedAst.generateFlow();
 
     this.pauseEvaluation();
     this.clearRow(address.sheet, address.row);

@@ -7,12 +7,12 @@ import {
 } from "@/components/nodes";
 import {
   AstNodeType,
-  buildStringCellValue,
   isAstWithChildren,
   isAstWithValue,
   isParenthesisAst,
   type Ast,
-} from "@/libs/sheetflow";
+} from "../ast";
+import { buildStringCellValue, printCellValue, type Value } from "../cellValue";
 
 export const generateNodes = (
   flatAst: Ast[],
@@ -99,4 +99,45 @@ export const generateEdges = (
       flatAst.findIndex((ast) => ast.id === a.source) -
       flatAst.findIndex((ast) => ast.id === b.source),
   );
+};
+
+// TODO: simplify
+export const injectValuesToFlow = (
+  values: Record<string, Value>,
+  nodes?: AstNode[],
+  edges?: Edge[],
+): [AstNode[] | undefined, Edge[] | undefined] => {
+  let copyNodes: typeof nodes;
+  let copyEdges: typeof edges;
+
+  if (nodes?.length) {
+    copyNodes = structuredClone(nodes);
+
+    for (const { data } of copyNodes) {
+      const { ast, output, inputs } = data;
+
+      // nodes not synced with values
+      if (!(ast.id in values)) return [undefined, undefined];
+
+      if (output) output.value = values[ast.id];
+
+      if (inputs && isAstWithChildren(ast)) {
+        const { children } = ast;
+
+        inputs.forEach((i, idx) => {
+          if (children[idx].id in values) i.value = values[children[idx].id];
+        });
+      }
+    }
+  }
+
+  if (edges?.length) {
+    copyEdges = structuredClone(edges);
+
+    for (const edge of copyEdges) {
+      edge.label = printCellValue(values[edge.source]);
+    }
+  }
+
+  return [copyNodes, copyEdges];
 };

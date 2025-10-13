@@ -1,3 +1,4 @@
+import equal from "fast-deep-equal";
 import {
   HyperFormula,
   NoRelativeAddressesAllowedError,
@@ -123,12 +124,18 @@ export class HyperFormulaEngine extends SheetFlowEngine {
 
   // #region engine
   override updateConfig(config: Partial<SheetFlowConfig>): void {
-    this.hf.updateConfig(unmapConfig({ ...this.config, ...config }));
+    const newConfig = unmapConfig({ ...this.config, ...config });
+    const hasConfigChanged = !equal(
+      { ...this.hf.getConfig(), ...newConfig },
+      this.hf.getConfig(),
+    );
+
+    if (hasConfigChanged) this.hf.updateConfig(newConfig);
 
     super.updateConfig(config);
 
     // when HyperFormula ends up rebuilding its entire instance because of a config change, it won't trigger `valuesUpdated` event even when calculated values in sheets change
-    this.recalculateEverything();
+    if (hasConfigChanged) this.recalculateEverything();
   }
 
   static override getAllLanguages(): string[] {

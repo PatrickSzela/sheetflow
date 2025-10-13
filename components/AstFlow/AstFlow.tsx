@@ -8,8 +8,7 @@ import {
   type ReactFlowProps,
 } from "@xyflow/react";
 import { AstNode } from "@/components/nodes";
-import { type Ast } from "@/libs/sheetflow";
-import { useGenerateFlow } from "./useGenerateFlow";
+import { usePlacedAstFlow, type PlacedAst } from "@/libs/sheetflow";
 import { useHighlightNodes } from "./useHighlightNodes";
 
 const fitViewOptions: FitViewOptions = {
@@ -24,33 +23,21 @@ export interface AstFlowProps<
   TNode extends AstNode = AstNode,
   TEdge extends Edge = Edge,
 > extends Omit<ReactFlowProps<TNode, TEdge>, "nodes"> {
-  flatAst: Ast[];
-  skipParenthesis?: boolean;
-  skipValues?: boolean;
-  enhanceGeneratedFlow?: (
-    nodes: AstNode[],
-    edges: Edge[],
-  ) => { nodes: AstNode[]; edges: Edge[] };
+  placedAst: PlacedAst;
 }
 
 export const AstFlow = (props: AstFlowProps) => {
-  const {
-    flatAst,
-    skipParenthesis,
-    skipValues,
-    enhanceGeneratedFlow,
-    ...otherProps
-  } = props;
+  const { placedAst, ...otherProps } = props;
 
   const { mode, systemMode } = useColorScheme();
+  const { nodes, edges } = usePlacedAstFlow(placedAst);
 
-  useGenerateFlow(flatAst, skipParenthesis, skipValues, enhanceGeneratedFlow);
   useHighlightNodes();
 
   return (
     <ReactFlow
-      defaultNodes={[]}
-      defaultEdges={[]}
+      nodes={nodes}
+      edges={edges}
       nodeTypes={nodeTypes}
       colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { type Meta, type StoryObj } from "@storybook/react-vite";
 import {
   HfEngineProviderArgTypes,
@@ -54,14 +54,6 @@ const meta = {
   argTypes: {
     ...HfEngineProviderArgTypes,
     flowProps: { table: { disable: true } },
-    "flowProps.skipParenthesis": {
-      name: "skipParenthesis",
-      table: { category: "flow" },
-    },
-    "flowProps.skipValues": {
-      name: "skipValues",
-      table: { category: "flow" },
-    },
   },
 } satisfies Meta<MetaArgs>;
 
@@ -72,9 +64,6 @@ export const FormulaEditorStory: Story = {
   args: {
     defaultFormula: "=(PI()*0.5)+(-FLOOR(A1+A2*A3,1)*(1 + 100%))",
     defaultScope: "Sheet1",
-
-    "flowProps.skipParenthesis": true,
-    "flowProps.skipValues": false,
   },
 };
 
@@ -97,9 +86,6 @@ export const FormulaEditorStoryArrays: Story = {
         [-7, -8, -9],
       ],
     },
-
-    "flowProps.skipParenthesis": true,
-    "flowProps.skipValues": false,
   },
 };
 
