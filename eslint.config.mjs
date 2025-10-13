@@ -41,6 +41,13 @@ export default defineConfig([
         "error",
         { allowInterfaces: "always" },
       ],
+      "no-restricted-imports": [
+        "error",
+        {
+          // https://mui.com/material-ui/guides/minimizing-bundle-size/#enforce-best-practices-with-eslint
+          patterns: [{ regex: "^@mui/[^/]+$" }],
+        },
+      ],
     },
   },
 

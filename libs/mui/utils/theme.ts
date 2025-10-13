@@ -6,7 +6,7 @@ import {
   type Shadows,
   type SupportedColorScheme,
   type Theme,
-} from "@mui/material";
+} from "@mui/material/styles";
 import type { ConditionalPick, Simplify, UnionToTuple } from "type-fest";
 import { colorizeBoxShadow, generateColorOverlay } from "./css";
 

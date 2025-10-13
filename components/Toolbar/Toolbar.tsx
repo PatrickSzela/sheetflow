@@ -1,4 +1,5 @@
-import { AppBar, styled, type AppBarProps } from "@mui/material";
+import AppBar, { type AppBarProps } from "@mui/material/AppBar";
+import { styled } from "@mui/material/styles";
 import { generatePaletteVariants } from "@/libs/mui";
 
 export interface ToolbarProps extends Omit<AppBarProps, "enableColorOnDark"> {

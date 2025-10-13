@@ -1,4 +1,4 @@
-import { styled } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { Handle as RFHandle, type HandleProps } from "@xyflow/react";
 
 const HandleRoot = styled(RFHandle)(() => ({

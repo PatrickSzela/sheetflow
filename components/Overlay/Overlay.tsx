@@ -1,4 +1,5 @@
-import { Box, styled, type BoxProps } from "@mui/material";
+import Box, { type BoxProps } from "@mui/material/Box";
+import { styled } from "@mui/material/styles";
 
 const OverlayRoot = styled(Box)(({ theme }) => ({
   position: "relative",

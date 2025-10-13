@@ -1,5 +1,5 @@
 import { useCallback, type ChangeEventHandler } from "react";
-import { TextField, type TextFieldProps } from "@mui/material";
+import TextField, { type TextFieldProps } from "@mui/material/TextField";
 import { useContent, type CellContent, type Reference } from "@/libs/sheetflow";
 
 export type ContentTextFieldProps = {

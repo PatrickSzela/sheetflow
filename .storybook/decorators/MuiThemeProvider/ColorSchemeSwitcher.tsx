@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useColorScheme } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
 import { type ReactRenderer } from "@storybook/react-vite";
 import { type StoryContext } from "storybook/internal/csf";
 

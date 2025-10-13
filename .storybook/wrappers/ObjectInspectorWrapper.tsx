@@ -1,4 +1,4 @@
-import { useColorScheme } from "@mui/material";
+import { useColorScheme } from "@mui/material/styles";
 import { ObjectInspector, chromeDark, chromeLight } from "react-inspector";
 
 export interface ObjectInspectorWrapperProps {

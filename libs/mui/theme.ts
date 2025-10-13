@@ -1,12 +1,12 @@
-import {
-  outlinedInputClasses,
-  type OutlinedInputProps,
-  type PaperProps,
-} from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 
 import type {} from "./themeAugmentation.d.ts";
 
+import {
+  outlinedInputClasses,
+  type OutlinedInputProps,
+} from "@mui/material/OutlinedInput";
+import type { PaperProps } from "@mui/material/Paper";
 import { enhanceTheme, generatePaletteVariants, mixColors } from "./utils";
 
 const base = createTheme({

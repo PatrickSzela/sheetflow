@@ -1,21 +1,18 @@
 import { useCallback, useEffect } from "react";
-import {
-  CheckCircle,
-  Error as ErrorIcon,
-  Pending,
-  type SvgIconComponent,
-} from "@mui/icons-material";
-import {
-  Alert,
-  AlertTitle,
-  Box,
-  Button,
-  InputAdornment,
-  OutlinedInput,
-  Paper,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+// eslint-disable-next-line no-restricted-imports
+import type { SvgIconComponent } from "@mui/icons-material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import PendingIcon from "@mui/icons-material/Pending";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import InputAdornment from "@mui/material/InputAdornment";
+import OutlinedInput from "@mui/material/OutlinedInput";
+import Paper from "@mui/material/Paper";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
 import { AstFlow, type AstFlowProps } from "@/components/AstFlow";
 import { Overlay } from "@/components/Overlay";
 import { type PaletteColorName } from "@/libs/mui";
@@ -60,7 +57,7 @@ const getEditorData = (
 
   switch (state) {
     case "success": {
-      Icon = CheckCircle;
+      Icon = CheckCircleIcon;
       title = "Formula is valid";
       color = "success";
       break;
@@ -86,7 +83,7 @@ const getEditorData = (
       break;
     }
     case "loading": {
-      Icon = Pending;
+      Icon = PendingIcon;
       color = "info";
       break;
     }

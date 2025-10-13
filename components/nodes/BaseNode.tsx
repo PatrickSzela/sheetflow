@@ -1,12 +1,5 @@
 import React, { useMemo } from "react";
-import {
-  Box,
-  Divider,
-  Typography,
-  styled,
-  typographyClasses,
-  useTheme,
-} from "@mui/material";
+import Box from "@mui/material/Box";
 import Card, { type CardProps } from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardHeader, {
@@ -14,6 +7,9 @@ import CardHeader, {
   type CardHeaderProps,
 } from "@mui/material/CardHeader";
 import { useDefaultProps } from "@mui/material/DefaultPropsProvider";
+import Divider from "@mui/material/Divider";
+import Typography, { typographyClasses } from "@mui/material/Typography";
+import { styled, useTheme } from "@mui/material/styles";
 import {
   Position,
   type HandleProps,

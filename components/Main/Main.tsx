@@ -1,27 +1,20 @@
 import { useState } from "react";
 import Close from "@mui/icons-material/Close";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import {
-  Box,
-  Drawer,
-  FormControl,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Select,
-  Stack,
-  ToggleButton,
-  ToggleButtonGroup,
-  Toolbar,
-  Typography,
-  capitalize,
-  styled,
-  useMediaQuery,
-  useTheme,
-  type BoxProps,
-  type DrawerProps,
-  type StackProps,
-} from "@mui/material";
+import Box, { type BoxProps } from "@mui/material/Box";
+import Drawer, { type DrawerProps } from "@mui/material/Drawer";
+import FormControl from "@mui/material/FormControl";
+import IconButton from "@mui/material/IconButton";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import Stack, { type StackProps } from "@mui/material/Stack";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { styled, useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import { capitalize } from "@mui/material/utils";
 import {
   SheetFlowEngine,
   useSheetFlow,

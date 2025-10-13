@@ -1,4 +1,4 @@
-import { decomposeColor, type ColorObject } from "@mui/material";
+import { decomposeColor, type ColorObject } from "@mui/material/styles";
 
 export const changeColorOpacity = (color: string, opacity: number) => {
   return `rgb(from ${color} r g b / ${opacity})`;
