@@ -1,10 +1,13 @@
+import { useCallback } from "react";
 import { useColorScheme } from "@mui/material/styles";
 import {
   Background,
   Controls,
   ReactFlow,
+  applyNodeChanges,
   type Edge,
   type FitViewOptions,
+  type OnNodesChange,
   type ReactFlowProps,
 } from "@xyflow/react";
 import { AstNode } from "@/components/nodes";
@@ -32,12 +35,20 @@ export const AstFlow = (props: AstFlowProps) => {
   const { mode, systemMode } = useColorScheme();
   const { nodes, edges } = usePlacedAstFlow(placedAst);
 
+  const onNodesChange: OnNodesChange<AstNode> = useCallback(
+    (changes) => {
+      placedAst.updateNodes(applyNodeChanges(changes, nodes));
+    },
+    [nodes, placedAst],
+  );
+
   useHighlightNodes();
 
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
+      onNodesChange={onNodesChange}
       nodeTypes={nodeTypes}
       colorMode={mode ?? systemMode ?? "system"}
       nodesConnectable={false}

@@ -102,6 +102,11 @@ export class PlacedAst {
     void this.generateFlow();
   }
 
+  updateNodes(nodes: AstNode[]) {
+    this.flow = { ...this.flow, nodes: nodes };
+    this.eventEmitter.emit("flowChanged", this.flow);
+  }
+
   async generateFlow() {
     const { flatAst } = this.data;
     const { generateParenthesis, generateValues } = this.flow;
