@@ -2,7 +2,12 @@ import EventEmitter from "events";
 import type { Edge } from "@xyflow/react";
 import type TypedEventEmitter from "typed-emitter";
 import { AstNode } from "@/components/nodes";
-import { buildEmptyAst, type Ast } from "./ast";
+import {
+  buildEmptyAst,
+  isAstWithValue,
+  isParenthesisAst,
+  type Ast,
+} from "./ast";
 import { type CellAddress } from "./cellAddress";
 import { type Value } from "./cellValue";
 import {
@@ -98,8 +103,21 @@ export class PlacedAst {
   }
 
   updateFlowSettings(settings: Partial<PlacedAstFlowSettings>) {
+    const shouldRegenerate = (
+      key: keyof PlacedAstFlowSettings,
+      isFn: (i: unknown) => boolean,
+    ) =>
+      key in settings &&
+      this.flow[key] !== settings[key] &&
+      !!this.data.flatAst.find((i) => isFn(i));
+
+    const regenerateFlow =
+      shouldRegenerate("generateParenthesis", isParenthesisAst) ||
+      shouldRegenerate("generateValues", isAstWithValue);
+
     this.flow = { ...this.flow, ...settings };
-    void this.generateFlow();
+
+    if (regenerateFlow) void this.generateFlow();
   }
 
   updateNodes(nodes: AstNode[]) {
