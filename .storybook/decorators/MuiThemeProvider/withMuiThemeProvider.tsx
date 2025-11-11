@@ -1,15 +1,15 @@
 import { type ReactRenderer } from "@storybook/react-vite";
 import { type DecoratorFunction } from "storybook/internal/csf";
+import { ThemeProvider } from "@/libs/mui";
 import { ColorSchemeSwitcher } from "./ColorSchemeSwitcher";
-import { MuiThemeProvider } from "./MuiThemeProvider";
 
 export const withMuiThemeProvider = (): DecoratorFunction<ReactRenderer> => {
   return function MuiThemeProviderDecorator(Story, context) {
     return (
-      <MuiThemeProvider>
+      <ThemeProvider>
         <ColorSchemeSwitcher context={context} />
         <Story />
-      </MuiThemeProvider>
+      </ThemeProvider>
     );
   };
 };
