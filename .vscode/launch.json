@@ -5,11 +5,83 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Start Storybook",
+      "name": "Start SheetFlow Server",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "presentation": {
+        "group": "SheetFlow"
+      }
+    },
+    {
+      "name": "Start SheetFlow in Firefox",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "serverReadyAction": {
+        "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
+        "action": "startDebugging",
+        "name": "Launch Firefox against SheetFlow Server",
+        "killOnServerStop": true
+      },
+      "presentation": {
+        "group": "SheetFlow"
+      }
+    },
+    {
+      "name": "Start SheetFlow in Chrome",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "pnpm run dev",
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "serverReadyAction": {
+        "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
+        "uriFormat": "%s",
+        "action": "debugWithChrome",
+        "killOnServerStop": true
+      },
+      "presentation": {
+        "group": "SheetFlow"
+      }
+    },
+    {
+      "name": "Launch Firefox against SheetFlow Server",
+      "type": "firefox",
+      "request": "launch",
+      "reAttach": true,
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}",
+      "suggestPathMappingWizard": true,
+      "pathMappings": [
+        {
+          "url": "webpack://sheetflow",
+          "path": "${workspaceFolder}"
+        }
+      ],
+      "presentation": {
+        "group": "SheetFlow"
+      }
+    },
+    {
+      "name": "Launch Chrome against SheetFlow Server",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "presentation": {
+        "group": "SheetFlow"
+      }
+    },
+    {
+      "name": "Start Storybook Server",
       "type": "node-terminal",
       "request": "launch",
       "command": "pnpm run storybook --no-open",
-      "internalConsoleOptions": "openOnFirstSessionStart"
+      "internalConsoleOptions": "openOnFirstSessionStart",
+      "presentation": {
+        "group": "Storybook"
+      }
     },
     {
       "name": "Start Storybook in Firefox",
@@ -20,8 +92,11 @@
       "serverReadyAction": {
         "pattern": "Local:.+(https?://[^:]+:[0-9]+)",
         "action": "startDebugging",
-        "name": "Launch Firefox against Storybook",
+        "name": "Launch Firefox against Storybook Server",
         "killOnServerStop": true
+      },
+      "presentation": {
+        "group": "Storybook"
       }
     },
     {
@@ -35,10 +110,13 @@
         "uriFormat": "%s",
         "action": "debugWithChrome",
         "killOnServerStop": true
+      },
+      "presentation": {
+        "group": "Storybook"
       }
     },
     {
-      "name": "Launch Firefox against Storybook",
+      "name": "Launch Firefox against Storybook Server",
       "type": "firefox",
       "request": "launch",
       "reAttach": true,
@@ -51,13 +129,19 @@
           "url": "webpack://sheetflow",
           "path": "${workspaceFolder}"
         }
-      ]
+      ],
+      "presentation": {
+        "group": "Storybook"
+      }
     },
     {
-      "name": "Launch Chrome against Storybook",
+      "name": "Launch Chrome against Storybook Server",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:6006"
+      "url": "http://localhost:6006",
+      "presentation": {
+        "group": "Storybook"
+      }
     }
   ]
 }
