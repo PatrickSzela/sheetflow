@@ -52,7 +52,7 @@ export type PlacedAstEventEmitter = TypedEventEmitter<PlacedAstEvents>;
 // TODO: read-only properties
 
 export class PlacedAst {
-  uuid: string;
+  id: string;
   address: CellAddress;
   data: PlacedAstData;
   values: PlacedAstValues;
@@ -63,13 +63,13 @@ export class PlacedAst {
     new EventEmitter() as PlacedAstEventEmitter;
 
   constructor(
-    uuid: string,
+    id: string,
     address: CellAddress,
     data?: PlacedAstData,
     values?: PlacedAstValues,
     flowSettings?: PlacedAstFlowSettings,
   ) {
-    this.uuid = uuid;
+    this.id = id;
     this.address = address;
     this.flow = {
       nodes: [],

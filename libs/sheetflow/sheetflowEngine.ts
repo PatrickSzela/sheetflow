@@ -97,23 +97,23 @@ export abstract class SheetFlowEngine {
     const astValuesChangedListener: SheetFlowEvents["valuesChanged"] = (
       changes,
     ) => {
-      for (const uuid of Object.keys(this.placedAsts)) {
-        if (this.isPlacedAstPartOfChanges(uuid, changes)) {
-          const placedAst = this.placedAsts[uuid];
-          placedAst.updateValues(this.calculatePlacedAstAsRecord(uuid));
+      for (const id of Object.keys(this.placedAsts)) {
+        if (this.isPlacedAstPartOfChanges(id, changes)) {
+          const placedAst = this.placedAsts[id];
+          placedAst.updateValues(this.calculatePlacedAstAsRecord(id));
           placedAst.injectValues();
         }
       }
     };
 
     const sheetNamedExpressionAdded: SheetFlowEvents["sheetAdded"] = (name) => {
-      for (const uuid of Object.keys(this.placedAsts)) {
-        const { data } = this.placedAsts[uuid];
+      for (const id of Object.keys(this.placedAsts)) {
+        const { data } = this.placedAsts[id];
         const { formula, scope } = data;
 
         // TODO: that's kinda naive, figure out a better way to check if sheet/named expression is part of the ast
         if (formula.includes(name)) {
-          this.updatePlacedAstWithFormula(uuid, formula, scope);
+          this.updatePlacedAstWithFormula(id, formula, scope);
         }
       }
     };
@@ -178,8 +178,8 @@ export abstract class SheetFlowEngine {
   abstract calculateFormula(formula: string, sheetId: number): Value;
 
   // formula AST
-  abstract getAstFromAddress(address: CellAddress, uuid?: string): Ast;
-  abstract getAstFromFormula(uuid: string, formula: string, scope: number): Ast;
+  abstract getAstFromAddress(address: CellAddress, id?: string): Ast;
+  abstract getAstFromFormula(id: string, formula: string, scope: number): Ast;
 
   // evaluation
   abstract pauseEvaluation(): void;
@@ -245,42 +245,42 @@ export abstract class SheetFlowEngine {
     return `=${ast.rawContent}`;
   }
 
-  isAstPlaced(uuid: string): boolean {
-    return uuid in this.placedAsts;
+  isAstPlaced(id: string): boolean {
+    return id in this.placedAsts;
   }
 
-  getPlacedAst(uuid: string): PlacedAst {
-    if (!(uuid in this.placedAsts))
-      throw new Error(`UUID \`${uuid}\` not found`);
+  getPlacedAst(id: string): PlacedAst {
+    if (!(id in this.placedAsts))
+      throw new Error(`Placed AST with ID \`${id}\` not found`);
 
-    return this.placedAsts[uuid];
+    return this.placedAsts[id];
   }
 
   createPlacedAst(formula?: string, scope?: number): PlacedAst {
-    const uuid = crypto.randomUUID();
+    const id = crypto.randomUUID();
     const row = this.getFirstAvailableRowForPlaceableAst();
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
     const address = buildCellAddress(0, row, sheetId);
 
     const placedAst = new PlacedAst(
-      uuid,
+      id,
       address,
       undefined,
       undefined,
       this.config.flow,
     );
-    this.placedAsts[uuid] = placedAst;
+    this.placedAsts[id] = placedAst;
 
     // TODO: warning when one of the args is passed but the other isn't
     if (formula && isValidPartOfAddress(scope)) {
-      this.updatePlacedAstWithFormula(uuid, formula, scope);
+      this.updatePlacedAstWithFormula(id, formula, scope);
     }
 
     return placedAst;
   }
 
-  placeAst(uuid: string): void {
-    const { address, data } = this.getPlacedAst(uuid);
+  placeAst(id: string): void {
+    const { address, data } = this.getPlacedAst(id);
     const { row } = address;
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
@@ -290,16 +290,16 @@ export abstract class SheetFlowEngine {
     });
   }
 
-  removePlacedAst(uuid: string): void {
-    const placedAst = this.getPlacedAst(uuid);
+  removePlacedAst(id: string): void {
+    const placedAst = this.getPlacedAst(id);
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
     this.clearRow(sheetId, placedAst.address.row);
-    delete this.placedAsts[uuid];
+    delete this.placedAsts[id];
   }
 
-  calculatePlacedAst(uuid: string): Value[] {
-    const { data } = this.getPlacedAst(uuid);
+  calculatePlacedAst(id: string): Value[] {
+    const { data } = this.getPlacedAst(id);
 
     return data.flatAst.map((ast) =>
       isEmptyAst(ast)
@@ -311,9 +311,9 @@ export abstract class SheetFlowEngine {
     );
   }
 
-  calculatePlacedAstAsRecord(uuid: string): Record<string, Value> {
-    const { data } = this.getPlacedAst(uuid);
-    const values = this.calculatePlacedAst(uuid);
+  calculatePlacedAstAsRecord(id: string): Record<string, Value> {
+    const { data } = this.getPlacedAst(id);
+    const values = this.calculatePlacedAst(id);
     const groupedValues: Record<string, Value> = {};
 
     data.flatAst.forEach((ast, idx) => {
@@ -324,7 +324,7 @@ export abstract class SheetFlowEngine {
   }
 
   updatePlacedAstWithFormula(
-    uuid: string,
+    id: string,
     formula: string,
     scope: number,
   ): PlacedAst {
@@ -334,7 +334,7 @@ export abstract class SheetFlowEngine {
     if (!this.doesSheetWithIdExists(scope))
       throw new Error(`Sheet with ID \`${scope}\` doesn't exists`);
 
-    const placedAst = this.getPlacedAst(uuid);
+    const placedAst = this.getPlacedAst(id);
     const normalizedFormula = this.normalizeFormula(formula);
     const { address } = placedAst;
 
@@ -352,14 +352,14 @@ export abstract class SheetFlowEngine {
 
     this.pauseEvaluation();
     this.clearRow(address.sheet, address.row);
-    this.placeAst(uuid);
+    this.placeAst(id);
     this.resumeEvaluation();
 
     return placedAst;
   }
 
-  isPlacedAstPartOfChanges(uuid: string, changes: Change[]): boolean {
-    const { address } = this.getPlacedAst(uuid);
+  isPlacedAstPartOfChanges(id: string, changes: Change[]): boolean {
+    const { address } = this.getPlacedAst(id);
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
     return !!changes.find((change) => {
@@ -374,9 +374,9 @@ export abstract class SheetFlowEngine {
   }
 
   recalculateEverything(): void {
-    for (const uuid of Object.keys(this.placedAsts)) {
-      const { formula, scope } = this.placedAsts[uuid].data;
-      this.updatePlacedAstWithFormula(uuid, formula, scope);
+    for (const id of Object.keys(this.placedAsts)) {
+      const { formula, scope } = this.placedAsts[id].data;
+      this.updatePlacedAstWithFormula(id, formula, scope);
     }
   }
 

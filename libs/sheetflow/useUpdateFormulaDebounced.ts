@@ -10,7 +10,7 @@ export const useUpdateFormulaDebounced = (
   delay = 300,
 ) => {
   const sf = useSheetFlow();
-  const { updateFormula } = usePlacedAst(placedAst.uuid);
+  const { updateFormula } = usePlacedAst(placedAst.id);
   const { formula } = usePlacedAstData(placedAst);
 
   const lastValid = useRef(placedAst.data.formula);

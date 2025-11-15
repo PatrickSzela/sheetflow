@@ -27,5 +27,5 @@ export const useCreatePlacedAst = (
     }
   }, []);
 
-  return usePlacedAst(createdAst.uuid);
+  return usePlacedAst(createdAst.id);
 };

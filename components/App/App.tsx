@@ -43,12 +43,12 @@ export const App = () => {
   );
 };
 
-const DependenciesEditorPlacedAst = (props: { uuid: string }) => {
-  const { uuid } = props;
+const DependenciesEditorPlacedAst = (props: { id: string }) => {
+  const { id } = props;
 
   const sf = useSheetFlow();
 
-  const { placedAst } = usePlacedAst(uuid);
+  const { placedAst } = usePlacedAst(id);
   const { precedents } = usePlacedAstData(placedAst);
 
   const { cells, namedExpressions } = useMemo(() => {
@@ -71,7 +71,7 @@ const AppInner = () => {
 
   const drawerChildren =
     selectedEditor && sf.isAstPlaced(selectedEditor) ? (
-      <DependenciesEditorPlacedAst uuid={selectedEditor} />
+      <DependenciesEditorPlacedAst id={selectedEditor} />
     ) : null;
 
   return (

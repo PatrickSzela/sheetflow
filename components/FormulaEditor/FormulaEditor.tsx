@@ -29,7 +29,7 @@ type State = "success" | "warning" | "error" | "loading";
 export interface FormulaEditorProps {
   placedAst: PlacedAst;
   flowProps?: Omit<AstFlowProps, "placedAst">;
-  onFocus?: (uuid: string) => void;
+  onFocus?: (id: string) => void;
 }
 
 const getEditorData = (
@@ -123,7 +123,7 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
 
   // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
   useEffect(() => {
-    onFocus?.(placedAst.uuid);
+    onFocus?.(placedAst.id);
   }, [onFocus, placedAst]);
 
   return (

@@ -12,14 +12,14 @@ export const remapAst = (
   hf: HyperFormula,
   ast: Ast,
   address: SimpleCellAddress,
-  rootUUID?: string,
+  rootId?: string,
   isPartOfArrayFormula = false,
 ): SheetFlow.Ast => {
   const rawContent = hf.unparser.unparse(ast, address).slice(1);
   const { type } = ast;
 
   const baseData = {
-    ...(rootUUID !== undefined ? { id: rootUUID } : undefined),
+    ...(rootId !== undefined ? { id: rootId } : undefined),
     rawContent: type === AstNodeType.EMPTY ? "" : rawContent,
     engineData: {
       isPartOfArrayFormula,

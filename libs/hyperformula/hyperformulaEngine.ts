@@ -393,7 +393,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
   // #endregion
 
   // #region formula AST
-  getAstFromAddress(address: CellAddress, uuid: string): Ast {
+  getAstFromAddress(address: CellAddress, id: string): Ast {
     const addr = unmapCellAddress(address);
 
     const formulaVertex = this.hf.graph.getNodes().find((node) => {
@@ -415,10 +415,10 @@ export class HyperFormulaEngine extends SheetFlowEngine {
       );
     }
 
-    return remapAst(this.hf, hfAst, addr, uuid);
+    return remapAst(this.hf, hfAst, addr, id);
   }
 
-  getAstFromFormula(uuid: string, formula: string, scope: number): Ast {
+  getAstFromFormula(id: string, formula: string, scope: number): Ast {
     const address = buildCellAddress(-1, -1, scope);
     const hfAddress = unmapCellAddress(address);
 
@@ -428,7 +428,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
       hfAddress,
     );
 
-    return remapAst(this.hf, astWithSheetNames, hfAddress, uuid);
+    return remapAst(this.hf, astWithSheetNames, hfAddress, id);
   }
 
   override astToFormula(ast: Ast): string {
