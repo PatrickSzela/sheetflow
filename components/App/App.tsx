@@ -8,6 +8,7 @@ import {
   SheetFlowProvider,
   findMostSimilarLanguage,
   groupReferencesBySheet,
+  useCreatePlacedAst,
   usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
@@ -63,6 +64,11 @@ const AppInner = () => {
   const sf = useSheetFlow();
   const [selectedEditor, setSelectedEditor] = useState<string>();
 
+  const { placedAst } = useCreatePlacedAst(
+    "=A1+A2*A3",
+    sf.getSheetIdWithError("Sheet1"),
+  );
+
   const drawerChildren =
     selectedEditor && sf.isAstPlaced(selectedEditor) ? (
       <DependenciesEditorPlacedAst uuid={selectedEditor} />
@@ -82,11 +88,7 @@ const AppInner = () => {
       }}
     >
       <ReactFlowProvider>
-        <FormulaEditor
-          defaultScope={sf.getSheetIdWithError("Sheet1")}
-          onFocus={setSelectedEditor}
-          defaultFormula="=A1+A2*A3"
-        />
+        <FormulaEditor placedAst={placedAst} onFocus={setSelectedEditor} />
       </ReactFlowProvider>
     </Main>
   );

@@ -17,18 +17,17 @@ import { AstFlow, type AstFlowProps } from "@/components/AstFlow";
 import { Overlay } from "@/components/Overlay";
 import { type PaletteColorName } from "@/libs/mui";
 import {
-  useCreatePlacedAst,
   usePlacedAstData,
   useSheetFlow,
   useUpdateFormulaDebounced,
   type MissingReferences,
+  type PlacedAst,
 } from "@/libs/sheetflow";
 
 type State = "success" | "warning" | "error" | "loading";
 
 export interface FormulaEditorProps {
-  defaultScope: number;
-  defaultFormula?: string;
+  placedAst: PlacedAst;
   flowProps?: Omit<AstFlowProps, "placedAst">;
   onFocus?: (uuid: string) => void;
 }
@@ -92,13 +91,10 @@ const getEditorData = (
 };
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
-  const { defaultFormula, flowProps, defaultScope, onFocus } = props;
+  const { flowProps, placedAst, onFocus } = props;
 
   const sf = useSheetFlow();
-
-  const { placedAst } = useCreatePlacedAst(defaultFormula, defaultScope);
   const { missing } = usePlacedAstData(placedAst);
-
   const { formula, updateFormula, error, loading } =
     useUpdateFormulaDebounced(placedAst);
 

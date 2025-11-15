@@ -8,28 +8,24 @@ import {
   withReactFlowProvider,
   type HfEngineProviderProps,
 } from "@/.storybook/decorators";
-import { useSheetFlow } from "@/libs/sheetflow";
+import {
+  FormulaControlsArgTypes,
+  useFormulaControls,
+  type FormulaControlsProps,
+} from "@/.storybook/helpers";
 import { groupPrefixedKeys, type PrefixKeys } from "@/libs/utils";
 import { FormulaEditor, type FormulaEditorProps } from "./FormulaEditor";
 
-type MetaArgs = { defaultScope: string } & PrefixKeys<
-  Required<FormulaEditorProps>["flowProps"],
-  "flowProps"
-> &
-  Omit<FormulaEditorProps, "defaultScope"> &
+type MetaArgs = FormulaControlsProps &
+  PrefixKeys<Required<FormulaEditorProps>["flowProps"], "flowProps"> &
+  Omit<FormulaEditorProps, "placedAst"> &
   HfEngineProviderProps;
 
 const FormulaEditorWrapper = (props: MetaArgs) => {
-  const { defaultScope, ...rest } = props;
+  const { formula, scope, ...rest } = props;
+  const { placedAst } = useFormulaControls(props);
 
-  const sf = useSheetFlow();
-
-  return (
-    <FormulaEditor
-      defaultScope={sf.getSheetIdWithError(defaultScope)}
-      {...rest}
-    />
-  );
+  return <FormulaEditor placedAst={placedAst} {...rest} />;
 };
 
 const meta = {
@@ -53,6 +49,8 @@ const meta = {
   args: { ...HfEngineProviderArgs },
   argTypes: {
     ...HfEngineProviderArgTypes,
+    ...FormulaControlsArgTypes,
+    scope: { table: { disable: true } },
     flowProps: { table: { disable: true } },
   },
 } satisfies Meta<MetaArgs>;
@@ -62,17 +60,17 @@ type Story = StoryObj<typeof meta>;
 export const FormulaEditorStory: Story = {
   name: "Editor",
   args: {
-    defaultFormula: "=(PI()*0.5)+(-FLOOR(A1+A2*A3,1)*(1 + 100%))",
-    defaultScope: "Sheet1",
+    formula: "=(PI()*0.5)+(-FLOOR(A1+A2*A3,1)*(1 + 100%))",
+    scope: "Sheet1",
   },
 };
 
 export const FormulaEditorStoryArrays: Story = {
   name: "Editor - Arrays & Named Expressions",
   args: {
-    defaultFormula:
+    formula:
       "=ARRAYFORMULA({1,2,3;4,5,6;7,8,9}+Sheet1!A1:C3+NamedExp1st+NamedExp2nd*NamedExp3rd)",
-    defaultScope: "Sheet1",
+    scope: "Sheet1",
 
     "sheetflow.namedExpressions": [
       { name: "NamedExp1st", expression: "={10,20,30;40,50,60;70,80,90}" },
