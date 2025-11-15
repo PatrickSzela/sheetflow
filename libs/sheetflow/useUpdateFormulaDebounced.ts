@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState, useTransition } from "react";
 import { useDebouncedCallback } from "@mantine/hooks";
-import { useSheetFlow } from "@/libs/sheetflow/useSheetFlow";
 import { type PlacedAst } from "./placedAst";
 import { usePlacedAst } from "./usePlacedAst";
+import { usePlacedAstData } from "./usePlacedAstData";
+import { useSheetFlow } from "./useSheetFlow";
 
 export const useUpdateFormulaDebounced = (
   placedAst: PlacedAst,
@@ -10,11 +11,14 @@ export const useUpdateFormulaDebounced = (
 ) => {
   const sf = useSheetFlow();
   const { updateFormula } = usePlacedAst(placedAst.uuid);
+  const { formula } = usePlacedAstData(placedAst);
 
   const lastValid = useRef(placedAst.data.formula);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [formula, setInternalFormula] = useState(placedAst.data.formula);
+  const [internalFormula, setInternalFormula] = useState(
+    placedAst.data.formula,
+  );
 
   const [isPending, startTransition] = useTransition();
 
@@ -55,7 +59,7 @@ export const useUpdateFormulaDebounced = (
   );
 
   return {
-    formula,
+    formula: loading || isPending || error ? internalFormula : formula,
     error,
     updateFormula: update,
     loading: loading || isPending,
