@@ -62,7 +62,10 @@ export const AstFlow = (props: AstFlowProps) => {
       {...otherProps}
     >
       <Controls fitViewOptions={fitViewOptions} />
-      <Background />
+      <Background
+        // id required for proper support of multiple background on the same page
+        id={placedAst.id}
+      />
     </ReactFlow>
   );
 };

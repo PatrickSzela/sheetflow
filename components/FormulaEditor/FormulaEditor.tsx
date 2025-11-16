@@ -29,7 +29,6 @@ type State = "success" | "warning" | "error" | "loading";
 export interface FormulaEditorProps {
   placedAst: PlacedAst;
   flowProps?: Omit<AstFlowProps, "placedAst">;
-  onFocus?: (id: string) => void;
 }
 
 const getEditorData = (
@@ -91,7 +90,7 @@ const getEditorData = (
 };
 
 export const FormulaEditor = (props: FormulaEditorProps) => {
-  const { flowProps, placedAst, onFocus } = props;
+  const { flowProps, placedAst } = props;
 
   const sf = useSheetFlow();
   const { missing } = usePlacedAstData(placedAst);
@@ -120,11 +119,6 @@ export const FormulaEditor = (props: FormulaEditorProps) => {
     missing,
     addMissing,
   );
-
-  // WORKAROUND: this is a temporary solution until AST reconciliation & layout manager are implemented
-  useEffect(() => {
-    onFocus?.(placedAst.id);
-  }, [onFocus, placedAst]);
 
   return (
     <Box position="relative" width="100%" height="100%">

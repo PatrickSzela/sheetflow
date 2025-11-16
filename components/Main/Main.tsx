@@ -69,6 +69,8 @@ const MainRoot = styled(Box, {
 
   return {
     flex: 1,
+    // required for support of DockView's automatic resizing
+    overflow: "hidden",
     transition: theme.transitions.create("margin", {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
