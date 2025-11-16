@@ -1,3 +1,16 @@
+import { useMemo, useState } from "react";
+import AddIcon from "@mui/icons-material/Add";
+import IconButton from "@mui/material/IconButton";
+import Stack from "@mui/material/Stack";
+import { ReactFlowProvider } from "@xyflow/react";
+import {
+  DockviewReact,
+  type DockviewApi,
+  type DockviewReadyEvent,
+  type IDockviewHeaderActionsProps,
+  type IDockviewPanelProps,
+  type IWatermarkPanelProps,
+} from "dockview";
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import {
   FormulaEditor,
@@ -18,18 +31,6 @@ import {
   type SheetFlowEngine,
   type Sheets,
 } from "@/libs/sheetflow";
-import AddIcon from "@mui/icons-material/Add";
-import IconButton from "@mui/material/IconButton";
-import Stack from "@mui/material/Stack";
-import { ReactFlowProvider } from "@xyflow/react";
-import {
-  DockviewReact,
-  type DockviewApi,
-  type IDockviewHeaderActionsProps,
-  type IDockviewPanelProps,
-  type IWatermarkPanelProps,
-} from "dockview";
-import { useMemo, useState } from "react";
 
 import "@xyflow/react/dist/style.css";
 import "dockview/dist/styles/dockview.css";
@@ -151,6 +152,12 @@ const AppInner = () => {
       <DependenciesEditorPlacedAst id={selectedEditor} />
     ) : null;
 
+  const onReady = (e: DockviewReadyEvent) => {
+    e.api.onDidRemovePanel((e) => {
+      sf.removePlacedAst(e.id);
+    });
+  };
+
   return (
     <Main
       position="relative"
@@ -165,7 +172,7 @@ const AppInner = () => {
     >
       <DockviewReact
         className={"dockview-theme-abyss"}
-        onReady={() => undefined}
+        onReady={onReady}
         components={components}
         watermarkComponent={(p) => (
           <Watermark {...p} onFocus={setSelectedEditor} />
