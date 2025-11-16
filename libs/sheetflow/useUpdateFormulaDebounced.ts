@@ -13,12 +13,9 @@ export const useUpdateFormulaDebounced = (
   const { updateFormula } = usePlacedAst(placedAst.id);
   const { formula } = usePlacedAstData(placedAst);
 
-  const lastValid = useRef(placedAst.data.formula);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>();
-  const [internalFormula, setInternalFormula] = useState(
-    placedAst.data.formula,
-  );
+  const [internalFormula, setInternalFormula] = useState(formula);
 
   const [isPending, startTransition] = useTransition();
 
@@ -42,20 +39,23 @@ export const useUpdateFormulaDebounced = (
 
       if (!sf.isFormulaValid(formula)) {
         setError("Invalid formula");
-        return;
-      } else {
-        setError(undefined);
-      }
-
-      if (lastValid.current === formula) {
+        setLoading(false);
+        debounce.cancel();
         return;
       }
 
-      lastValid.current = formula;
+      setError(undefined);
+
+      if (placedAst.data.formula === formula) {
+        setLoading(false);
+        debounce.cancel();
+        return;
+      }
+
       setLoading(true);
       debounce(formula);
     },
-    [debounce, sf],
+    [debounce, sf, placedAst],
   );
 
   return {
