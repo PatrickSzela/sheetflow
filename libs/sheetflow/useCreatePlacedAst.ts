@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { PlacedAst } from "./placedAst";
+import { PlacedAst, type PlacedAstSource } from "./placedAst";
 import { usePlacedAst } from "./usePlacedAst";
 import { useSheetFlow } from "./useSheetFlow";
 
@@ -8,8 +8,8 @@ import { useSheetFlow } from "./useSheetFlow";
 let globalPlacedAstTemp: PlacedAst | null;
 
 export const useCreatePlacedAst = (
-  initialFormula?: string,
-  initialScope?: number,
+  source: PlacedAstSource,
+  initialFormula = "",
 ) => {
   const sf = useSheetFlow();
 
@@ -17,14 +17,17 @@ export const useCreatePlacedAst = (
   // until tabbed interface is implemented where multiple placed ast can coexists.
   // This also means we'll be able to create these in event handlers which will make React very happy :)
   const [createdAst] = useState<PlacedAst>(() => {
-    globalPlacedAstTemp ??= sf.createPlacedAst(initialFormula, initialScope);
+    if (!globalPlacedAstTemp) {
+      globalPlacedAstTemp ??= sf.createPlacedAst(source);
+      sf.updatePlacedAstWithFormula(globalPlacedAstTemp.id, initialFormula);
+    }
     return globalPlacedAstTemp;
   });
 
   useEffect(() => {
     return () => {
       globalPlacedAstTemp = null;
-    }
+    };
   }, []);
 
   return usePlacedAst(createdAst.id);

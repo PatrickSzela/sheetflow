@@ -1,21 +1,33 @@
 import { type CellContent } from "./cell";
 
-export type NamedExpression = {
+export type NamedExpressionReference = {
   name: string;
-  expression: CellContent;
   scope?: number;
+};
+
+export type NamedExpression = NamedExpressionReference & {
+  expression: CellContent;
 };
 
 export type NamedExpressions = NamedExpression[];
 
+export const isNamedExpressionReference = (
+  namedExpressionReference: unknown,
+): namedExpressionReference is NamedExpressionReference => {
+  const { name, scope } = namedExpressionReference as NamedExpressionReference;
+
+  return (
+    typeof name === "string" &&
+    (typeof scope === "number" || scope === undefined)
+  );
+};
+
 export const isNamedExpression = (
   namedExpression: unknown,
 ): namedExpression is NamedExpression => {
-  const { expression, name, scope } = namedExpression as NamedExpression;
-
+  const { expression } = namedExpression as NamedExpression;
   return (
     typeof expression === "string" &&
-    typeof name === "string" &&
-    (typeof scope === "number" || scope === undefined)
+    isNamedExpressionReference(namedExpression)
   );
 };

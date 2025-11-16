@@ -16,6 +16,7 @@ import {
   generateNodes,
   injectValuesToFlow,
 } from "./flow";
+import type { NamedExpressionReference } from "./namedExpression";
 import { type Reference } from "./reference";
 
 export type MissingReferences = {
@@ -26,7 +27,6 @@ export type MissingReferences = {
 export type PlacedAstValues = Record<string, Value>;
 export type PlacedAstData = {
   formula: string;
-  scope: number;
   ast: Ast;
   flatAst: Ast[];
   precedents: Reference[];
@@ -49,11 +49,14 @@ export type PlacedAstEvents = {
 };
 export type PlacedAstEventEmitter = TypedEventEmitter<PlacedAstEvents>;
 
+export type PlacedAstSource = CellAddress | NamedExpressionReference;
+
 // TODO: read-only properties
 
 export class PlacedAst {
   id: string;
-  address: CellAddress;
+  source: PlacedAstSource;
+  astAddress: CellAddress;
   data: PlacedAstData;
   values: PlacedAstValues;
   flow: PlacedAstFlow;
@@ -64,13 +67,15 @@ export class PlacedAst {
 
   constructor(
     id: string,
-    address: CellAddress,
+    source: PlacedAstSource,
+    astAddress: CellAddress,
     data?: PlacedAstData,
     values?: PlacedAstValues,
     flowSettings?: PlacedAstFlowSettings,
   ) {
     this.id = id;
-    this.address = address;
+    this.source = source;
+    this.astAddress = astAddress;
     this.flow = {
       nodes: [],
       edges: [],
@@ -82,7 +87,6 @@ export class PlacedAst {
     this.values = values ?? {};
     this.data = data ?? {
       formula: "",
-      scope: -1,
       ast: buildEmptyAst({ value: null, rawContent: "" }),
       flatAst: [],
       precedents: [],

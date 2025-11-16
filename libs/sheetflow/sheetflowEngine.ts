@@ -4,8 +4,9 @@ import type TypedEmitter from "typed-emitter";
 import { isEmptyAst, type Ast } from "./ast";
 import { type CellContent } from "./cell";
 import {
+  areCellAddressesEqual,
   buildCellAddress,
-  isValidPartOfAddress,
+  isCellAddress,
   type CellAddress,
 } from "./cellAddress";
 import { type CellRange } from "./cellRange";
@@ -14,7 +15,11 @@ import { type Change } from "./change";
 import { getPrettyLanguage } from "./config";
 import { flattenAst } from "./flattenAst";
 import { type NamedExpression, type NamedExpressions } from "./namedExpression";
-import { PlacedAst, type PlacedAstFlowSettings } from "./placedAst";
+import {
+  PlacedAst,
+  type PlacedAstFlowSettings,
+  type PlacedAstSource,
+} from "./placedAst";
 import { type Reference } from "./reference";
 import { type Sheet, type Sheets } from "./sheet";
 import {
@@ -34,6 +39,7 @@ export type SheetFlowEvents = {
   sheetAdded: (sheet: string) => void;
   namedExpressionAdded: (name: string) => void;
   valuesChanged: (changes: Change[]) => void;
+  cellContentChanged: (address: CellAddress, content: CellContent) => void;
 };
 export type SheetFlowEventEmitter = TypedEmitter<SheetFlowEvents>;
 
@@ -109,18 +115,71 @@ export abstract class SheetFlowEngine {
     const sheetNamedExpressionAdded: SheetFlowEvents["sheetAdded"] = (name) => {
       for (const id of Object.keys(this.placedAsts)) {
         const { data } = this.placedAsts[id];
-        const { formula, scope } = data;
+        const { formula } = data;
 
         // TODO: that's kinda naive, figure out a better way to check if sheet/named expression is part of the ast
         if (formula.includes(name)) {
-          this.updatePlacedAstWithFormula(id, formula, scope);
+          this.updatePlacedAstWithFormula(id, formula);
         }
+      }
+    };
+
+    const setPlacedAstContent = (
+      placedAst: PlacedAst,
+      content: CellContent,
+    ) => {
+      const { id, astAddress, source } = placedAst;
+
+      // TODO: handle this better
+      const formula =
+        typeof content !== "string" || !this.isFormulaValid(content)
+          ? `=${(content ?? "").toString()}`
+          : content;
+
+      // TODO: support named expressions
+      if (!isCellAddress(source))
+        throw new Error("Implement named expressions");
+
+      const ast = this.getAstFromFormula(
+        crypto.randomUUID(),
+        formula,
+        source.sheet,
+      );
+      const flatAst = flattenAst(ast);
+      const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
+      const precedents = getPrecedents(this, flatAst);
+
+      placedAst.updateData({ formula, ast, flatAst, precedents, missing });
+      void placedAst.generateFlow();
+
+      this.pauseEvaluation();
+      this.clearRow(astAddress.sheet, astAddress.row);
+      this.placeAst(id);
+      this.resumeEvaluation();
+
+      return placedAst;
+    };
+
+    // TODO: same thing but for named expressions
+    const cellContentChanged: SheetFlowEvents["cellContentChanged"] = (
+      address,
+      content,
+    ) => {
+      for (const id of Object.keys(this.placedAsts)) {
+        const placedAst = this.placedAsts[id];
+        const { source } = placedAst;
+
+        if (!isCellAddress(source) || !areCellAddressesEqual(address, source))
+          continue;
+
+        setPlacedAstContent(placedAst, content);
       }
     };
 
     this.on("valuesChanged", astValuesChangedListener);
     this.on("sheetAdded", sheetNamedExpressionAdded);
     this.on("namedExpressionAdded", sheetNamedExpressionAdded);
+    this.on("cellContentChanged", cellContentChanged);
   }
 
   // #region abstract methods
@@ -179,7 +238,7 @@ export abstract class SheetFlowEngine {
 
   // formula AST
   abstract getAstFromAddress(address: CellAddress, id?: string): Ast;
-  abstract getAstFromFormula(id: string, formula: string, scope: number): Ast;
+  abstract getAstFromFormula(id: string, formula: string, scope?: number): Ast;
 
   // evaluation
   abstract pauseEvaluation(): void;
@@ -197,7 +256,7 @@ export abstract class SheetFlowEngine {
     if (!values.length) return 0;
 
     // while this will break if there are duplicates in the array or if the number isn't an integer, but this should never happen
-    const items = values.map((i) => i.address.row).sort((a, b) => a - b);
+    const items = values.map((i) => i.astAddress.row).sort((a, b) => a - b);
     const empty = items.find((row, idx) => row !== idx);
 
     if (empty === undefined) return items.length + 1;
@@ -256,34 +315,33 @@ export abstract class SheetFlowEngine {
     return this.placedAsts[id];
   }
 
-  createPlacedAst(formula?: string, scope?: number): PlacedAst {
+  createPlacedAst(source: PlacedAstSource): PlacedAst {
     const id = crypto.randomUUID();
     const row = this.getFirstAvailableRowForPlaceableAst();
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
-    const address = buildCellAddress(0, row, sheetId);
+    const astAddress = buildCellAddress(0, row, sheetId);
 
     const placedAst = new PlacedAst(
       id,
-      address,
+      source,
+      astAddress,
       undefined,
       undefined,
       this.config.flow,
     );
-    this.placedAsts[id] = placedAst;
 
-    // TODO: warning when one of the args is passed but the other isn't
-    if (formula && isValidPartOfAddress(scope)) {
-      this.updatePlacedAstWithFormula(id, formula, scope);
-    }
+    this.placedAsts[id] = placedAst;
 
     return placedAst;
   }
 
   placeAst(id: string): void {
-    const { address, data } = this.getPlacedAst(id);
-    const { row } = address;
+    const { astAddress, data } = this.getPlacedAst(id);
+    const { row } = astAddress;
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
+    // TODO: instead of placing the main formula in the internal sheet (first item in `flatAst`)
+    // reuse the source cell instead when checking for changes (possibly make a helper in PlacedAst)
     data.flatAst.forEach((ast, idx) => {
       const address = buildCellAddress(idx, row, sheetId);
       this.setCell(address, this.astToFormula(ast));
@@ -294,7 +352,7 @@ export abstract class SheetFlowEngine {
     const placedAst = this.getPlacedAst(id);
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
-    this.clearRow(sheetId, placedAst.address.row);
+    this.clearRow(sheetId, placedAst.astAddress.row);
     delete this.placedAsts[id];
   }
 
@@ -323,50 +381,28 @@ export abstract class SheetFlowEngine {
     return groupedValues;
   }
 
-  updatePlacedAstWithFormula(
-    id: string,
-    formula: string,
-    scope: number,
-  ): PlacedAst {
+  updatePlacedAstWithFormula(id: string, formula: string): void {
     if (!this.isFormulaValid(formula))
       throw new Error(`Formula \`${formula}\` is not a valid formula`);
 
-    if (!this.doesSheetWithIdExists(scope))
-      throw new Error(`Sheet with ID \`${scope}\` doesn't exists`);
-
-    const placedAst = this.getPlacedAst(id);
+    const { source } = this.getPlacedAst(id);
     const normalizedFormula = this.normalizeFormula(formula);
-    const { address } = placedAst;
 
-    const ast = this.getAstFromFormula(
-      crypto.randomUUID(),
-      normalizedFormula,
-      scope,
-    );
-    const flatAst = flattenAst(ast);
-    const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
-    const precedents = getPrecedents(this, flatAst);
-
-    placedAst.updateData({ formula, scope, ast, flatAst, precedents, missing });
-    void placedAst.generateFlow();
-
-    this.pauseEvaluation();
-    this.clearRow(address.sheet, address.row);
-    this.placeAst(id);
-    this.resumeEvaluation();
-
-    return placedAst;
+    if (isCellAddress(source)) {
+      this.setCell(source, normalizedFormula);
+    } else {
+      this.setNamedExpression(source.name, normalizedFormula, source.scope);
+    }
   }
 
   isPlacedAstPartOfChanges(id: string, changes: Change[]): boolean {
-    const { address } = this.getPlacedAst(id);
+    const { astAddress } = this.getPlacedAst(id);
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
 
     return !!changes.find((change) => {
       if ("address" in change) {
-        return (
-          change.address.sheet === sheetId && change.address.row === address.row
-        );
+        const { sheet, row } = change.address;
+        return sheet === sheetId && row === astAddress.row;
       }
 
       return false;
@@ -375,8 +411,8 @@ export abstract class SheetFlowEngine {
 
   recalculateEverything(): void {
     for (const id of Object.keys(this.placedAsts)) {
-      const { formula, scope } = this.placedAsts[id].data;
-      this.updatePlacedAstWithFormula(id, formula, scope);
+      const { formula } = this.placedAsts[id].data;
+      this.updatePlacedAstWithFormula(id, formula);
     }
   }
 

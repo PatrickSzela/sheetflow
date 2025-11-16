@@ -65,8 +65,8 @@ const AppInner = () => {
   const [selectedEditor, setSelectedEditor] = useState<string>();
 
   const { placedAst } = useCreatePlacedAst(
+    sf.stringToCellAddress("Sheet1!AA100"),
     "=A1+A2*A3",
-    sf.getSheetIdWithError("Sheet1"),
   );
 
   const drawerChildren =

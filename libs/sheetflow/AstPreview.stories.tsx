@@ -43,8 +43,8 @@ type Story = StoryObj<typeof meta>;
 export const FormulaPreview: Story = {
   name: "AST Preview",
   args: {
+    source: "Sheet1!AA100",
     formula: "=(PI()*0.5)+(-FLOOR(Sheet1!A1+A2*A3,1)*(1 + 100%))",
-    scope: "Sheet1",
   },
 };
 

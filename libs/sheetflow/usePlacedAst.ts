@@ -5,8 +5,8 @@ export const usePlacedAst = (id: string) => {
   const sf = useSheetFlow();
 
   const updateFormula = useCallback(
-    (formula: string, scope: number) => {
-      sf.updatePlacedAstWithFormula(id, formula, scope);
+    (formula: string) => {
+      sf.updatePlacedAstWithFormula(id, formula);
     },
     [sf, id],
   );

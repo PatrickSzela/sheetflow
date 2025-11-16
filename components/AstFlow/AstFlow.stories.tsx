@@ -20,7 +20,7 @@ type MetaArgs = FormulaControlsProps &
   HfEngineProviderProps;
 
 const AstFlowWrapper = (props: MetaArgs) => {
-  const { formula, scope, ...rest } = props;
+  const { formula, source, ...rest } = props;
 
   const { placedAst, error } = useFormulaControls(props);
 
@@ -72,8 +72,8 @@ type Story = StoryObj<typeof meta>;
 export const FormulaFlowStory: Story = {
   name: "Flow",
   args: {
+    source: "Sheet1!AA100",
     formula: "=(PI()*0.5)+(-FLOOR(Sheet1!A1+A2*A3,1)*(1 + 100%))",
-    scope: "Sheet1",
   },
 };
 

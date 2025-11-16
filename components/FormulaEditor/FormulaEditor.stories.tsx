@@ -22,7 +22,8 @@ type MetaArgs = FormulaControlsProps &
   HfEngineProviderProps;
 
 const FormulaEditorWrapper = (props: MetaArgs) => {
-  const { formula, scope, ...rest } = props;
+  const { formula, source, ...rest } = props;
+
   const { placedAst } = useFormulaControls(props);
 
   return <FormulaEditor placedAst={placedAst} {...rest} />;
@@ -50,7 +51,7 @@ const meta = {
   argTypes: {
     ...HfEngineProviderArgTypes,
     ...FormulaControlsArgTypes,
-    scope: { table: { disable: true } },
+    source: { table: { disable: true } },
     flowProps: { table: { disable: true } },
   },
 } satisfies Meta<MetaArgs>;
@@ -60,17 +61,17 @@ type Story = StoryObj<typeof meta>;
 export const FormulaEditorStory: Story = {
   name: "Editor",
   args: {
+    source: "Sheet1!AA100",
     formula: "=(PI()*0.5)+(-FLOOR(A1+A2*A3,1)*(1 + 100%))",
-    scope: "Sheet1",
   },
 };
 
 export const FormulaEditorStoryArrays: Story = {
   name: "Editor - Arrays & Named Expressions",
   args: {
+    source: "Sheet1!AA100",
     formula:
       "=ARRAYFORMULA({1,2,3;4,5,6;7,8,9}+Sheet1!A1:C3+NamedExp1st+NamedExp2nd*NamedExp3rd)",
-    scope: "Sheet1",
 
     "sheetflow.namedExpressions": [
       { name: "NamedExp1st", expression: "={10,20,30;40,50,60;70,80,90}" },

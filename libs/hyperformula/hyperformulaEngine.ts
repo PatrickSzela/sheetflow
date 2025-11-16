@@ -204,6 +204,7 @@ export class HyperFormulaEngine extends SheetFlowEngine {
 
   setCell(address: CellAddress, content: CellContent): void {
     this.hf.setCellContents(unmapCellAddress(address), content);
+    this.eventEmitter.emit("cellContentChanged", address, content);
   }
 
   getCellValue(address: CellAddress): CellValue {
@@ -418,8 +419,10 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     return remapAst(this.hf, hfAst, addr, id);
   }
 
-  getAstFromFormula(id: string, formula: string, scope: number): Ast {
-    const address = buildCellAddress(-1, -1, scope);
+  getAstFromFormula(id: string, formula: string, scope?: number): Ast {
+    // TODO: check if sheet exists?
+    const _scope = scope ?? this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
+    const address = buildCellAddress(-1, -1, _scope);
     const hfAddress = unmapCellAddress(address);
 
     const { ast } = this.hf.parser.parse(formula, hfAddress);

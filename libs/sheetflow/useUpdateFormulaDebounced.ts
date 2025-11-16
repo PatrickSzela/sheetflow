@@ -25,7 +25,7 @@ export const useUpdateFormulaDebounced = (
   const debounce = useDebouncedCallback((formula: string) => {
     startTransition(() => {
       try {
-        updateFormula(formula, placedAst.data.scope);
+        updateFormula(formula);
         setError(undefined);
       } catch (e) {
         if (e instanceof Error) setError(e.message);
