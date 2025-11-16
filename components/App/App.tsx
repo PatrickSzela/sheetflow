@@ -19,8 +19,17 @@ import {
 import "@xyflow/react/dist/style.css";
 
 const sheets: Sheets = {
-  Sheet1: [[1], [2], [3]],
+  Sheet1: [],
 };
+
+// TODO: temporary solution, remove once layout manager is implemented
+const f = Array.from({ length: 27 }).fill(null);
+sheets["Sheet1"] = Array.from({ length: 100 }).fill([]) as Sheets[string];
+sheets["Sheet1"][0] = ["1"];
+sheets["Sheet1"][1] = ["2"];
+sheets["Sheet1"][2] = ["3"];
+sheets["Sheet1"][99] = Array.from({ length: 100 });
+sheets["Sheet1"][99][26] = "=A1*A2+A3";
 
 export const App = () => {
   const options = useMemo<Partial<SheetFlowConfig>>(() => {
@@ -66,7 +75,6 @@ const AppInner = () => {
 
   const { placedAst } = useCreatePlacedAst(
     sf.stringToCellAddress("Sheet1!AA100"),
-    "=A1+A2*A3",
   );
 
   const drawerChildren =

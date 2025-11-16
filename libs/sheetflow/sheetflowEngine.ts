@@ -124,42 +124,6 @@ export abstract class SheetFlowEngine {
       }
     };
 
-    const setPlacedAstContent = (
-      placedAst: PlacedAst,
-      content: CellContent,
-    ) => {
-      const { id, astAddress, source } = placedAst;
-
-      // TODO: handle this better
-      const formula =
-        typeof content !== "string" || !this.isFormulaValid(content)
-          ? `=${(content ?? "").toString()}`
-          : content;
-
-      // TODO: support named expressions
-      if (!isCellAddress(source))
-        throw new Error("Implement named expressions");
-
-      const ast = this.getAstFromFormula(
-        crypto.randomUUID(),
-        formula,
-        source.sheet,
-      );
-      const flatAst = flattenAst(ast);
-      const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
-      const precedents = getPrecedents(this, flatAst);
-
-      placedAst.updateData({ formula, ast, flatAst, precedents, missing });
-      void placedAst.generateFlow();
-
-      this.pauseEvaluation();
-      this.clearRow(astAddress.sheet, astAddress.row);
-      this.placeAst(id);
-      this.resumeEvaluation();
-
-      return placedAst;
-    };
-
     // TODO: same thing but for named expressions
     const cellContentChanged: SheetFlowEvents["cellContentChanged"] = (
       address,
@@ -172,7 +136,7 @@ export abstract class SheetFlowEngine {
         if (!isCellAddress(source) || !areCellAddressesEqual(address, source))
           continue;
 
-        setPlacedAstContent(placedAst, content);
+        this.setPlacedAstContent(placedAst, content);
       }
     };
 
@@ -321,16 +285,16 @@ export abstract class SheetFlowEngine {
     const sheetId = this.getSheetIdWithError(SpecialSheets.PLACED_ASTS);
     const astAddress = buildCellAddress(0, row, sheetId);
 
-    const placedAst = new PlacedAst(
-      id,
-      source,
-      astAddress,
-      undefined,
-      undefined,
-      this.config.flow,
-    );
+    const placedAst = new PlacedAst(id, source, astAddress, this.config.flow);
 
     this.placedAsts[id] = placedAst;
+
+    if (isCellAddress(source)) {
+      this.setPlacedAstContent(placedAst, this.getCell(source));
+    } else {
+      // TODO: implement named expressions
+      throw new Error("Named expressions not yet implemented");
+    }
 
     return placedAst;
   }
@@ -379,6 +343,46 @@ export abstract class SheetFlowEngine {
     });
 
     return groupedValues;
+  }
+
+  setPlacedAstContent(placedAst: PlacedAst, content: CellContent): PlacedAst {
+    const { id, astAddress, source } = placedAst;
+
+    // TODO: simplify this
+    if (content === undefined || content === null || content === "") {
+      placedAst.updateData(PlacedAst.buildEmptyData());
+      void placedAst.generateFlow();
+      this.clearRow(astAddress.sheet, astAddress.row);
+      return placedAst;
+    }
+
+    // TODO: handle this better
+    const formula =
+      typeof content !== "string" || !this.isFormulaValid(content)
+        ? `=${(content ?? "").toString()}`
+        : content;
+
+    // TODO: support named expressions
+    if (!isCellAddress(source)) throw new Error("Implement named expressions");
+
+    const ast = this.getAstFromFormula(
+      crypto.randomUUID(),
+      formula,
+      source.sheet,
+    );
+    const flatAst = flattenAst(ast);
+    const missing = getMissingSheetsAndNamedExpressions(this, flatAst);
+    const precedents = getPrecedents(this, flatAst);
+
+    placedAst.updateData({ formula, ast, flatAst, precedents, missing });
+    void placedAst.generateFlow();
+
+    this.pauseEvaluation();
+    this.clearRow(astAddress.sheet, astAddress.row);
+    this.placeAst(id);
+    this.resumeEvaluation();
+
+    return placedAst;
   }
 
   updatePlacedAstWithFormula(id: string, formula: string): void {

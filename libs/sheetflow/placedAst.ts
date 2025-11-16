@@ -69,8 +69,6 @@ export class PlacedAst {
     id: string,
     source: PlacedAstSource,
     astAddress: CellAddress,
-    data?: PlacedAstData,
-    values?: PlacedAstValues,
     flowSettings?: PlacedAstFlowSettings,
   ) {
     this.id = id;
@@ -84,8 +82,12 @@ export class PlacedAst {
       generateValues: false,
       ...flowSettings,
     };
-    this.values = values ?? {};
-    this.data = data ?? {
+    this.values = {};
+    this.data = PlacedAst.buildEmptyData();
+  }
+
+  static buildEmptyData(): PlacedAstData {
+    return {
       formula: "",
       ast: buildEmptyAst({ value: null, rawContent: "" }),
       flatAst: [],

@@ -20,15 +20,10 @@ export const useFormulaControls = (args: FormulaControlsProps) => {
 
   const sf = useSheetFlow();
 
-  const [[initFormula, initSource]] = useState(
-    () => [formula, sf.stringToCellAddress(source)] as const,
-  );
+  const [initSource] = useState(() => sf.stringToCellAddress(source));
   const [error, setError] = useState<Error>();
 
-  const { placedAst, updateFormula } = useCreatePlacedAst(
-    initSource,
-    initFormula,
-  );
+  const { placedAst, updateFormula } = useCreatePlacedAst(initSource);
 
   useEffect(() => {
     try {
