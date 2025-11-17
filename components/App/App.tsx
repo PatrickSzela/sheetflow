@@ -6,6 +6,8 @@ import { ReactFlowProvider } from "@xyflow/react";
 import {
   DockviewApi,
   DockviewReact,
+  themeDark,
+  themeLight,
   type DockviewGroupPanel,
   type DockviewReadyEvent,
   type IDockviewPanelProps,
@@ -34,6 +36,8 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import "dockview/dist/styles/dockview.css";
+
+import { useColorScheme } from "@mui/material/styles";
 
 const sheets: Sheets = {
   Sheet1: [],
@@ -127,6 +131,7 @@ const DependenciesEditorPlacedAst = (props: { id: string }) => {
 
 const AppInner = () => {
   const sf = useSheetFlow();
+  const { colorScheme } = useColorScheme();
 
   const [selectedEditor, setSelectedEditor] = useState<string>();
   const [openCellOpen, setOpenCellOpen] = useState<{
@@ -163,7 +168,7 @@ const AppInner = () => {
       }}
     >
       <DockviewReact
-        className={"dockview-theme-abyss"}
+        theme={colorScheme === "dark" ? themeDark : themeLight}
         onReady={onReady}
         components={components}
         leftHeaderActionsComponent={(e) => (
