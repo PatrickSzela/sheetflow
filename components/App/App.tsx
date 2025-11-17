@@ -203,8 +203,9 @@ const AppInner = () => {
           createPanel(dockview!, sf, r, setSelectedEditor, openCellOpen.panel);
           setOpenCellOpen({ open: false, closeable: true, panel: undefined });
         }}
-        onClose={() => {
+        onClose={(_, reason) => {
           if (!openCellOpen.closeable) return;
+          if (reason === "backdropClick") return;
           setOpenCellOpen({ open: false, closeable: true, panel: undefined });
         }}
       />
