@@ -4,12 +4,11 @@ import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
+  DockviewApi,
   DockviewReact,
-  type DockviewApi,
+  type DockviewGroupPanel,
   type DockviewReadyEvent,
-  type IDockviewHeaderActionsProps,
   type IDockviewPanelProps,
-  type IWatermarkPanelProps,
 } from "dockview";
 import { DependenciesEditor } from "@/components/DependenciesEditor";
 import {
@@ -17,16 +16,17 @@ import {
   type FormulaEditorProps,
 } from "@/components/FormulaEditor";
 import { Main } from "@/components/Main";
+import { OpenCell } from "@/components/OpenCell";
 import { HyperFormulaEngine } from "@/libs/hyperformula";
 import {
   SheetFlowProvider,
-  buildCellAddress,
   findMostSimilarLanguage,
   groupReferencesBySheet,
+  isCellAddress,
   usePlacedAst,
   usePlacedAstData,
   useSheetFlow,
-  type CellAddress,
+  type PlacedAstSource,
   type SheetFlowConfig,
   type SheetFlowEngine,
   type Sheets,
@@ -56,19 +56,23 @@ const components = {
 const createPanel = (
   dockview: DockviewApi,
   sf: SheetFlowEngine,
-  address: CellAddress,
+  reference: PlacedAstSource,
   onFocus: (id: string) => void,
-  headerActions?: IDockviewHeaderActionsProps,
+  groupPanel?: DockviewGroupPanel,
 ) => {
-  const placedAst = sf.createPlacedAst(address);
+  // TODO: implement named expressions
+  if (!isCellAddress(reference))
+    throw new Error("Named Expressions not implemented");
+
+  const placedAst = sf.createPlacedAst(reference);
 
   const panel = dockview.addPanel<FormulaEditorProps>({
     id: placedAst.id,
-    title: sf.cellAddressToString(address),
+    title: sf.cellAddressToString(reference),
     component: "default",
-    ...(headerActions && {
+    ...(groupPanel && {
       position: {
-        referenceGroup: headerActions.group,
+        referenceGroup: groupPanel,
       },
     }),
     params: {
@@ -81,28 +85,6 @@ const createPanel = (
   panel.api.onDidActiveChange((e) => {
     if (e.isActive) onFocus(placedAst.id);
   });
-};
-
-const Watermark = (
-  props: IWatermarkPanelProps & { onFocus: (id: string) => void },
-) => {
-  const { containerApi, onFocus } = props;
-  const sf = useSheetFlow();
-
-  return (
-    <div
-      onClick={() =>
-        createPanel(
-          containerApi,
-          sf,
-          buildCellAddress(0, 0, sf.getSheetIdWithError("Sheet1")),
-          onFocus,
-        )
-      }
-    >
-      Create new tab
-    </div>
-  );
 };
 
 export const App = () => {
@@ -145,7 +127,14 @@ const DependenciesEditorPlacedAst = (props: { id: string }) => {
 
 const AppInner = () => {
   const sf = useSheetFlow();
+
   const [selectedEditor, setSelectedEditor] = useState<string>();
+  const [openCellOpen, setOpenCellOpen] = useState<{
+    open: boolean;
+    closeable: boolean;
+    panel?: DockviewGroupPanel;
+  }>({ open: false, closeable: true, panel: undefined });
+  const [dockview, setDockview] = useState<DockviewApi>();
 
   const drawerChildren =
     selectedEditor && sf.isAstPlaced(selectedEditor) ? (
@@ -156,6 +145,9 @@ const AppInner = () => {
     e.api.onDidRemovePanel((e) => {
       sf.removePlacedAst(e.id);
     });
+
+    setDockview(e.api);
+    setOpenCellOpen({ open: true, closeable: false, panel: undefined });
   };
 
   return (
@@ -174,27 +166,31 @@ const AppInner = () => {
         className={"dockview-theme-abyss"}
         onReady={onReady}
         components={components}
-        watermarkComponent={(p) => (
-          <Watermark {...p} onFocus={setSelectedEditor} />
-        )}
         leftHeaderActionsComponent={(e) => (
           <Stack marginLeft={0.5} gap={0.5}>
             <IconButton
               size="small"
               onClick={() =>
-                createPanel(
-                  e.containerApi,
-                  sf,
-                  buildCellAddress(0, 0, sf.getSheetIdWithError("Sheet1")),
-                  setSelectedEditor,
-                  e,
-                )
+                setOpenCellOpen({ open: true, closeable: true, panel: e.group })
               }
             >
               <AddIcon />
             </IconButton>
           </Stack>
         )}
+      />
+
+      <OpenCell
+        open={openCellOpen.open}
+        closeable={openCellOpen.closeable}
+        onSubmit={(r) => {
+          createPanel(dockview!, sf, r, setSelectedEditor, openCellOpen.panel);
+          setOpenCellOpen({ open: false, closeable: true, panel: undefined });
+        }}
+        onClose={() => {
+          if (!openCellOpen.closeable) return;
+          setOpenCellOpen({ open: false, closeable: true, panel: undefined });
+        }}
       />
     </Main>
   );

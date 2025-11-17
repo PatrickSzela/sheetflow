@@ -296,12 +296,27 @@ export class HyperFormulaEngine extends SheetFlowEngine {
     return !!this.hf.getSheetName(id);
   }
 
-  getAllSheets(): Sheets {
+  getAllSheets(includeInternalSheets?: boolean): Sheets {
+    const sheets = this.hf.getAllSheetsSerialized();
+
+    if (!includeInternalSheets) {
+      for (const sheet of Object.values(SpecialSheets)) {
+        delete sheets[sheet];
+      }
+    }
+
     return remapSheets(this.hf.getAllSheetsSerialized());
   }
 
-  getAllSheetNames(): string[] {
-    return this.hf.getSheetNames();
+  getAllSheetNames(includeInternalSheets?: boolean): string[] {
+    let names = this.hf.getSheetNames();
+
+    if (!includeInternalSheets)
+      names = names.filter(
+        (i) => !Object.values<string>(SpecialSheets).includes(i),
+      );
+
+    return names;
   }
 
   clearRow(sheetId: number, index: number): void {

@@ -173,8 +173,8 @@ export abstract class SheetFlowEngine {
   abstract removeSheet(id: number): void;
   abstract doesSheetExists(name: string): boolean;
   abstract doesSheetWithIdExists(id: number): boolean;
-  abstract getAllSheets(): Sheets;
-  abstract getAllSheetNames(): string[];
+  abstract getAllSheets(includeInternalSheets?: boolean): Sheets;
+  abstract getAllSheetNames(includeInternalSheets?: boolean): string[];
   abstract clearRow(sheet: number, index: number): void;
 
   // named expression

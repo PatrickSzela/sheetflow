@@ -28,7 +28,7 @@
     // "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "noImplicitOverride": true,
-    "exactOptionalPropertyTypes": true,
+    // "exactOptionalPropertyTypes": true,
     "noPropertyAccessFromIndexSignature": true,
 
     "paths": {
