@@ -5,6 +5,7 @@ import Stack from "@mui/material/Stack";
 import { ReactFlowProvider } from "@xyflow/react";
 import {
   DockviewApi,
+  DockviewDefaultTab,
   DockviewReact,
   themeDark,
   themeLight,
@@ -171,6 +172,8 @@ const AppInner = () => {
         theme={colorScheme === "dark" ? themeDark : themeLight}
         onReady={onReady}
         components={components}
+        // WORKAROUND: for some reason Dockview doesn't close tab with MMB when `defaultTabComponent` is not specified
+        defaultTabComponent={DockviewDefaultTab}
         leftHeaderActionsComponent={(e) => (
           <Stack marginLeft={0.5} gap={0.5}>
             <IconButton
