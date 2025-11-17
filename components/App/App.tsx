@@ -148,11 +148,19 @@ const AppInner = () => {
     ) : null;
 
   const onReady = (e: DockviewReadyEvent) => {
-    e.api.onDidRemovePanel((e) => {
+    const api = e.api;
+
+    api.onDidRemovePanel((e) => {
       sf.removePlacedAst(e.id);
     });
 
-    setDockview(e.api);
+    api.onDidRemoveGroup(() => {
+      if (!api.groups.length) {
+        setOpenCellOpen({ open: true, closeable: false, panel: undefined });
+      }
+    });
+
+    setDockview(api);
     setOpenCellOpen({ open: true, closeable: false, panel: undefined });
   };
 
