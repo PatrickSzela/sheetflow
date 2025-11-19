@@ -149,6 +149,11 @@ const NodeHeader = styled(CardHeader)<CardHeaderProps>(() => ({
     [`& svg`]: {
       fontSize: "1.15rem",
     },
+
+    [`& span`]: {
+      minWidth: '12px',
+      textAlign: 'center'
+    }
   },
 
   [`& .${cardHeaderClasses.content}, & .${cardHeaderClasses.title}`]: {

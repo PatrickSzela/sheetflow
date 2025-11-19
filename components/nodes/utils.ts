@@ -47,6 +47,45 @@ export type NodeSettings = {
   value: NodeSettingsSection;
 };
 
+const BINARY_OPERATOR_TO_TITLE = {
+  "-": "SUBTRACT",
+  "+": "ADD",
+  "&": "CONCATENATE",
+  "=": "EQUAL",
+  "<>": "NOT EQUAL",
+  ">": "GREATER",
+  "<": "LESSER",
+  ">=": "GREATER OR EQUAL",
+  "<=": "LESSER OR EQUAL",
+  "*": "MULTIPLY",
+  "/": "DIVIDE",
+  "^": "EXPONENTIATION",
+} as const;
+
+const UNARY_OPERATOR_TO_TITLE = {
+  "%": "PERCENT",
+  "-": "NEGATE",
+  "+": "PLUS",
+} as const;
+
+export const unaryExpressionTitle = (operator: string, onRight: boolean) => {
+  if (operator in UNARY_OPERATOR_TO_TITLE) {
+    return UNARY_OPERATOR_TO_TITLE[
+      operator as keyof typeof UNARY_OPERATOR_TO_TITLE
+    ];
+  }
+  return onRight ? `A${operator}` : `${operator}A`;
+};
+
+export const binaryExpressionTitle = (operator: string) => {
+  if (operator in BINARY_OPERATOR_TO_TITLE) {
+    return BINARY_OPERATOR_TO_TITLE[
+      operator as keyof typeof BINARY_OPERATOR_TO_TITLE
+    ];
+  }
+  return `A ${operator} B`;
+};
+
 export const remapNodeValue = (input: AstNodeValue): NodeValue => ({
   value: printCellValue(input.value),
   ...(input.handleId !== undefined && { handleId: input.handleId }),
@@ -104,8 +143,8 @@ export const getNodeDataFromAst = (
     case AstNodeType.UNARY_EXPRESSION:
       return {
         ...nodeData,
-        title: ast.operatorOnRight ? `A${ast.operator}` : `${ast.operator}A`,
-        icon: React.createElement(PlusOne),
+        title: unaryExpressionTitle(ast.operator, ast.operatorOnRight),
+        icon: React.createElement("span", {}, ast.operator),
         color: "secondary",
         ...error,
       };
@@ -113,8 +152,8 @@ export const getNodeDataFromAst = (
     case AstNodeType.BINARY_EXPRESSION:
       return {
         ...nodeData,
-        title: `A ${ast.operator} B`,
-        icon: React.createElement(Add),
+        title: binaryExpressionTitle(ast.operator),
+        icon: React.createElement("span", {}, ast.operator),
         color: "secondary",
         ...error,
       };
